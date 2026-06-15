@@ -1,0 +1,129 @@
+@import 'tailwindcss';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  overflow-y: hidden;
+}
+
+body {
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  height: 100vh;
+  overflow: hidden;
+  width: 100%;
+}
+
+:root {
+  --text: #3f4a46;
+  --text-h: #10211c;
+  --bg: #f2f0e8;
+  --border: rgba(16, 33, 28, 0.12);
+  --code-bg: rgba(255, 255, 255, 0.55);
+  --accent: #2f7d65;
+  --accent-bg: rgba(47, 125, 101, 0.12);
+  --accent-border: rgba(47, 125, 101, 0.42);
+  --social-bg: rgba(255, 255, 255, 0.45);
+  --shadow:
+    rgba(16, 33, 28, 0.12) 0 24px 60px -20px, rgba(16, 33, 28, 0.08) 0 10px 20px -12px;
+
+  --sans: Inter, 'Segoe UI', Roboto, sans-serif;
+  --heading: 'Cormorant Garamond', Georgia, serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(235, 205, 145, 0.38), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(95, 159, 134, 0.18), transparent 28%),
+    linear-gradient(160deg, #f7f3eb 0%, #f3efe6 42%, #eaf1ec 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #ced7d1;
+    --text-h: #f4f7f5;
+    --bg: #0d1310;
+    --border: rgba(255, 255, 255, 0.12);
+    --code-bg: rgba(255, 255, 255, 0.06);
+    --accent: #88c8af;
+    --accent-bg: rgba(136, 200, 175, 0.14);
+    --accent-border: rgba(136, 200, 175, 0.44);
+    --social-bg: rgba(255, 255, 255, 0.06);
+    --shadow:
+      rgba(0, 0, 0, 0.42) 0 24px 60px -20px, rgba(0, 0, 0, 0.2) 0 10px 20px -12px;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    font-size: 16px;
+  }
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+}
+
+@media (max-width: 1024px) {
+  h1 {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+}
+
+@media (max-width: 1024px) {
+  h2 {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}
