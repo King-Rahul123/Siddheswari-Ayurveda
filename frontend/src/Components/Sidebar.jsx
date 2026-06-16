@@ -3,7 +3,34 @@ import { useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const [saleOpen, setSaleOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+
+  const handleSaleToggle = () => {
+    setSaleOpen((prev) => {
+      const newState = !prev;
+
+      // If opening Sale, close Report
+      if (newState) {
+        setReportOpen(false);
+      }
+
+      return newState;
+    });
+  };
+
+  const handleReportToggle = () => {
+    setReportOpen((prev) => {
+      const newState = !prev;
+
+      // If opening Report, close Sale
+      if (newState) {
+        setSaleOpen(false);
+      }
+
+      return newState;
+    });
+  };
 
   return (
     <aside className="sidebar">
@@ -12,7 +39,7 @@ export default function Sidebar() {
           <img
             src="/Logo.jpg"
             alt="Logo"
-            className="w-18 h-18 rounded-full"
+            className="w-16 h-16 rounded-full"
           />
           <h2>Siddheswari Ayurveda</h2>
           <span>Healing Naturally</span>
@@ -29,61 +56,61 @@ export default function Sidebar() {
             Customer
           </li>
 
-          <li className={ window.location.pathname === "/dashboard/appointments" ? "active" : "" } onClick={() => navigate("/dashboard/appointments")} >
-            <i className="bi bi-calendar-check-fill"></i>
-            Appointments
+          {/* Sale Menu */}
+          <li className="menu-parent" onClick={handleSaleToggle}>
+            <div className="menu-item">
+              <div>
+                <i className="bi bi-cash-stack"></i>
+                <span>Sale & Purchase</span>
+              </div>
+              <i className={`bi ${ saleOpen ? "bi-chevron-up" : "bi-chevron-down" }`}></i>
+            </div>
           </li>
 
-          <li className={ window.location.pathname === "/dashboard/billing" ? "active" : "" } onClick={() => navigate("/dashboard/billing")} >
-            <i className="bi bi-cash-stack"></i>
-            Sell
-          </li>
+          {saleOpen && (
+            <ul className="submenu">
+              <li className={ window.location.pathname === "/dashboard/sales" ? "active" : "" } onClick={() => navigate("/dashboard/sales")} >
+                Sale invoice
+              </li>
+
+              <li className={ window.location.pathname === "/dashboard/purchases" ? "active" : "" } onClick={() => navigate("/dashboard/purchases")} >
+                Purchase invoice
+              </li>
+            </ul>
+          )}
+
 
           {/* Report Menu */}
-          <li className="menu-parent" onClick={() => setReportOpen(!reportOpen)}>
+          <li className="menu-parent" onClick={handleReportToggle}>
             <div className="menu-item">
               <div>
                 <i className="bi bi-file-earmark-bar-graph-fill"></i>
                 <span>Report</span>
               </div>
-              <i className={`bi ${ reportOpen ? "bi-chevron-up" : "bi-chevron-down" }`}
-              ></i>
+              <i className={`bi ${ reportOpen ? "bi-chevron-up" : "bi-chevron-down" }`}></i>
             </div>
           </li>
 
           {reportOpen && (
             <ul className="submenu">
-              <li
-                className={
-                  window.location.pathname === "/dashboard/analytics"
-                    ? "active"
-                    : ""
-                }
-                onClick={() => navigate("/dashboard/analytics")}
-              >
+              <li className={ window.location.pathname === "/dashboard/analytics" ? "active" : "" } onClick={() => navigate("/dashboard/analytics")} >
+                <i className="bi bi-graph-up"></i>
                 Analytics
               </li>
 
-              <li
-                className={
-                  window.location.pathname === "/dashboard/product-report"
-                    ? "active"
-                    : ""
-                }
-                onClick={() => navigate("/dashboard/product-report")}
-              >
-                Product Report
+              <li className={ window.location.pathname === "/dashboard/stock-report" ? "active" : "" } onClick={() => navigate("/dashboard/stock-report")} >
+                <i className="bi bi-box-seam"></i>
+                Stock Report
               </li>
 
-              <li
-                className={
-                  window.location.pathname === "/dashboard/sale-report"
-                    ? "active"
-                    : ""
-                }
-                onClick={() => navigate("/dashboard/sale-report")}
-              >
+              <li className={ window.location.pathname === "/dashboard/sale-report" ? "active" : "" } onClick={() => navigate("/dashboard/sale-report")} >
+                <i className="bi bi-file-earmark-bar-graph-fill"></i>
                 Sale Report
+              </li>
+
+              <li className={ window.location.pathname === "/dashboard/purchase-report" ? "active" : "" } onClick={() => navigate("/dashboard/purchase-report")} >
+                <i className="bi bi-file-earmark-bar-graph-fill"></i>
+                Purchase Report
               </li>
             </ul>
           )}

@@ -1,0 +1,9 @@
+.ayurveda-toast {
+  background: linear-gradient( 135deg, #296f2d, #38a740 ) !important;
+  color: white !important;
+  border-radius: 12px !important;
+  font-weight: 500;
+  width: 100%;
+  font-size: 14px;
+  box-shadow: 0 10px 25px rgba(46, 125, 50, 0.3);
+}

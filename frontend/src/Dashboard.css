@@ -20,15 +20,17 @@ body {
 ====================== */
 
 .dashboard {
-    display: flex;
-    min-height: 100vh;
+  display: flex;
+  min-height: 100vh;
+  overflow-x: visible;
 }
 
 .dashboard-wrapper {
-    flex: 1;
-    margin-left: 270px;
-    display: flex;
-    flex-direction: column;
+  flex: 1;
+  margin-left: 270px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* ======================
@@ -60,7 +62,7 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 
 .logo h2 {
@@ -119,7 +121,7 @@ body {
 }
 
 /* ======================
-   Report Submenu
+  Submenu
 ====================== */
 
 .menu-parent {
@@ -150,8 +152,8 @@ body {
 
 .submenu {
   list-style: none;
-  padding: 0;
-  margin: 0 0 0 20px;
+  padding: 8px;
+  margin: 0 10px 10px 20px;
   background: rgba(255, 255, 255, 0.144);
   border-radius: 6px;
   transition: all 0.5s ease;
@@ -160,7 +162,7 @@ body {
 .submenu li {
   display: flex;
   align-items: center;
-  padding: 8px 15px;
+  padding: 6px 15px;
   margin-bottom: 5px;
   border-radius: 10px;
   color: rgba(255, 255, 255, 0.85);
@@ -172,7 +174,7 @@ body {
 .submenu li:hover {
   background: rgba(255, 255, 255, 0.12);
   color: white;
-  transform: translateX(5px);
+  transform: translateX(0);
 }
 
 .submenu li.active {
@@ -260,6 +262,8 @@ body {
 
 .dashboard-content {
   padding: 15px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 /* ======================

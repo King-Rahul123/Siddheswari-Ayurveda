@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // import { useState } from "react";
 
 import Login from "./pages/Login";
@@ -47,6 +49,10 @@ export default function App() {
           {/* <Route path="purchase&sale" element={<Purchase_Sale />} /> */}
         {/* </Route> */}
       </Routes>
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+      />
     </BrowserRouter>
   );
 }
