@@ -1,9 +1,10 @@
 import { useState } from "react";
-import "../Dashboard.css";
-import "../Customer.css";
+import "../CSS/Dashboard.css";
+import "../CSS/Customer.css";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import AddCustomer from "../Components/AddCustomer";
+import * as XLSX from "xlsx";
 
 export default function Customer() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,7 +15,6 @@ export default function Customer() {
     const headers = [
       "Customer ID",
       "Name",
-      "Age",
       "Gender",
       "Phone",
       "Created On",
@@ -23,7 +23,6 @@ export default function Customer() {
     const rows = filteredCustomers.map((customer) => [
       customer.id,
       customer.name,
-      customer.age,
       customer.gender,
       customer.phone,
       customer.createdOn,
@@ -47,31 +46,33 @@ export default function Customer() {
   };
 
   const exportToExcel = () => {
-    // Install xlsx package
-    // npm install xlsx
+    const excelData = filteredCustomers.map((customer, index) => ({
+      Sl: index + 1,
+      "Customer ID": customer.id,
+      Name: customer.name,
+      Gender: customer.gender,
+      Phone: customer.phone,
+      "Created On": customer.createdOn,
+    }));
 
-    import("xlsx").then((XLSX) => {
-      const worksheet = XLSX.utils.json_to_sheet(filteredCustomers);
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
 
-      const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Customers"
+    );
 
-      XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        "Customers"
-      );
+    XLSX.writeFile(workbook, "Customers.xlsx");
 
-      XLSX.writeFile(workbook, "customers.xlsx");
-
-      setShowExportPopup(false);
-    });
+    setShowExportPopup(false);
   };
 
   const customers = [
     {
       id: "CUS001",
       name: "Rahul Adak",
-      age: 24,
       gender: "Male",
       phone: "8145322318",
       createdOn: "20 Jun 2026",
@@ -79,7 +80,6 @@ export default function Customer() {
     {
       id: "CUS002",
       name: "Priya Sharma",
-      age: 32,
       gender: "Female",
       phone: "8348765905",
       createdOn: "18 Jun 2026",
@@ -87,7 +87,6 @@ export default function Customer() {
     {
       id: "CUS003",
       name: "Amit Kumar",
-      age: 45,
       gender: "Male",
       phone: "7654321098",
       createdOn: "25 Jun 2026",
@@ -95,7 +94,6 @@ export default function Customer() {
     {
       id: "CUS004",
       name: "Sneha Das",
-      age: 28,
       gender: "Female",
       phone: "6543210987",
       createdOn: "22 Jun 2026",
@@ -120,7 +118,7 @@ export default function Customer() {
           <div className="customer-header">
             <div>
               <h2>Customer Management</h2>
-              <p>Manage all your Ayurveda customers efficiently.</p>
+              <p className="text-gray-600 text-sm">Manage all your Ayurveda customers efficiently</p>
             </div>
 
             <button className="add-customer-btn" onClick={() => setShowCustomerPopup(true)} >
@@ -133,13 +131,7 @@ export default function Customer() {
           <div className="customer-toolbar">
             <div className="search-box">
               <i className="bi bi-search"></i>
-
-              <input
-                type="text"
-                placeholder="Search by customer name or phone..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <input type="text" placeholder="Search by customer name or phone..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
             </div>
 
             <button className="export-btn" onClick={() => setShowExportPopup(true)}>
@@ -150,6 +142,7 @@ export default function Customer() {
 
           {/* Customer Table */}
           <div className="customer-table-card">
+            <p className="text-muted text-xs text-right mb-1"><b>Total:</b> {filteredCustomers.length}</p>
             <div className="table-responsive">
               <table className="dashboard-table">
                 <thead>
@@ -157,7 +150,6 @@ export default function Customer() {
                     <th className="text-center">Sl.</th>
                     <th className="text-center">Customer</th>
                     <th className="text-center">Customer ID</th>
-                    <th className="text-center">Age</th>
                     <th className="text-center">Gender</th>
                     <th className="text-center">Phone</th>
                     <th className="text-center">Created On</th>
@@ -178,15 +170,9 @@ export default function Customer() {
                       </td>
 
                       <td className="text-center">{customer.id}</td>
-
-                      <td className="text-center">{customer.age}</td>
-
                       <td className="text-center">{customer.gender}</td>
-
                       <td className="text-center">{customer.phone}</td>
-
                       <td className="text-center">{customer.createdOn}</td>
-
                       <td className="text-center">
                         <div className="customer-actions">
                           <button className="action-btn edit">

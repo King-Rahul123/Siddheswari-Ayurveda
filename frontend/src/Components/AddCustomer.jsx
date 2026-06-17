@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import "../Customer.css";
+import "../CSS/Customer.css";
 import "../CSS/Card.css"
 
 export default function AddCustomer({ show, onClose }) {

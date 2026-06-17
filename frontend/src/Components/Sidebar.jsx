@@ -70,10 +70,12 @@ export default function Sidebar() {
           {saleOpen && (
             <ul className="submenu">
               <li className={ window.location.pathname === "/dashboard/sales" ? "active" : "" } onClick={() => navigate("/dashboard/sales")} >
+                <i className="bi bi-tag"></i>
                 Sale invoice
               </li>
 
               <li className={ window.location.pathname === "/dashboard/purchases" ? "active" : "" } onClick={() => navigate("/dashboard/purchases")} >
+                <i className="bi bi-cart-check"></i>
                 Purchase invoice
               </li>
             </ul>

@@ -15,12 +15,7 @@
   color: #1b5e20;
   font-size: 30px;
   font-weight: 700;
-  margin-bottom: 5px;
-}
-
-.customer-header p {
-  color: #666;
-  margin: 0;
+  margin-bottom: 3px;
 }
 
 .add-customer-btn {
@@ -114,7 +109,6 @@
   max-width: 500px;
   background: white;
   border-radius: 16px;
-  padding: 0 18px;
   border: 1px solid #dcedc8;
   display: flex;
   align-items: center;

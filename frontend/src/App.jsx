@@ -7,6 +7,8 @@ import Login from "./pages/Login";
 
 import Dashboard from "./pages/Dashboard";
 import Customer from "./Pages/Customer";
+import Sales from "./Pages/Sale";
+import SaleInvoice from "./Components/SaleInvoice";
 
 
 /* ---------- DASHBOARD LAYOUT (FIXED) ---------- */
@@ -44,7 +46,8 @@ export default function App() {
         {/* <Route path="/dashboard" element={<DashboardLayout />}> */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/customer" element={<Customer />} />
-          {/* <Route path="profile" element={<Profile />} /> */}
+          <Route path="/dashboard/sales" element={<Sales />} />
+          <Route path="/dashboard/sales/sale-invoice" element={<SaleInvoice />} />
           {/* <Route path="products" element={<Products />} /> */}
           {/* <Route path="purchase&sale" element={<Purchase_Sale />} /> */}
         {/* </Route> */}
