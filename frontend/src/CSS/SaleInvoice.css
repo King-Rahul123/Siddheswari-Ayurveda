@@ -48,16 +48,14 @@
     box-shadow: 0 20px 45px rgba(0,0,0,.08);
 }
 
-/* CUSTOMER INFO */
-
-.invoice-info{
+.invoice-info {
     display: grid;
     grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
     gap: 18px;
     margin-bottom: 12px;
 }
 
-.invoice-info input{
+.invoice-info input {
     height: 45px;
     border: none;
     outline: none;
@@ -69,14 +67,12 @@
     transition: 0.3s;
 }
 
-.invoice-info input:focus{
+.invoice-info input:focus {
     transform: translateY(-2px);
     box-shadow: inset 0 0 0 2px #22c55e, 0 10px 20px rgba(34,197,94,.18);
 }
 
-/* TABLE */
-
-.invoice-table{
+.invoice-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
@@ -85,7 +81,7 @@
     margin-bottom: 25px;
 }
 
-.invoice-table th{
+.invoice-table th {
     color: white;
     background: #15803d;
     padding: 12px 16px;

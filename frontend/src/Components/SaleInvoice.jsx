@@ -4,11 +4,11 @@ import Sidebar from "../Components/Sidebar";
 import "../CSS/SaleInvoice.css";
 
 export default function SaleInvoice() {
-    const [billNumber] = useState(() => {
-        return `INV${new Date().getFullYear()}${Math.floor(
-            1000 + Math.random() * 9000
-        )}`;
-    });
+  const [billNumber] = useState(() => {
+      return `INV${new Date().getFullYear()}${Math.floor(
+          1000 + Math.random() * 9000
+      )}`;
+  });
 
   const [items, setItems] = useState([
     {
@@ -42,6 +42,8 @@ export default function SaleInvoice() {
     0
   );
 
+  const discount = subTotal > 1000 ? subTotal * 0.1 : 0;
+
   const gstAmount = items.reduce(
     (sum, item) =>
       sum + (item.qty * item.rate * item.gst) / 100,
@@ -61,55 +63,34 @@ export default function SaleInvoice() {
 
           <div className="invoice-header">
             <div className="flex items-center gap-3">
-                <i className="bi bi-arrow-left bg-gray-500 py-1 px-2 text-white rounded-lg" onClick={() => window.history.back()}></i>
-                <h2>Sales Invoice</h2>
+              <i className="bi bi-arrow-left bg-gray-500 py-1 px-2 text-white rounded-lg" onClick={() => window.history.back()}></i>
+              <h2>Sales Invoice</h2>
             </div>
-
             <button className="save-btn">Save Invoice</button>
           </div>
 
           <div className="invoice-card">
-
             <div className="invoice-info">
-
-              <input
-                type="text"
-                placeholder="Bill Number"
-                value={billNumber}
-                readOnly
-              />
-
+              <input type="text" placeholder="Bill Number" value={billNumber} readOnly />
               <input type="date" />
-
-              <input
-                type="text"
-                placeholder="Customer Name"
-              />
-
-              <input
-                type="text"
-                placeholder="Mobile Number"
-              />
-
+              <input type="text" placeholder="Customer Name" />
+              <input type="text" placeholder="Mobile Number" />
             </div>
 
             <table className="invoice-table">
-
               <thead>
                 <tr>
                   <th>Product</th>
                   <th>Qty</th>
+                  <th>MRP</th>
                   <th>Rate</th>
                   <th>GST %</th>
                   <th>Total</th>
                 </tr>
               </thead>
-
               <tbody>
-
                 {items.map((item, index) => (
                   <tr key={index}>
-
                     <td>
                       <input
                         value={item.product}
@@ -122,7 +103,6 @@ export default function SaleInvoice() {
                         }
                       />
                     </td>
-
                     <td>
                       <input
                         type="number"
@@ -131,6 +111,20 @@ export default function SaleInvoice() {
                           updateItem(
                             index,
                             "qty",
+                            Number(e.target.value)
+                          )
+                        }
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="number"
+                        value={item.mrp}
+                        onChange={(e) =>
+                          updateItem(
+                            index,
+                            "mrp",
                             Number(e.target.value)
                           )
                         }
@@ -165,36 +159,20 @@ export default function SaleInvoice() {
                       />
                     </td>
 
-                    <td>
-                      ₹{item.qty * item.rate}
-                    </td>
+                    <td>₹{item.qty * item.rate}</td>
 
                   </tr>
                 ))}
-
               </tbody>
-
             </table>
-
-            <button
-              className="add-row-btn"
-              onClick={addRow}
-            >
-              + Add Product
-            </button>
-
+            <button className="add-row-btn" onClick={addRow}>+ Add Product</button>
             <div className="invoice-summary">
-
-              <h4>Subtotal : ₹{subTotal}</h4>
-
+              <h4>Subtotal : ₹{subTotal.toFixed(2)}</h4>
+              <h4>Discount : ₹{discount.toFixed(2)}</h4>
               <h4>GST : ₹{gstAmount.toFixed(2)}</h4>
-
               <h3>Net Amount : ₹{netAmount.toFixed(2)}</h3>
-
             </div>
-
           </div>
-
         </main>
       </div>
     </div>
