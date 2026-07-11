@@ -7,3 +7,36 @@
   font-size: 14px;
   box-shadow: 0 10px 25px rgba(46, 125, 50, 0.3);
 }
+
+.invoice-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  min-width: 320px;
+  max-width: 450px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #296f2d, #38a740);
+  color: white;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 15px;
+  animation: slideIn 0.3s ease;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.ayurveda-toast.error {
+  background: linear-gradient( 135deg, #dc2626, #ef4444 );
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

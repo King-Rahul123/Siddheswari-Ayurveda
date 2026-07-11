@@ -1,0 +1,62 @@
+.print-container {
+  width: 100%;
+  padding: 20px;
+  background: white;
+  color: black;
+  font-family: Arial, sans-serif;
+}
+
+.invoice-header-print {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.invoice-header-print h1 {
+  margin: 0;
+  font-size: 25px;
+}
+
+.invoice-details {
+  display: flex;
+  justify-content: space-between;
+}
+
+.customer-details {
+  margin-bottom: 15px;
+}
+
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.print-table th,
+.print-table td {
+  border: 1px solid #000;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  text-align: center;
+}
+
+.invoice-total {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.signature-section {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 60px;
+}
+
+@media print {
+  body {
+    margin: 0;
+  }
+
+  .print-container {
+    padding: 10px;
+  }
+}

@@ -118,7 +118,7 @@ export default function Sales() {
                                     <td>₹{sale.totalamount}</td>
                                     <td>₹{sale.netamount}</td>
                                     <td className="gap-2 flex justify-center">
-                                        <button className="edit-btn"><i className="bi bi-pencil-square text-gray-500"></i></button>
+                                        <button className="edit-btn" onClick={() =>navigate(`/dashboard/sales/edit/${sale.billnumber}`)}><i className="bi bi-pencil-square text-gray-500"></i></button>
                                         <button className="view-btn"><i className="bi bi-printer text-blue-500 text-base"></i></button>
                                     </td>
                                 </tr>

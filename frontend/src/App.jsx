@@ -8,7 +8,12 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Customer from "./Pages/Customer";
 import Sales from "./Pages/Sale";
+import Purchase from "./Pages/Purchase";
 import SaleInvoice from "./Components/SaleInvoice";
+import PrintInvoice from "./Components/PrintFormate";
+import EditSale from "./Components/EditBill";
+// import EditPurchase from "./Components/EditPurchase";
+
 
 
 /* ---------- DASHBOARD LAYOUT (FIXED) ---------- */
@@ -48,8 +53,11 @@ export default function App() {
           <Route path="/dashboard/customer" element={<Customer />} />
           <Route path="/dashboard/sales" element={<Sales />} />
           <Route path="/dashboard/sales/sale-invoice" element={<SaleInvoice />} />
+          <Route path="/print-invoice" element={<PrintInvoice />} />
+          <Route path="/dashboard/sales/edit/:billnumber" element={<EditSale />} />
+          <Route path="/dashboard/purchase" element={<Purchase />} />
+          {/* <Route path="/dashboard/purchase/edit/:billNumber" element={<EditPurchase />} /> */}
           {/* <Route path="products" element={<Products />} /> */}
-          {/* <Route path="purchase&sale" element={<Purchase_Sale />} /> */}
         {/* </Route> */}
       </Routes>
       <ToastContainer

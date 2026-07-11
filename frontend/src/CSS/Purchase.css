@@ -1,0 +1,108 @@
+.toolbar-right{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.download-btn{
+    color: green;
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.export-modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.35);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+    backdrop-filter:blur(4px);
+}
+
+.export-modal{
+    width:420px;
+    background:#fff;
+    border-radius:18px;
+    padding:24px;
+    box-shadow:0 20px 40px rgba(0,0,0,.15);
+}
+
+.download-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+}
+
+.download-header h4{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:22px;
+    color:#2E7D32;
+}
+
+.close-btn{
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:50%;
+    background:#f2f2f2;
+    cursor:pointer;
+}
+
+.close-btn:hover{
+    background:#e5e5e5;
+}
+
+.download-text{
+    color:#666;
+    margin:10px 0 25px;
+}
+
+.export-options{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.export-option{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:18px;
+    border:1px solid #e5e5e5;
+    border-radius:12px;
+    cursor:pointer;
+    background:#fff;
+    transition:.3s;
+}
+
+.export-option:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+.export-option i{
+    font-size:30px;
+}
+
+.export-option.excel i{
+    color:#1d6f42;
+}
+
+.export-option.csv i{
+    color:#ff9800;
+}
+
+.export-option div{
+    display:flex;
+    flex-direction:column;
+    text-align:left;
+}
+
+.export-option small{
+    color:#777;
+}

@@ -74,7 +74,7 @@ export default function Sidebar() {
                 Sale invoice
               </li>
 
-              <li className={ window.location.pathname === "/dashboard/purchases" ? "active" : "" } onClick={() => navigate("/dashboard/purchases")} >
+              <li className={ window.location.pathname === "/dashboard/purchase" ? "active" : "" } onClick={() => navigate("/dashboard/purchase")} >
                 <i className="bi bi-cart-check"></i>
                 Purchase invoice
               </li>
