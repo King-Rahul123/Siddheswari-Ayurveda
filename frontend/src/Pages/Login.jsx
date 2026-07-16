@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import '../Login.css'
+import { login } from "../services/authService";
+import Loader from "../Components/Loader";
 
 function Login() {
+	const navigate = useNavigate();
 	const [formData, setFormData] = useState({
 		username: '',
 		password: '',
@@ -10,7 +14,9 @@ function Login() {
 	const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false)
 	const [resetEmail, setResetEmail] = useState('')
 	const [statusMessage, setStatusMessage] = useState('')
+	const [isError, setIsError] = useState(false);
 	const [toastMessage, setToastMessage] = useState('')
+	const [loading,setLoading]=useState(false);
 
 	const handleChange = (event) => {
 		const { name, type, checked, value } = event.target
@@ -25,19 +31,41 @@ function Login() {
 		}
 	}
 
-	const handleSubmit = (event) => {
-		event.preventDefault()
-		setStatusMessage('Sign-in form submitted. Hook this up to your auth flow next.')
-	}
+	const handleSubmit = async (event) => {
+		event.preventDefault();
+
+		setLoading(true);
+		setStatusMessage("");
+
+		try {
+			await login(
+				formData.username.trim(),
+				formData.password
+			);
+
+			setIsError(false);
+			setStatusMessage("Login Successful");
+
+			setTimeout(() => {
+				navigate("/dashboard");
+			}, 1200);
+
+		} catch (error) {
+			setLoading(false);
+			setIsError(true);
+			setStatusMessage(error.message);
+		}
+	};
 
 	const openForgotPassword = () => {
-		setResetEmail(formData.username)
-		setForgotPasswordOpen(true)
-		setStatusMessage('')
+		setResetEmail("");
+		setForgotPasswordOpen(true);
+		setStatusMessage("");
 	}
 
 	const closeForgotPassword = () => {
-		setForgotPasswordOpen(false)
+		setForgotPasswordOpen(false);
+		setResetEmail("");
 	}
 
 	useEffect(() => {
@@ -86,7 +114,9 @@ function Login() {
 	}
 
 	return (
-		<main className="login-page">
+		<>
+			{loading && <Loader />}
+			<main className="login-page">
 
 			<section className="login-shell" aria-label="Login form">
 				<aside className="login-brand">
@@ -186,13 +216,26 @@ function Login() {
 							</button>
 						</div>
 
-						<button className="submit-button" type="submit">Sign in</button>
+						<button
+							className="submit-button"
+							type="submit"
+							disabled={loading}
+						>
+							{loading ? (
+								<>
+									<span className="spinner"></span>
+									Signing in...
+								</>
+							) : (
+								"Log in"
+							)}
+						</button>
 
-						{statusMessage ? (
-							<p className="status-message" role="status" aria-live="polite">
+						{statusMessage && (
+							<p className={`status-message ${isError ? "error" : "success"}`} role="status">
 								{statusMessage}
 							</p>
-						) : null}
+						)}
 
 						<p className="form-note">Need access? Contact your administrator to create an account.</p>
 					</form>
@@ -262,6 +305,7 @@ function Login() {
 					</div>
 				) : null}
 		</main>
+		</>
 	)
 }
 

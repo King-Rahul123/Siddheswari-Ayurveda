@@ -1,0 +1,58 @@
+.popup-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.35);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+.customer-popup{
+    width:900px;
+    max-width:95%;
+    background:#fff;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+
+.popup-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 20px;
+    background:#198754;
+    color:white;
+    text-align:center;
+}
+
+.popup-header h4{
+    font-size:22px;
+}
+
+.popup-body{
+    padding: 20px;
+}
+
+.form-control{
+    font-size:16px;
+}
+
+.customer-table-wrapper{
+    max-height:400px;
+    overflow:auto;
+}
+
+table thead tr{
+    font-size:16px;
+}
+
+.customer-table-wrapper table tbody tr{
+    cursor:pointer;
+    font-size:16px;
+}
+
+.customer-table-wrapper table tbody tr:hover{
+    background:#e8f5e9;
+}

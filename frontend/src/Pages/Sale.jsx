@@ -1,39 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import "../CSS/Sale.css";
+import { subscribeSales } from "../services/saleService";
 
 export default function Sales() {
     const navigate = useNavigate();
     const [search, setSearch] = useState("");
     const [selectedDate, setSelectedDate] = useState("");
 
-    const salesData = [
-        {
-            billnumber: "BILL001",
-            customer: "Rahul Adak",
-            amount: 560,
-            date: "2026-06-17",
-        },
-        {
-            billnumber: "BILL002",
-            customer: "Priya Sharma",
-            amount: 320,
-            date: "2026-06-16",
-        },
-        {
-            billnumber: "BILL003",
-            customer: "Amit Kumar",
-            amount: 840,
-            date: "2026-06-15",
-        },
-    ];
+    const [salesData, setSalesData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const unsubscribe = subscribeSales((data) => {
+            setSalesData(data);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     const filteredSales = salesData.filter((sale) => {
-        const matchesSearch = sale.customer
-        .toLowerCase()
-        .includes(search.toLowerCase());
+        const matchesSearch = (sale.customerName || "")
+            .toLowerCase()
+            .includes(search.toLowerCase());
 
         const matchesDate =
             selectedDate === "" || sale.date === selectedDate;
@@ -104,25 +96,34 @@ export default function Sales() {
                             </thead>
 
                             <tbody>
-                                {filteredSales.map((sale) => (
-                                <tr key={sale.billnumber}>
-                                    <td>{sale.billnumber}</td>
-                                    <td>
-                                        {new Date(sale.date).toLocaleDateString("en-GB", {
-                                            day: "2-digit",
-                                            month: "short",
-                                            year: "numeric",
-                                        })}
-                                    </td>
-                                    <td>{sale.customer}</td>
-                                    <td>₹{sale.totalamount}</td>
-                                    <td>₹{sale.netamount}</td>
-                                    <td className="gap-2 flex justify-center">
-                                        <button className="edit-btn" onClick={() =>navigate(`/dashboard/sales/edit/${sale.billnumber}`)}><i className="bi bi-pencil-square text-gray-500"></i></button>
-                                        <button className="view-btn"><i className="bi bi-printer text-blue-500 text-base"></i></button>
-                                    </td>
-                                </tr>
-                                ))}
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan="6" className="text-center py-3">
+                                            Loading...
+                                        </td>
+                                    </tr>
+                                ) : filteredSales.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="6" className="text-center py-3">
+                                            <i className="bi bi-search text-gray-500 text-2xl"></i>
+                                            <p>No Sales Found</p>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredSales.map((sale) => (
+                                        <tr key={sale.saleId}>
+                                            <td>{sale.saleId}</td>
+                                            <td>{sale.date}</td>
+                                            <td>{sale.customerName}</td>
+                                            <td>₹{Number(sale.totalAmount || 0).toFixed(2)}</td>
+                                            <td>₹{Number(sale.netAmount || 0).toFixed(2)}</td>
+                                            <td className="gap-2 flex justify-center">
+                                                <button className="edit-btn" onClick={() =>navigate(`/dashboard/sales/edit/${sale.saleId}`)}><i className="bi bi-pencil-square text-gray-500"></i></button>
+                                                <button className="view-btn"><i className="bi bi-printer text-blue-500 text-base"></i></button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>

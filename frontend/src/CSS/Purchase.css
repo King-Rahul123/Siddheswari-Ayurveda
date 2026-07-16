@@ -10,7 +10,16 @@
     transition: all 0.3s ease;
 }
 
-.export-modal-overlay{
+.add-stock-btn{
+    background-color: #2E7D32;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.purchase-export-modal-overlay{
     position:fixed;
     inset:0;
     background:rgba(0,0,0,.35);
@@ -21,7 +30,7 @@
     backdrop-filter:blur(4px);
 }
 
-.export-modal{
+.purchase-export-modal{
     width:420px;
     background:#fff;
     border-radius:18px;
@@ -29,14 +38,14 @@
     box-shadow:0 20px 40px rgba(0,0,0,.15);
 }
 
-.download-header{
+.purchase-export-modal .download-header{
     display:flex;
     justify-content:space-between;
     align-items:center;
     margin-bottom:10px;
 }
 
-.download-header h4{
+.purchase-export-modal .download-header h4{
     display:flex;
     align-items:center;
     gap:10px;
@@ -44,7 +53,7 @@
     color:#2E7D32;
 }
 
-.close-btn{
+.purchase-export-modal .close-btn{
     width:36px;
     height:36px;
     border:none;
@@ -53,22 +62,22 @@
     cursor:pointer;
 }
 
-.close-btn:hover{
+.purchase-export-modal .close-btn:hover{
     background:#e5e5e5;
 }
 
-.download-text{
+.purchase-export-modal .download-text{
     color:#666;
     margin:10px 0 25px;
 }
 
-.export-options{
+.purchase-export-modal .export-options{
     display:flex;
     flex-direction:column;
     gap:15px;
 }
 
-.export-option{
+.purchase-export-modal .export-option{
     display:flex;
     align-items:center;
     gap:18px;
@@ -80,29 +89,29 @@
     transition:.3s;
 }
 
-.export-option:hover{
+.purchase-export-modal .export-option:hover{
     transform:translateY(-2px);
     box-shadow:0 8px 20px rgba(0,0,0,.08);
 }
 
-.export-option i{
+.purchase-export-modal .export-option i{
     font-size:30px;
 }
 
-.export-option.excel i{
+.purchase-export-modal .export-option.excel i{
     color:#1d6f42;
 }
 
-.export-option.csv i{
+.purchase-export-modal .export-option.csv i{
     color:#ff9800;
 }
 
-.export-option div{
+.purchase-export-modal .export-option div{
     display:flex;
     flex-direction:column;
     text-align:left;
 }
 
-.export-option small{
+.purchase-export-modal .export-option small{
     color:#777;
 }

@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../CSS/Dashboard.css";
 import "../CSS/Customer.css";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
-import AddCustomer from "../Components/AddCustomer";
+import AddCustomer from "../Popup/AddCustomer";
 import * as XLSX from "xlsx";
+import { subscribeCustomers } from "../services/customerService";
+
 
 export default function Customer() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,11 +23,11 @@ export default function Customer() {
     ];
 
     const rows = filteredCustomers.map((customer) => [
-      customer.id,
+      customer.customerCode,
       customer.name,
       customer.gender,
       customer.phone,
-      customer.createdOn,
+      customer.createdAt ? customer.createdAt.toDate().toLocaleDateString("en-IN") : "-",
     ]);
 
     const csvContent = [
@@ -48,11 +50,11 @@ export default function Customer() {
   const exportToExcel = () => {
     const excelData = filteredCustomers.map((customer, index) => ({
       Sl: index + 1,
-      "Customer ID": customer.id,
+      "Customer ID": customer.customerCode,
       Name: customer.name,
       Gender: customer.gender,
       Phone: customer.phone,
-      "Created On": customer.createdOn,
+      "Created On": customer.createdAt ? customer.createdAt.toDate().toLocaleDateString("en-IN") : "-",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(excelData);
@@ -69,36 +71,17 @@ export default function Customer() {
     setShowExportPopup(false);
   };
 
-  const customers = [
-    {
-      id: "CUS001",
-      name: "Rahul Adak",
-      gender: "Male",
-      phone: "8145322318",
-      createdOn: "20 Jun 2026",
-    },
-    {
-      id: "CUS002",
-      name: "Priya Sharma",
-      gender: "Female",
-      phone: "8348765905",
-      createdOn: "18 Jun 2026",
-    },
-    {
-      id: "CUS003",
-      name: "Amit Kumar",
-      gender: "Male",
-      phone: "7654321098",
-      createdOn: "25 Jun 2026",
-    },
-    {
-      id: "CUS004",
-      name: "Sneha Das",
-      gender: "Female",
-      phone: "6543210987",
-      createdOn: "22 Jun 2026",
-    },
-  ];
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = subscribeCustomers((data) => {
+      setCustomers(data);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const filteredCustomers = customers.filter(
     (customer) =>
@@ -158,38 +141,51 @@ export default function Customer() {
                 </thead>
 
                 <tbody>
-                  {filteredCustomers.map((customer) => (
-                    <tr key={customer.id}>
-                      <td className="text-center text-sm">{filteredCustomers.indexOf(customer) + 1}.</td>
-                      <td className="text-center">
-                        <div className="customer-info">
-                          <div>
-                            <h6>{customer.name}</h6>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="text-center">{customer.id}</td>
-                      <td className="text-center">{customer.gender}</td>
-                      <td className="text-center">{customer.phone}</td>
-                      <td className="text-center">{customer.createdOn}</td>
-                      <td className="text-center">
-                        <div className="customer-actions">
-                          <button className="action-btn edit">
-                            <i className="bi bi-pencil-fill"></i>
-                          </button>
-
-                          <button className="action-btn delete">
-                            <i className="bi bi-trash-fill"></i>
-                          </button>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="7" className="text-center py-5">
+                        <div className="flex justify-center items-center gap-2">
+                          <div className="spinner-border spinner-border-sm text-success" role="status"></div>
+                          <span>Loading customers...</span>
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  ) : filteredCustomers.length > 0 ? (
+                    filteredCustomers.map((customer, index) => (
+                      <tr key={customer.docId}>
+                        <td className="text-center text-sm">{index + 1}.</td>
 
-                  {filteredCustomers.length === 0 && (
+                        <td className="text-center">
+                          <div className="customer-info">
+                            <h6>{customer.name}</h6>
+                          </div>
+                        </td>
+
+                        <td className="text-center text-sm">{customer.customerCode}</td>
+                        <td className="text-center text-sm">{customer.gender}</td>
+                        <td className="text-center text-sm">{customer.phone}</td>
+                        <td className="text-center text-sm">
+                          {customer.createdAt
+                            ? customer.createdAt.toDate().toLocaleDateString("en-IN")
+                            : "-"}
+                        </td>
+
+                        <td className="text-center">
+                          <div className="grid grid-cols-2 gap-1 justify-center items-center">
+                            <button className="action-btn edit">
+                              <i className="bi bi-pencil-fill"></i>
+                            </button>
+
+                            <button className="action-btn delete">
+                              <i className="bi bi-trash-fill"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
                     <tr>
-                      <td colSpan="9" className="empty-state text-center">
+                      <td colSpan="7" className="empty-state text-center">
                         <i className="bi bi-search"></i>
                         <p>No customers found.</p>
                       </td>
@@ -202,11 +198,11 @@ export default function Customer() {
 
           {showExportPopup && (
             <div
-              className="export-modal-overlay"
+              className="customer-export-modal-overlay"
               onClick={() => setShowExportPopup(false)}
             >
               <div
-                className="export-modal"
+                className="customer-export-modal"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="export-header">

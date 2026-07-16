@@ -1,43 +1,76 @@
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import "../CSS/Dashboard.css"; 
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
+import AddPatient from "../Popup/TakeAppointment";
+import AddDoctor from "../Popup/AddDoctor";
+import { changePassword } from "../services/authService";
+import { subscribeCustomers } from "../services/customerService";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [showAppointmentPopup, setShowAppointmentPopup] = useState(false);
+  const [showDoctorPopup, setShowDoctorPopup] = useState(false);
+  const [appointments] = useState([]);
+  const [customerCount, setCustomerCount] = useState(0);
 
-  const appointments = [
-    {
-      patient: "Rahul Adak",
-      time: "09:00 AM",
-      type: "Consultation",
-      status: "Confirmed",
-    },
-    {
-      patient: "Priya Sharma",
-      time: "10:30 AM",
-      type: "Therapy",
-      status: "Pending",
-    },
-    {
-      patient: "Amit Kumar",
-      time: "12:00 PM",
-      type: "Follow-up",
-      status: "Completed",
-    },
-  ];
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
-  const notifications = [
-    "New patient registered",
-    "Therapy session scheduled",
-    "Payment received",
-    "Follow-up reminder",
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const loggedInUser = JSON.parse(
+    localStorage.getItem("loggedInUser")
+  );
+
+  useEffect(() => {
+    const unsubscribe = subscribeCustomers((customers) => {
+      setCustomerCount(customers.length);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (!loggedInUser) {
+    return <Navigate to="/" replace />;
+  }
+
+  const shortcuts = [
+    {
+      title: "Take Appointment",
+      icon: "bi-person-plus-fill",
+      color: "#2e7d32",
+      action: () => setShowAppointmentPopup(true),
+    },
+    {
+      title: "Stock",
+      icon: "bi-box-seam-fill",
+      color: "#1976d2",
+      action: () => navigate("/dashboard/stock-report"),
+    },
+    {
+      title: "Add Customer",
+      icon: "bi-people-fill",
+      color: "#8e24aa",
+      action: () => navigate("/dashboard/customer"),
+    },
+    {
+      title: "Add Doctor",
+      icon: "bi-person-badge-fill",
+      color: "#ef6c00",
+      action: () => setShowDoctorPopup(true),
+    },
   ];
 
   const stats = [
     {
       title: "Total Customers",
-      value: "0",
+      value: customerCount,
       icon: "bi-people-fill",
       route: "/dashboard/customer",
     },
@@ -45,7 +78,7 @@ export default function Dashboard() {
       title: "Appointments",
       value: "0",
       icon: "bi-calendar-check-fill",
-      route: "/dashboard/ledger",
+      route: "/dashboard/appointments",
     },
     {
       title: "Stock Amount",
@@ -60,6 +93,52 @@ export default function Dashboard() {
       route: "/dashboard/analytics",
     },
   ];
+
+  const handleChangePassword = async () => {
+    // Current password required
+    if (!passwordForm.currentPassword.trim()) {
+      toast.warning("Enter current password");
+      return;
+    }
+
+    // New password required
+    if (!passwordForm.newPassword.trim()) {
+      toast.warning("Enter new password");
+      return;
+    }
+
+    // Confirm password required
+    if (!passwordForm.confirmPassword.trim()) {
+      toast.warning("Confirm your new password");
+      return;
+    }
+
+    // New & confirm password check
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("New password and confirm password do not match");
+      return;
+    }
+
+    try {
+      await changePassword(
+        loggedInUser.username,
+        passwordForm.currentPassword,
+        passwordForm.newPassword
+      );
+
+      toast.success("Password changed successfully");
+
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+
+      setShowChangePassword(false);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <div className="dashboard">
@@ -76,7 +155,7 @@ export default function Dashboard() {
           {/* Stats Section */}
           <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {stats.map((item, index) => (
-              <div key={index} className="stat-box" onClick={() => navigate(item.route)} >
+              <div key={index} className="stat-box" onClick={() => { navigate(item.route) }} >
                 <i
                   className={`bi ${item.icon}`}
                   style={{
@@ -86,7 +165,6 @@ export default function Dashboard() {
                 ></i>
 
                 <h3>{item.title}</h3>
-
                 <p>{item.value}</p>
               </div>
             ))}
@@ -96,57 +174,163 @@ export default function Dashboard() {
           <section className="dashboard-grid">
             {/* Appointments */}
             <div className="card">
-              <h5>Today's Appointments</h5>
+              <h5>Appointments</h5>
 
               <div className="table-responsive">
                 <table className="dashboard-table">
                   <thead>
                     <tr>
-                      <th>Patient</th>
-                      <th>Time</th>
-                      <th>Type</th>
-                      <th>Status</th>
+                      <th className="text-center">Patient Name</th>
+                      <th className="text-center">Date</th>
+                      <th className="text-center">Problem</th>
+                      <th className="text-center">Doctor</th>
                     </tr>
                   </thead>
 
                   <tbody>
-                    {appointments.map((appointment, index) => (
-                      <tr key={index}>
-                        <td>{appointment.patient}</td>
-
-                        <td>{appointment.time}</td>
-
-                        <td>{appointment.type}</td>
-
-                        <td>
-                          <span
-                            className={`status ${appointment.status.toLowerCase()}`}
-                          >
-                            {appointment.status}
-                          </span>
+                    {appointments.length > 0 ? (
+                      appointments.map((appointment, index) => (
+                        <tr key={index}>
+                          <td>{appointment.patient}</td>
+                          <td>{appointment.date}</td>
+                          <td>{appointment.problem}</td>
+                          <td>{appointment.doctor}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="no-data">
+                          <i className="bi bi-calendar-x"></i>
+                          <p>No appointments found</p>
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
             </div>
 
-            {/* Notifications */}
+            {/* Quick Actions */}
             <div className="card">
-              <h5>Notifications</h5>
-
-              <div className="notification-list">
-                {notifications.map((notification, index) => (
-                  <div className="notification" key={index}>
-                    <i className="bi bi-bell-fill"></i>
-                    <span>{notification}</span>
+              <div className="card-title">
+                  <div>
+                      <h5>Quick Actions</h5>
+                      <small>Frequently used actions</small>
                   </div>
-                ))}
+
+                  <i className="bi bi-lightning-charge-fill"></i>
+              </div>
+
+              <div className="shortcut-grid">
+                  {shortcuts.map((item, index) => (
+                      <div
+                          key={index}
+                          className="shortcut-card"
+                          onClick={item.action}
+                      >
+                          {/* Icon */}
+                          <div
+                              className="shortcut-icon-box"
+                              style={{ backgroundColor: item.color }}
+                          >
+                              <i className={`bi ${item.icon}`}></i>
+                          </div>
+
+                          {/* Title */}
+                          <div className="shortcut-content">
+                              <span className="shortcut-title">
+                                  {item.title}
+                              </span>
+                          </div>
+
+                          {/* Arrow */}
+                          <i className="bi bi-arrow-right shortcut-arrow"></i>
+                      </div>
+                  ))}
               </div>
             </div>
           </section>
+
+          <section className="d-flex justify-content-center align-items-center">
+            <button className="btn btn-outline-danger" onClick={() => setShowChangePassword(true)}>
+              <i className="bi bi-key-fill me-2"></i>
+              Change Password
+            </button>
+          </section>
         </main>
+
+        {showChangePassword && (
+          <div className="modal fade show d-block">
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Change Password</h5>
+                  <button
+                    className="btn-close"
+                    onClick={() => setShowChangePassword(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label>Current Password</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) =>
+                        setPasswordForm({
+                          ...passwordForm,
+                          currentPassword: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>New Password</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      value={passwordForm.newPassword}
+                      onChange={(e) =>
+                        setPasswordForm({
+                          ...passwordForm,
+                          newPassword: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>Confirm Password</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) =>
+                        setPasswordForm({
+                          ...passwordForm,
+                          confirmPassword: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={() => setShowChangePassword(false)}>Cancel</button>
+                  <button className="btn btn-danger" onClick={handleChangePassword}>Update Password</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <AddPatient
+          show={showAppointmentPopup}
+          onClose={() => setShowAppointmentPopup(false)}
+        />
+        <AddDoctor
+          show={showDoctorPopup}
+          onClose={() => setShowDoctorPopup(false)}
+        />
       </div>
     </div>
   );

@@ -242,7 +242,7 @@ body {
   gap: 20px;
 }
 
-.notification-icon {
+.shortcut-icon {
   font-size: 22px;
   color: #2e7d32;
   cursor: pointer;
@@ -307,6 +307,7 @@ body {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 25px;
+  height: auto;
   margin-bottom: 30px;
 }
 
@@ -358,32 +359,119 @@ body {
   background: #f9fcf9;
 }
 
-/* ======================
-   Notifications
-====================== */
+/* ============================
+   QUICK ACTIONS
+============================ */
 
-.notification-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.shortcut-grid{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.notification {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px;
-  background: #f8faf8;
-  border-radius: 12px;
-  transition: all 0.3s ease;
+.shortcut-card{
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 16px;
+    border-radius: 16px;
+    border: 1px solid #e8ecef;
+    background:  #fff;
+    cursor: pointer;
+    transition: .3s;
+    box-shadow: 0 4px 12px rgba(0,0,0,.05);
 }
 
-.notification:hover {
-    transform: translateX(5px);
+.shortcut-card:hover{
+    transform: translateY(-4px);
+    border-color: #2e7d32;
+    box-shadow: 0 12px 24px rgba(46,125,50,.18);
 }
 
-.notification i {
+.shortcut-icon-box{
+    height: 35px;
+    min-width: 35px;
+    border-radius: 14px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:#fff;
+    font-size: 15px;
+    transition:.3s;
+}
+
+.shortcut-card:hover .shortcut-icon-box{
+    transform: rotate(-8deg) scale(1.08);
+}
+
+.shortcut-content{
+    flex: 1;
+}
+
+.shortcut-title{
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.shortcut-badge{
+    background: #2e7d32;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.shortcut-arrow{
+    font-size:24px;
+    color:#2e7d32;
+    transition:.3s;
+}
+
+.shortcut-card:hover .shortcut-arrow{
+    transform:translateX(6px);
+}
+
+.card-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.card-title h5{
+    margin:0;
+    color:#2e7d32;
+}
+
+.card-title small{
+    color:#888;
+}
+
+.card-title i{
+    font-size: 26px;
     color: #2e7d32;
+}
+
+.no-data{
+    text-align: center !important;
+    padding: 40px 20px !important;
+    color: #888;
+}
+
+.no-data i{
+    display: block;
+    font-size: 40px;
+    color: #d0d0d0;
+    margin-bottom: 10px;
+}
+
+.no-data p{
+    margin:0;
+    font-size:15px;
+    font-weight:500;
 }
 
 /* ======================

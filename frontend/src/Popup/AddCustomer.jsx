@@ -2,6 +2,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import "../CSS/Customer.css";
 import "../CSS/Card.css"
+import { addCustomer, getNextCustomerCode, checkCustomerPhone } from "../services/customerService";
 
 export default function AddCustomer({ show, onClose }) {
     const [customerForm, setCustomerForm] = useState({
@@ -22,24 +23,28 @@ export default function AddCustomer({ show, onClose }) {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const existingCustomer = await checkCustomerPhone(customerForm.phone);
+        if (existingCustomer) {
+            toast.warning(
+                `${existingCustomer.phone} is already registered.`,
+                {
+                    icon: false,
+                    className: "ayurveda-toast",
+                }
+            );
+            return;
+        }
+
+        // Prepare customer data first
         const customer = {
-            id: `CUS${Date.now().toString().slice(-3)}`,
+            customerCode: await getNextCustomerCode(),
             ...customerForm,
         };
 
-        console.log(customer);
-
-        toast.success(
-            `🌿 ${customer.name} has been registered successfully.`,
-            {
-                icon: false,
-                className: "ayurveda-toast",
-            }
-        );
-
+        // Clear form and close popup immediately
         setCustomerForm({
             name: "",
             age: "",
@@ -51,6 +56,44 @@ export default function AddCustomer({ show, onClose }) {
             state: "",
         });
 
+        onClose();
+
+        // Save in background
+        try {
+            await addCustomer(customer);
+
+            toast.success(
+            `🌿 ${customer.name} has been registered successfully.`,
+            {
+                icon: false,
+                className: "ayurveda-toast",
+            }
+            );
+        } catch (error) {
+            console.error(error);
+
+            toast.error("Failed to save customer.");
+
+            // Optional: reopen popup if save fails
+            // onOpen?.();
+        }
+    };
+
+    const resetForm = () => {
+        setCustomerForm({
+            name: "",
+            age: "",
+            gender: "",
+            phone: "",
+            email: "",
+            address: "",
+            city: "",
+            state: "",
+        });
+    };
+
+    const handleCancel = () => {
+        resetForm();
         onClose();
     };
 
@@ -68,7 +111,7 @@ export default function AddCustomer({ show, onClose }) {
                             <p>Register a new patient for consultation</p>
                         </div>
                     </div>
-                    <button className="close-btn" onClick={onClose}>&times;</button>
+                    <button className="close-btn" onClick={handleCancel}>&times;</button>
                 </div>
 
                 {/* Form */}    
@@ -113,7 +156,7 @@ export default function AddCustomer({ show, onClose }) {
                             <span>Address Information</span>
                         </div>
 
-                        <div className="form-group">
+                        <div className="form-group mb-2">
                             <label>Address</label>
                             <textarea rows="3" name="address" placeholder="Enter address" value={customerForm.address} onChange={handleChange} />
                         </div>
@@ -133,8 +176,8 @@ export default function AddCustomer({ show, onClose }) {
 
                     {/* Footer */}
                     <div className="popup-footer">
-                        <button type="button" className="cancel-btn" onClick={onClose}>Cancel</button>
-                        <button type="submit" className="save-btn">
+                        <button type="button" className="cancel-btn" onClick={handleCancel}>Cancel</button>
+                        <button type="submit" className="save-btn" onClick={handleSubmit}>
                             <i className="bi bi-check-circle-fill"></i>
                             Save Customer
                         </button>

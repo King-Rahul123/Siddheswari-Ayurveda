@@ -25,7 +25,7 @@ function ForgetPasswordPage() {
 
 		if (!email.trim()) {
 			setIsSent(false)
-			setMessage('Enter your registered email to receive the reset link.')
+			await resetPassword(email);
 			return
 		}
 

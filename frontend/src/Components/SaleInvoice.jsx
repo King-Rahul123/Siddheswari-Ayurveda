@@ -1,15 +1,25 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 // import Header from "../Components/Header";
-import Sidebar from "../Components/Sidebar";
+import Sidebar from "./Sidebar";
 import "../CSS/Card.css";
 import "../CSS/SaleInvoice.css";
+import CustomerList from "../Popup/CustomerList";
+import ProductList from "../Popup/ProductList";
+import { addSale, getNextSaleId, getCurrentSaleId } from "../services/saleService";
 
 export default function SaleInvoice() {
 
   const navigate = useNavigate();
-  const [customerName, setCustomerName] = useState("");
-  const [mobile, setMobile] = useState("");
+  const [customer, setCustomer] = useState({
+      customerCode: "",
+      customerName: "",
+      phone: "",
+  });
+
+  const [showCustomerPopup, setShowCustomerPopup] = useState(false);
+  const [showProductPopup, setShowProductPopup] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(0);
 
   const handleEnterKey = (e) => {
     if (e.key === "+" || e.code === "NumpadAdd") {
@@ -72,51 +82,66 @@ export default function SaleInvoice() {
     type: "",
   });
 
-  const saveInvoice = () => {
+  const loggedInUser = JSON.parse(
+    localStorage.getItem("loggedInUser")
+  );
+
+  const saveInvoice = async () => {
     try {
-      const year = new Date().getFullYear();
-
-      const savedYear = localStorage.getItem("billYear");
-
-      let billCount = parseInt(
-        localStorage.getItem("billCount") || "0",
-        10
+      const validItems = items.filter(
+        (item) => item.productName.trim() !== ""
       );
 
-      if (savedYear !== String(year)) {
-        billCount = 0;
-      }
+      const totalQty = validItems.reduce(
+        (sum, item) => sum + Number(item.qty || 0),
+        0
+      );
 
-      billCount++;
+      const generatedSaleId = await getNextSaleId();
 
-      localStorage.setItem("billYear", year);
-      localStorage.setItem("billCount", billCount);
+      const saleData = {
+        saleId: generatedSaleId,
+        customerCode: customer.customerCode,
+        customerName: customer.customerName,
+        date: invoiceDate,
+        totalQty,
+        totalAmount: netAmount,
+        createdBy: loggedInUser.username,
+      };
 
-      const finalBillNo =
-        `SDA${year}${String(billCount).padStart(4, "0")}`;
+      await addSale(saleData, validItems);
 
-      // Save invoice data here
+      const nextDisplayId = await getCurrentSaleId();
+      setSaleId(nextDisplayId);
+
+      // Clear customer
+      setCustomer({
+        customerCode: "",
+        customerName: "",
+        phone: "",
+      });
+
+      // Clear items
+      setItems([
+        {
+          itemCode: "",
+          productName: "",
+          batch: "",
+          expiry: "",
+          qty: 0,
+          mrp: 0,
+          rate: 0,
+          discount: 0,
+          gst: 0,
+          amount: 0,
+        },
+      ]);
 
       setToast({
         show: true,
-        message: `Invoice ${finalBillNo} saved successfully`,
+        message: `${saleId} saved successfully`,
         type: "success",
       });
-
-      // Generate next bill number
-      setBillNumber(
-        `SDA${year}${String(billCount + 1).padStart(4, "0")}`
-      );
-
-      // Clear toast after 3 sec
-      setTimeout(() => {
-        setToast({
-          show: false,
-          message: "",
-          type: "",
-        });
-      }, 3000);
-
     } catch (err) {
       console.error(err);
 
@@ -125,67 +150,53 @@ export default function SaleInvoice() {
         message: "Failed to save invoice",
         type: "error",
       });
-
-      setTimeout(() => {
-        setToast({
-          show: false,
-          message: "",
-          type: "",
-        });
-      }, 3000);
     }
   };
 
+  const firstProductRef = useRef(null);
   const invoiceRef = useRef(null);
+  const lastFocusedElement = useRef(null);
 
   //Generate Bill Number based on the current year and a counter stored in localStorage
-  const [billNumber, setBillNumber] = useState("");
-
+  const [saleId, setSaleId] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(
     new Date().toISOString().split("T")[0]
   );
 
   useEffect(() => {
-    const year = new Date().getFullYear();
-
-    const savedYear = localStorage.getItem("billYear");
-    let billCount = parseInt(
-      localStorage.getItem("billCount") || "0",
-      10
-    );
-
-    if (savedYear !== String(year)) {
-      billCount = 0;
+    async function loadBillNo() {
+    const id = await getCurrentSaleId();
+      setSaleId(id);
     }
-
-    setBillNumber(
-      `SDA-${year}-${String(billCount + 1).padStart(4, "0")}`
-    );
+    loadBillNo();
   }, []);
 
   const [items, setItems] = useState([
     {
-      product: "",
-      batch: "",
-      qty: "",
-      mrp: "",
-      rate: "",
-      expiry: "",
-      discount: "",
-      gst: "",
-    },
+      itemCode:"",
+      productName:"",
+      batch:"",
+      expiry:"",
+      qty:0,
+      mrp:0,
+      rate:0,
+      discount:0,
+      gst:0,
+      amount:0,
+  }
   ]);
 
   const addRow = () => {
     setItems((prev) => [
       ...prev,
       {
-        product: "",
+        itemCode: "",
+        productName: "",
         batch: "",
+        expiry: "",
         qty: "",
         mrp: "",
         rate: "",
-        expiry: "",
         discount: "",
         gst: "",
       },
@@ -195,6 +206,9 @@ export default function SaleInvoice() {
   const updateItem = (index, field, value) => {
     const updated = [...items];
     updated[index][field] = value;
+    updated[index].amount =
+      Number(updated[index].qty || 0) *
+      Number(updated[index].rate || 0);
     setItems(updated);
   };
 
@@ -214,15 +228,15 @@ export default function SaleInvoice() {
   const netAmount = subTotal + gstAmount;
   
   const handlePrint = () => {
-    const currentBillNo = billNumber;
+    const currentBillNo = saleId;
     saveInvoice();
 
     navigate("/print-invoice", {
       state: {
         billNumber: currentBillNo,
         invoiceDate,
-        customerName,
-        mobile,
+        customerName: customer.customerName,
+        mobile: customer.phone,
         items,
         subTotal,
         discount,
@@ -280,10 +294,42 @@ export default function SaleInvoice() {
 
           <form ref={invoiceRef} className="invoice-card" onKeyDown={handleEnterKey}>
             <div className="invoice-info">
-              <input type="text" placeholder="Bill Number" value={billNumber} readOnly />
-              <input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)}/>
-              <input type="text" placeholder="Customer Name" value={customerName} onChange={(e) => setCustomerName(e.target.value)}/>
-              <input type="text" placeholder="Mobile Number" value={mobile} onChange={(e) => setMobile(e.target.value)}/>
+              <input 
+                type="text" 
+                placeholder="Sale ID" 
+                value={saleId} 
+                readOnly
+              />
+
+              <input 
+                autoFocus 
+                type="date" 
+                value={invoiceDate} 
+                onChange={(e) => setInvoiceDate(e.target.value)}
+              />
+
+              <input
+                  type="text"
+                  placeholder="Customer Name"
+                  value={customer.customerName}
+                  onKeyDown={(e)=>{
+                      if(e.key==="Enter"){
+                        e.preventDefault();
+                        e.stopPropagation();
+                        lastFocusedElement.current = e.target;
+                        setShowCustomerPopup(true);
+                      }
+                  }}
+              />
+
+              <input 
+                type="text" 
+                placeholder="Mobile Number" 
+                value={customer.phone} 
+                onChange={(e) => 
+                  setCustomer({ ...customer, phone: e.target.value })} 
+                readOnly
+              />
             </div>
 
             <table className="invoice-table">
@@ -307,11 +353,20 @@ export default function SaleInvoice() {
                     <td>{index + 1}</td>
                     <td>
                       <input
+                        ref={index===0 ? firstProductRef : null}
                         type="text"
-                        value={item.product}
+                        value={item.productName}
                         placeholder="Product Name"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            lastFocusedElement.current = e.target;
+                            setSelectedRow(index);
+                            setShowProductPopup(true);
+                          }
+                        }}
                         onChange={(e) =>
-                          updateItem( index, "product", e.target.value )
+                          updateItem( index, "productName", e.target.value )
                         }
                       />
                     </td>
@@ -407,7 +462,7 @@ export default function SaleInvoice() {
 
                     <td className="amount-cell">
                       <div className="amount-wrapper">
-                        <span className="amount-value">₹{(Number(item.qty || 0) * Number(item.rate || 0)).toFixed(2)}</span>
+                        <span className="amount-value">₹{Number(item.amount).toFixed(2)}</span>
                         <button type="button" className="delete-row-btn" onClick={() => deleteRow(index)} title="Delete Row">&times;</button>
                       </div>
                     </td>
@@ -424,6 +479,46 @@ export default function SaleInvoice() {
             </div>
           </form>
         </main>
+
+        {showCustomerPopup && (
+          <CustomerList
+            show={showCustomerPopup}
+            onClose={() => {
+              setShowCustomerPopup(false);
+              setTimeout(() => {
+                lastFocusedElement.current?.focus();
+              }, 50);
+            }}
+            onSelect={(customerData)=>{
+                setCustomer({
+                    customerCode:customerData.customerCode,
+                    customerName:customerData.name,
+                    phone:customerData.phone,
+                });
+                setShowCustomerPopup(false);
+                setTimeout(()=>{
+                    firstProductRef.current?.focus();
+                },100);
+            }}
+          />
+        )}
+
+        <ProductList
+          show={showProductPopup}
+          onClose={() => {
+            setShowProductPopup(false);
+            setTimeout(() => {
+              lastFocusedElement.current?.focus();
+            }, 50);
+          }}
+          onSelect={(product) => {
+            updateItem(selectedRow, "itemCode", product.itemCode);
+            updateItem(selectedRow, "productName", product.productName);
+            updateItem(selectedRow, "mrp", product.mrp);
+            updateItem(selectedRow, "gst", product.gst);
+            setShowProductPopup(false);
+          }}
+        />
       </div>
     </div>
   );

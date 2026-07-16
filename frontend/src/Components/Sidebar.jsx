@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { logout } from "../services/authService";
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -17,6 +18,15 @@ export default function Sidebar() {
 
       return newState;
     });
+  };
+
+  const handleLogout = async () => {
+    try {
+        await logout();
+        navigate("/", { replace: true });
+    } catch (error) {
+        console.error(error);
+    }
   };
 
   const handleReportToggle = () => {
@@ -114,12 +124,17 @@ export default function Sidebar() {
                 <i className="bi bi-file-earmark-bar-graph-fill"></i>
                 Purchase Report
               </li>
+
+              <li className={ window.location.pathname === "/dashboard/staff-report" ? "active" : "" } onClick={() => navigate("/dashboard/staff-report")} >
+                <i className="bi bi-people-fill"></i>
+                Staff Report
+              </li>
             </ul>
           )}
         </ul>
       </div>
 
-      <button className="logout-btn">
+      <button className="logout-btn" onClick={handleLogout}>
         <i className="bi bi-box-arrow-right"></i>
         Logout
       </button>

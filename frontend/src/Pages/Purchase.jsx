@@ -37,6 +37,10 @@ export default function Purchase() {
         },
     ];
 
+    const handleAddProduct = () => {
+        navigate("/dashboard/purchase/purchase-entry");
+    };
+
     const filteredPurchase = purchaseData.filter((purchase) => {
 
         const matchesSearch = purchase.supplier
@@ -114,13 +118,10 @@ export default function Purchase() {
                             <p className="text-gray-600 text-sm">Manage Ayurvedic product purchases</p>
                         </div>
                         <button
-                            className="add-sale-btn"
-                            onClick={() =>
-                                navigate("/dashboard/purchase/new")
-                            }
+                            className="add-stock-btn"
+                            onClick={handleAddProduct}
                         >
-                            <i className="bi bi-plus-circle"></i>
-                            New Purchase
+                            <i className="bi bi-plus-circle"></i> Add Product
                         </button>
                     </div>
 
@@ -195,8 +196,8 @@ export default function Purchase() {
                     </div>
 
                     {showExportPopup && (
-                        <div className="export-modal-overlay" onClick={() => setShowExportPopup(false)}>
-                            <div className="export-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="purchase-export-modal-overlay" onClick={() => setShowExportPopup(false)}>
+                            <div className="purchase-export-modal" onClick={(e) => e.stopPropagation()}>
                                 <div className="download-header">
                                     <h4>
                                         <i className="bi bi-download"></i>

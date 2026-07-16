@@ -1,0 +1,158 @@
+.stock-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.stock-header h2{
+    align-items: center;
+    gap: 10px;
+    font-size: 30px;
+    color: #216924;
+    font-weight: 600;
+}
+
+.stock-cards{
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 18px;
+    margin-bottom: 15px;
+}
+
+.stock-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,.08);
+}
+
+.stock-card i{
+    font-size: 28px;
+    color: #16a34a;
+}
+
+.stock-card h3, .stock-card p{
+    font-size: 20px;
+    margin: 10px 0 5px;
+}
+
+.stock-card.green{
+    border-left: 5px solid #16a34a;
+}
+
+.stock-card.yellow{
+    border-left: 5px solid #f59e0b;
+}
+
+.stock-card.red{
+    border-left:5px solid #dc2626;
+}
+
+.stock-toolbar{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.stock-table-card{
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+.stock-table th {
+  background: #f8faf8;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.stock-table th {
+  padding: 6px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.stock-table td {
+  padding: 6px;
+  border-bottom: 1px solid #eeeeee;
+  text-align: center;
+}
+
+.stock-table tbody tr:hover {
+  background: #f9fcf9;
+}
+
+.product-name{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+}
+
+.status{
+    padding:5px 12px;
+    border-radius:20px;
+    color:#fff;
+    font-size:12px;
+    font-weight:600;
+}
+
+.status.available{
+    background:#16a34a;
+}
+
+.status.low{
+    background:#f59e0b;
+}
+
+.status.out{
+    background:#dc2626;
+}
+
+.stock-actions{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+}
+
+.stock-actions button{
+    border:none;
+    width:34px;
+    height:34px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.edit-btn{
+    background:#dbeafe;
+    color:#2563eb;
+}
+
+.view-btn{
+    background:#dcfce7;
+    color:#16a34a;
+}
+
+.history-btn{
+    background:#f3e8ff;
+    color:#9333ea;
+}
+
+.empty-state{
+    padding:40px;
+    color:#888;
+}
+
+.empty-state i{
+    font-size:45px;
+}
