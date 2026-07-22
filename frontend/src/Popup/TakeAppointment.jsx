@@ -1,11 +1,19 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import "../CSS/Customer.css";
 import "../CSS/Card.css"
-import { addPatient, getNextPatientCode } from "../services/patientService";
+import { addPatient, getNextPatientCode, updatePatient } from "../services/patientService";
+import { subscribeDoctors } from "../services/doctorService";
 
-export default function AppointmentPopup({ show, onClose }) {
-    const [patient, setPatient] = useState({
+export default function AppointmentPopup({ 
+    show, 
+    onClose, 
+    patient: selectedPatient, 
+    editMode, 
+    viewMode = false,
+}) {
+    
+    const emptyPatient = {
         name: "",
         phone: "",
         gender: "",
@@ -14,7 +22,22 @@ export default function AppointmentPopup({ show, onClose }) {
         appointDate: "",
         doctor: "",
         problem: "",
-    });
+        status: "Pending",
+    };
+
+    const [patient, setPatient] = useState(
+        () => selectedPatient ? { ...selectedPatient } : emptyPatient
+    );
+
+    const [doctors, setDoctors] = useState([]);
+
+    useEffect(() => {
+        const unsubscribe = subscribeDoctors((data) => {
+            setDoctors(data);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     const inputRefs = useRef([]);
 
@@ -27,6 +50,18 @@ export default function AppointmentPopup({ show, onClose }) {
         "doctor",
         "problem",
     ];
+
+    useEffect(() => {
+        if (show) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [show]);
 
     const handleEnter = (e, field) => {
         if (e.key !== "Enter") return;
@@ -52,44 +87,40 @@ export default function AppointmentPopup({ show, onClose }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Prepare patient data first
-        const patientData = {
-            patientCode: await getNextPatientCode(),
-            ...patient,
-        };
-
-        // Clear form and close popup immediately
-        setPatient({
-            name: "",
-            phone: "",
-            gender: "",
-            age: "",
-            address: "",
-            appointDate: "",
-            doctor: "",
-            problem: "",
-        });
-
-        onClose();
-
-        // Save in background
+        if (viewMode) return;
+        
         try {
-            await addPatient(patientData);
-            
-            toast.success(
-            `🌿 ${patientData.name} has been registered successfully.`,
-            {
-                icon: false,
-                className: "ayurveda-toast",
+            if (editMode) {
+                await updatePatient(patient.patientCode, patient);
+                toast.success(
+                    `🌿 ${patient.name} has been updated successfully.`,
+                    {
+                        icon: false,
+                        className: "ayurveda-toast",
+                    }
+                );
+            } else {
+                const patientData = {
+                    patientCode: await getNextPatientCode(),
+                    status: "Pending",
+                    ...patient,
+                };
+
+                await addPatient(patientData);
+                toast.success(
+                    `🌿 ${patientData.name} has been registered successfully.`,
+                    {
+                        icon: false,
+                        className: "ayurveda-toast",
+                    }
+                );
             }
-            );
+
+            onClose();
+
         } catch (error) {
             console.error(error);
-
-            toast.error("Failed to book appointment.");
-
-            // Optional: reopen popup if save fails
-            // onOpen?.();
+            toast.error("Failed to save.");
         }
     };
 
@@ -121,8 +152,12 @@ export default function AppointmentPopup({ show, onClose }) {
                     <div className="popup-title">
                         <div className="popup-icon"><i className="bi bi-person-plus-fill"></i></div>
                         <div>
-                            <h5>Add Patient</h5>
-                            <p>Book a patient Appointment</p>
+                            <h5>{editMode ? "Edit Appointment" : "Add Patient"}</h5>
+                            <p>
+                                {editMode
+                                    ? "Update patient appointment"
+                                    : "Book a patient appointment"}
+                            </p>
                         </div>
                     </div>
                     <button className="close-btn" onClick={handleCancel}>&times;</button>
@@ -147,6 +182,7 @@ export default function AppointmentPopup({ show, onClose }) {
                                     placeholder="Enter full name"
                                     value={patient.name}
                                     onChange={handleChange}
+                                    readOnly={viewMode}
                                     onKeyDown={(e) => handleEnter(e, "name")}
                                     required
                                 />
@@ -161,6 +197,7 @@ export default function AppointmentPopup({ show, onClose }) {
                                     placeholder="Enter age"
                                     value={patient.age}
                                     onChange={handleChange}
+                                    readOnly={viewMode}
                                     onKeyDown={(e) => handleEnter(e, "age")}
                                     required
                                 />
@@ -173,6 +210,7 @@ export default function AppointmentPopup({ show, onClose }) {
                                     name="gender"
                                     value={patient.gender}
                                     onChange={handleChange}
+                                    readOnly={viewMode}
                                     onKeyDown={(e) => handleEnter(e, "gender")}
                                     required
                                 >
@@ -192,6 +230,7 @@ export default function AppointmentPopup({ show, onClose }) {
                                         placeholder="Enter mobile number"
                                         value={patient.phone}
                                         onChange={handleChange}
+                                        readOnly={viewMode}
                                         onKeyDown={(e) => handleEnter(e, "phone")}
                                         required
                                     />
@@ -203,8 +242,7 @@ export default function AppointmentPopup({ show, onClose }) {
                             <span>Appointment Details</span>
                         </div>
 
-                        <div className="popup-grid">
-
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="form-group">
                                 <label>Appointment Date *</label>
                                 <input
@@ -213,6 +251,7 @@ export default function AppointmentPopup({ show, onClose }) {
                                     name="appointDate"
                                     value={patient.appointDate}
                                     onChange={handleChange}
+                                    readOnly={viewMode}
                                     onKeyDown={(e) => handleEnter(e, "appointDate")}
                                     required
                                 />
@@ -226,15 +265,37 @@ export default function AppointmentPopup({ show, onClose }) {
                                     placeholder="Select doctor"
                                     value={patient.doctor}
                                     onChange={handleChange}
+                                    readOnly={viewMode}
                                     onKeyDown={(e) => handleEnter(e, "doctor")}
                                     required
                                 >
-                                    <option value="">Select Doctor</option>
-                                    <option value="Dr. Smith">Dr. Smith</option>
-                                    <option value="Dr. Johnson">Dr. Johnson</option>
+                                    <option value="">--- Select Doctor ---</option>
+                                    {doctors.map((doctor) => (
+                                        <option
+                                            key={doctor.doctorCode}
+                                            value={doctor.name}
+                                        >
+                                            {doctor.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Status</label>
+                                <select
+                                    name="status"
+                                    value={patient.status || "Pending"}
+                                    onChange={handleChange}
+                                    readOnly={viewMode}
+                                >
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Cancelled">Cancelled</option>
                                 </select>
                             </div>
                         </div>
+
                         <br />
                         <div className="form-group">
                             <label>Problem / Symptoms</label>
@@ -243,6 +304,7 @@ export default function AppointmentPopup({ show, onClose }) {
                                 name="problem"
                                 value={patient.problem}
                                 onChange={handleChange}
+                                readOnly={viewMode}
                                 onKeyDown={(e) => handleEnter(e, "problem")}
                             />
                         </div>
@@ -251,10 +313,16 @@ export default function AppointmentPopup({ show, onClose }) {
                     {/* Footer */}
                     <div className="popup-footer">
                         <button type="button" className="cancel-btn" onClick={handleCancel}>Cancel</button>
-                        <button type="submit" className="save-btn">
-                            <i className="bi bi-check-circle-fill"></i>
-                            Book Appointment
+                        <button type="button" className="view-btn" disabled={viewMode} className={viewMode ? "disabled" : ""} onClick={() => setEditMode(!editMode)}>
+                            {viewMode && "View Only"}
                         </button>
+                        {editMode && !viewMode && (
+                            <button type="submit" className="save-btn">
+                                <i className="bi bi-check-circle-fill"></i>
+                                {editMode ? "Update Appointment" : "Book Appointment"}
+                                {viewMode && " (View Only)"}
+                            </button>
+                        )}
                     </div>
                 </form>
             </div>

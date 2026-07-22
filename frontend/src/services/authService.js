@@ -1,4 +1,4 @@
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
 export const login = async (username, password) => {
@@ -30,8 +30,8 @@ export const login = async (username, password) => {
 };
 
 export const logout = () => {
-    localStorage.removeItem("loggedInUser");
-    sessionStorage.clear();
+  localStorage.removeItem("loggedInUser");
+  sessionStorage.clear();
 };
 
 export const changePassword = async (
@@ -69,6 +69,50 @@ export const changePassword = async (
       password: newPassword,
     })
   );
+
+  return true;
+};
+
+export const addStaff = async (staff) => {
+  const staffRef = doc(db, "staff", staff.username);
+
+  const staffSnap = await getDoc(staffRef);
+
+  if (staffSnap.exists()) {
+      throw new Error("Username already exists");
+  }
+
+  await setDoc(staffRef, {
+    name: staff.name.trim(),
+    email: staff.email.trim(),
+    phone: staff.phone.trim(),
+    password: staff.password,
+    role: staff.role,
+    createdAt: serverTimestamp(),
+  });
+
+  return true;
+};
+
+export const updateStaff = async (staff) => {
+  const staffRef = doc(db, "staff", staff.username);
+
+  await updateDoc(staffRef, {
+    name: staff.name?.trim() || "",
+    email: staff.email?.trim() || "",
+    phone: staff.phone?.trim() || "",
+    role: staff.role || "",
+    salary: staff.salary || "",
+    address: staff.address || "",
+  });
+
+  return true;
+};
+
+export const deleteStaff = async (username) => {
+  const staffRef = doc(db, "staff", username);
+
+  await deleteDoc(staffRef);
 
   return true;
 };

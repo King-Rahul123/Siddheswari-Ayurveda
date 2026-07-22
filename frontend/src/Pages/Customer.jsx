@@ -5,13 +5,26 @@ import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import AddCustomer from "../Popup/AddCustomer";
 import * as XLSX from "xlsx";
-import { subscribeCustomers } from "../services/customerService";
+import { subscribeCustomers, deleteCustomer } from "../services/customerService";
 
 
 export default function Customer() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showExportPopup, setShowExportPopup] = useState(false);
   const [showCustomerPopup, setShowCustomerPopup] = useState(false);
+
+  const [editMode, setEditMode] = useState(false);
+
+  const [customerForm, setCustomerForm] = useState({
+    name: "",
+    age: "",
+    gender: "",
+    phone: "",
+    email: "",
+    address: "",
+    city: "",
+    state: "",
+  });
 
   const exportToCSV = () => {
     const headers = [
@@ -89,6 +102,37 @@ export default function Customer() {
       customer.phone.includes(searchTerm)
   );
 
+  const handleDelete = async (customerCode) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this customer?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await deleteCustomer(customerCode);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleEdit = (customer) => {
+    setCustomerForm({
+        customerCode: customer.customerCode,
+        name: customer.name || "",
+        age: customer.age || "",
+        gender: customer.gender || "",
+        phone: customer.phone || "",
+        email: customer.email || "",
+        address: customer.address || "",
+        city: customer.city || "",
+        state: customer.state || "",
+    });
+
+    setEditMode(true);
+    setShowCustomerPopup(true);
+  };
+
   return (
     <div className="dashboard">
       <Sidebar />
@@ -104,7 +148,20 @@ export default function Customer() {
               <p className="text-gray-600 text-sm">Manage all your Ayurveda customers efficiently</p>
             </div>
 
-            <button className="add-customer-btn" onClick={() => setShowCustomerPopup(true)} >
+            <button className="add-customer-btn" onClick={() => {
+              setEditMode(false);
+              setCustomerForm({
+                name: "",
+                age: "",
+                gender: "",
+                phone: "",
+                email: "",
+                address: "",
+                city: "",
+                state: "",
+              });
+              setShowCustomerPopup(true);
+            }} >
               <i className="bi bi-person-plus-fill"></i>
               Add Customer
             </button>
@@ -172,11 +229,11 @@ export default function Customer() {
 
                         <td className="text-center">
                           <div className="grid grid-cols-2 gap-1 justify-center items-center">
-                            <button className="action-btn edit">
+                            <button className="action-btn edit" onClick={() => handleEdit(customer)}>
                               <i className="bi bi-pencil-fill"></i>
                             </button>
 
-                            <button className="action-btn delete">
+                            <button className="action-btn delete" onClick={() => handleDelete(customer.customerCode)}>
                               <i className="bi bi-trash-fill"></i>
                             </button>
                           </div>
@@ -240,8 +297,15 @@ export default function Customer() {
           )}
 
           <AddCustomer
+            key={editMode ? customerForm.customerCode : "new"}
             show={showCustomerPopup}
-            onClose={() => setShowCustomerPopup(false)}
+            onClose={() => {
+                setShowCustomerPopup(false);
+                setEditMode(false);
+            }}
+            editMode={editMode}
+            customerForm={customerForm}
+            setCustomerForm={setCustomerForm}
           />
         </main>
       </div>

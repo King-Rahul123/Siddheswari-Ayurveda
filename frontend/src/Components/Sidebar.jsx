@@ -7,6 +7,8 @@ export default function Sidebar() {
   const [saleOpen, setSaleOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
 
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
   const handleSaleToggle = () => {
     setSaleOpen((prev) => {
       const newState = !prev;
@@ -125,10 +127,18 @@ export default function Sidebar() {
                 Purchase Report
               </li>
 
-              <li className={ window.location.pathname === "/dashboard/staff-report" ? "active" : "" } onClick={() => navigate("/dashboard/staff-report")} >
-                <i className="bi bi-people-fill"></i>
-                Staff Report
-              </li>
+              {loggedInUser?.role?.toLowerCase() === "admin" && (
+                <li className={
+                    window.location.pathname === "/dashboard/staff-report"
+                      ? "active"
+                      : ""
+                  }
+                  onClick={() => navigate("/dashboard/staff-report")}
+                >
+                  <i className="bi bi-people-fill"></i>
+                  Staff Report
+                </li>
+              )}
             </ul>
           )}
         </ul>

@@ -387,6 +387,7 @@
 }
 
 .doctor-popup .popup-header {
+  background: #038a17;
   padding: 12px 32px;
   border-bottom: 1px solid #edf7ed;
   display: flex;
@@ -404,8 +405,9 @@
   width: 45px;
   height: 45px;
   border-radius: 18px;
-  background: linear-gradient( 135deg, #2e7d32, #43a047);
+  background: linear-gradient( 135deg, #1d5a20, #43a047);
   color: white;
+  border: 2px solid white;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -415,13 +417,13 @@
 
 .doctor-popup .popup-title h5 {
   margin: 0;
-  color: #1b5e20;
+  color: white;
   font-size: 25px;
   font-weight: 600;
 }
 
 .doctor-popup .popup-title p {
-  color: #757575;
+  color: white;
   font-size: 13px;
 }
 

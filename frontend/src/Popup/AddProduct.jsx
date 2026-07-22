@@ -39,7 +39,7 @@ export default function AddProduct({
 				<div className="popup-box" onClick={(e) => e.stopPropagation()}>
 					<div className="popup-header">
 						<h4>Add New Product</h4>
-						<button onClick={onClose}>&times;</button>
+						<button type="button" onClick={onClose}>&times;</button>
 					</div>
 
 					<div className="popup-body">
@@ -212,10 +212,10 @@ export default function AddProduct({
 					</div>
 
 					<div className="popup-footer">
-						<button className="cancel-btn" onClick={onClose}>
+						<button type="button" className="cancel-btn" onClick={onClose}>
 							Cancel
 						</button>
-						<button className="save-btn" onClick={onSave}>
+						<button type="button" className="save-btn" onClick={onSave}>
 							Save Product
 						</button>
 					</div>

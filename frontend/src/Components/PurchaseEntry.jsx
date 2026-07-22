@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
 import AddProduct from "../Popup/AddProduct";
@@ -8,9 +8,11 @@ import { toast } from "react-toastify";
 import "../CSS/Dashboard.css";
 import "../CSS/PurchaseEntry.css";
 import "../CSS/Card.css";
+import CompanyList from "../Popup/CompanyList";
+import ProductList from "../Popup/ProductList";
 
 import { addcompanies, getNextcompaniesCode, subscribecompanies } from "../services/companyService";
-import { addProduct, getNextProductCode, subscribeProducts } from "../services/productService";
+import { addProduct, getNextProductCode } from "../services/productService";
 import { addPurchase, getNextPurchaseId } from "../services/purchaseService";
 import { addStock, getNextStockId } from "../services/stockService";
 
@@ -47,16 +49,12 @@ export default function PurchaseEntry() {
     const unitRef = useRef(null);
     const minStockRef = useRef(null);
     const discountRef = useRef(null);
+    const lastFocusedCell = useRef(null);
 
-    const [showSearch,setShowSearch]=useState(false);
-    const [searchText,setSearchText]=useState("");
-    const [currentRow,setCurrentRow]=useState(0);
-    const [selectedIndex,setSelectedIndex]=useState(0);
-
-    const [products, setProducts] = useState([]);
-    
     const [showAddProductPopup, setShowAddProductPopup] = useState(false);
     const [showAddCompanyPopup, setShowAddCompanyPopup] = useState(false);
+    const [showProductPopup, setShowProductPopup] = useState(false);
+    const [selectedRow, setSelectedRow] = useState(0);
 
     const [activeField, setActiveField] = useState("");
     
@@ -71,30 +69,15 @@ export default function PurchaseEntry() {
         discount: "",
     });
 
-    useEffect(() => {
-        const unsubscribe = subscribeProducts(setProducts);
-        return () => unsubscribe();
-    }, []);
-
-    const filteredProducts = useMemo(() => {
-        if (searchText === "") {
-            return products;
-        }
-
-        return products.filter((p) =>
-            p.productName.toLowerCase().includes(searchText.toLowerCase())
-        );
-    }, [products, searchText]);
-
     const columns = [
         "productName",
+        "hsn",
         "batch",
         "qty",
         "expiry",
         "mrp",
-        "discount",
         "gst",
-        "hsn",
+        "discount",
     ];
 
     const updateCell = (row, field, value) => {
@@ -129,19 +112,9 @@ export default function PurchaseEntry() {
     };
 
     const handleTableKey = (e, row, col) => {
-
         switch (e.key) {
-
             case "Enter":
                 e.preventDefault();
-                if (col === 0) {
-                    if (showSearch && filteredProducts.length > 0) {
-                        chooseProduct(filteredProducts[selectedIndex]);
-                    } else {
-                        moveNext(row, col);
-                    }
-                    return;
-                }
                 moveNext(row, col);
                 break;
 
@@ -157,29 +130,22 @@ export default function PurchaseEntry() {
 
             case "ArrowDown":
                 e.preventDefault();
-                if (row < rows.length - 1)
+                if (row < rows.length - 1) {
                     tableRefs.current[row + 1]?.[col]?.focus();
+                }
                 break;
 
             case "ArrowUp":
                 e.preventDefault();
-                if (row > 0)
+                if (row > 0) {
                     tableRefs.current[row - 1]?.[col]?.focus();
+                }
                 break;
 
             default:
                 break;
         }
-
     };
-
-    const chooseProduct = useCallback((product) => {
-        updateCell(currentRow, "productName", product.productName);
-        updateCell(currentRow, "gst", product.gst);
-        updateCell(currentRow, "hsn", product.hsn);
-        setShowSearch(false);
-        tableRefs.current[currentRow]?.[1]?.focus();
-    }, [currentRow]);
 
     const clearForm = useCallback(() => {
         setRows(createRows());
@@ -216,32 +182,49 @@ export default function PurchaseEntry() {
         });
     };
 
+    const closeAddProduct = useCallback(() => {
+        setShowAddProductPopup(false);
+
+        requestAnimationFrame(() => {
+            lastFocusedCell.current?.focus();
+        });
+    }, []);
+
     const saveNewProduct = async () => {
+        if (!newProduct.productName.trim()) {
+            toast.error("Product Name is required");
+            return;
+        }
+
+        // Save current data
+        const product = { ...newProduct };
+
+        // Close popup immediately
+        closeAddProduct();
+
+        // Clear form
+        setNewProduct({
+            companyName: "",
+            productName: "",
+            itemCode: "",
+            hsn: "",
+            gst: "",
+            unit: "",
+            minStock: "",
+            discount: "",
+        });
+
         try {
-            if (!newProduct.productName.trim()) {
-                toast.error("Product Name is required");
-                return;
-            }
             const itemCode = await getNextProductCode();
-            const productData = {
-                ...newProduct,
+
+            await addProduct({
+                ...product,
                 itemCode,
-            };
-            await addProduct(productData);
-            toast.success("Product Added");
-            setNewProduct({
-                companyName: "",
-                productName: "",
-                itemCode: "",
-                hsn: "",
-                gst: "",
-                unit: "",
-                minStock: "",
-                discount: "",
             });
-            setShowAddProductPopup(false);
+
+            toast.success("Product Added");
         } catch (err) {
-            console.log(err);
+            console.error(err);
             toast.error("Unable to save product");
         }
     };
@@ -256,6 +239,10 @@ export default function PurchaseEntry() {
         gst: "",
     });
 
+    const getToday = () => {
+        return new Date().toISOString().split("T")[0];
+    };
+
     const companyNamePopupRef = useRef(null);
     const mobileRef = useRef(null);
     const emailRef = useRef(null);
@@ -264,26 +251,17 @@ export default function PurchaseEntry() {
     const [companies, setCompanies] = useState([]);
     const [showCompanySearch, setShowCompanySearch] = useState(false);
     const [companySearchText, setCompanySearchText] = useState("");
-    const [selectedCompanyIndex, setSelectedCompanyIndex] = useState(0);
 
     const [invoiceNo, setInvoiceNo] = useState("");
-    const [invoiceDate, setInvoiceDate] = useState("");
+    const [invoiceDate, setInvoiceDate] = useState(getToday());
 
-    const filteredCompanies = useMemo(() => {
-        if (!companySearchText.trim()) return companies;
+    const closeAddCompany = useCallback(() => {
+        setShowAddCompanyPopup(false);
 
-        return companies.filter((c) =>
-            c.companyName
-                .toLowerCase()
-                .includes(companySearchText.toLowerCase())
-        );
-    }, [companies, companySearchText]);
-
-    const chooseCompany = (company) => {
-        setCompanySearchText(company.companyName);
-        invoiceRef.current?.focus();
-        setShowCompanySearch(false);
-    };
+        requestAnimationFrame(() => {
+            lastFocusedCell.current?.focus();
+        });
+    }, []);
 
     const handleSubmit = useCallback(async (e) => {
         if (e) e.preventDefault();
@@ -347,11 +325,13 @@ export default function PurchaseEntry() {
                 e.preventDefault();
 
                 if (activeField === "company") {
+                    lastFocusedCell.current = document.activeElement;
                     setShowAddCompanyPopup(true);
                     return;
                 }
 
                 if (activeField === "product") {
+                    lastFocusedCell.current = document.activeElement;
                     setShowAddProductPopup(true);
                     return;
                 }
@@ -366,17 +346,28 @@ export default function PurchaseEntry() {
                 e.preventDefault();
                 // Close Add Product popup first
                 if (showAddProductPopup) {
-                    setShowAddProductPopup(false);
+                    closeAddProduct();
                     return;
                 }
                 // Close Add Company Popup
                 if (showAddCompanyPopup) {
-                    setShowAddCompanyPopup(false);
+                    closeAddCompany();
+                    return;
+                }
+
+                if (showCompanySearch) {
+                    setShowCompanySearch(false);
+                    requestAnimationFrame(() => {
+                        companyRef.current?.focus();
+                    });
                     return;
                 }
                 // Close Product Search popup
-                if (showSearch) {
-                    setShowSearch(false);
+                if (showProductPopup) {
+                    setShowProductPopup(false);
+                    requestAnimationFrame(() => {
+                        lastFocusedCell.current?.focus();
+                    });
                     return;
                 }
                 // Otherwise go back
@@ -389,7 +380,17 @@ export default function PurchaseEntry() {
         return () => {
             window.removeEventListener("keydown", shortcuts);
         };
-    }, [clearForm, handleSubmit, navigate, showAddProductPopup, showAddCompanyPopup, showSearch, activeField]);
+    }, [clearForm, 
+        handleSubmit, 
+        navigate, 
+        showAddProductPopup, 
+        showAddCompanyPopup, 
+        activeField, 
+        closeAddProduct, 
+        closeAddCompany,
+        showCompanySearch,
+        showProductPopup
+    ]);
 
     useEffect(() => {
         const unsubscribe = subscribecompanies(setCompanies);
@@ -429,8 +430,7 @@ export default function PurchaseEntry() {
                 gst: "",
             });
 
-            setShowAddCompanyPopup(false);
-            companyRef.current?.focus();
+            closeAddCompany();
 
             toast.success("Company added successfully");
         } catch (error) {
@@ -464,7 +464,7 @@ export default function PurchaseEntry() {
                             <div className="text-lg font-bold">
                                 <h2>Product Entry</h2>
                             </div>
-                            <div className="text-xs flex gap-4">
+                            <div className="text-xs md:flex gap-4 hidden">
                                 <span><strong>Enter:</strong> Next Field</span>
                                 <span><strong>F2:</strong> New Product</span>
                                 <span><strong>End:</strong> Save</span>
@@ -481,38 +481,19 @@ export default function PurchaseEntry() {
                                         ref={companyRef}
                                         value={companySearchText}
                                         placeholder="Enter company name"
-                                        onFocus={() => setActiveField("company")}
+                                        onFocus={() => {
+                                            setActiveField("company");
+                                        }}
                                         onChange={(e) => {
                                             setCompanySearchText(e.target.value);
-                                            setShowCompanySearch(true);
-                                            // setCompanyTarget("main");
-                                            setSelectedCompanyIndex(0);
                                         }}
                                         onKeyDown={(e) => {
-                                            if(showCompanySearch){
-                                                if(e.key==="ArrowDown"){
-                                                    e.preventDefault();
-                                                    setSelectedCompanyIndex((prev)=>
-                                                        Math.min(prev+1, filteredCompanies.length-1)
-                                                    );
-                                                    return;
-                                                }
-                                                if(e.key==="ArrowUp"){
-                                                    e.preventDefault();
-                                                    setSelectedCompanyIndex((prev)=>
-                                                        Math.max(prev-1,0)
-                                                    );
-                                                    return;
-                                                }
-                                                if(e.key==="Enter"){
-                                                    e.preventDefault();
-                                                    chooseCompany(filteredCompanies[selectedCompanyIndex]);
-                                                    return;
-                                                }
-                                            }
-                                            if(e.key==="Enter"){
+                                            if (e.key === "Enter") {
                                                 e.preventDefault();
-                                                invoiceRef.current?.focus();
+                                                e.stopPropagation();
+
+                                                lastFocusedCell.current = e.target;
+                                                setShowCompanySearch(true);
                                             }
                                         }}
                                     />
@@ -545,6 +526,10 @@ export default function PurchaseEntry() {
                                         onKeyDown={(e)=>{
                                             if(e.key==="Enter"){
                                                 e.preventDefault();
+                                                // If empty, automatically set today's date
+                                                if (!invoiceDate) {
+                                                    setInvoiceDate(getToday());
+                                                }
                                                 tableRefs.current[0]?.[0]?.focus();
                                             }
                                         }}
@@ -558,13 +543,13 @@ export default function PurchaseEntry() {
                                         <tr>
                                             <th>#</th>
                                             <th>Product</th>
+                                            <th>HSN</th>
                                             <th>Batch</th>
                                             <th>Qty</th>
                                             <th>Expiry</th>
                                             <th>MRP</th>
-                                            <th>Dis %</th>
                                             <th>GST</th>
-                                            <th>HSN</th>
+                                            <th>Dis %</th>
                                         </tr>
                                     </thead>
 
@@ -583,43 +568,63 @@ export default function PurchaseEntry() {
                                                             }}
 
                                                             value={row[column] || ""}
+                                                            
+                                                            readOnly={column === "hsn" || column === "gst"}
+
+                                                            maxLength={column === "expiry" ? 5 : undefined}
 
                                                             onFocus={() => {
+                                                                lastFocusedCell.current = tableRefs.current[rowIndex][colIndex];
+
                                                                 if (column === "productName") {
                                                                     setActiveField("product");
-                                                                    setCurrentRow(rowIndex);
+                                                                    setSelectedRow(rowIndex);
                                                                 }
                                                             }}
 
                                                             onChange={(e) => {
-                                                                updateCell(rowIndex, column, e.target.value);
+                                                                let value = e.target.value;
 
+                                                                if (column === "expiry") {
+                                                                    // Only numbers
+                                                                    value = value.replace(/\D/g, "");
+                                                                    // Maximum 4 digits (MMYY)
+                                                                    value = value.slice(0, 4);
+                                                                    // Validate month
+                                                                    if (value.length >= 2) {
+                                                                        let month = parseInt(value.substring(0, 2), 10);
+                                                                        if (month > 12) {
+                                                                            month = 12;
+                                                                        }
+                                                                        if (month < 1 && value.length === 2) {
+                                                                            month = 1;
+                                                                        }
+                                                                        value =
+                                                                            month.toString().padStart(2, "0") +
+                                                                            value.substring(2);
+                                                                    }
+                                                                    // Add '/'
+                                                                    if (value.length > 2) {
+                                                                        value = value.substring(0, 2) + "/" + value.substring(2);
+                                                                    }
+                                                                }
+                                                                updateCell(rowIndex, column, value);
                                                                 if (column === "productName") {
-                                                                    setCurrentRow(rowIndex);
-                                                                    setSearchText(e.target.value);
-                                                                    setShowSearch(true);
-                                                                    setSelectedIndex(0);
+                                                                    setSelectedRow(rowIndex);
                                                                 }
                                                             }}
 
                                                             onKeyDown={(e) => {
-                                                                if (column === "productName" && showSearch) {
-                                                                    if (e.key === "ArrowDown") {
-                                                                        e.preventDefault();
-                                                                        setSelectedIndex((prev) =>
-                                                                            Math.min(prev + 1, filteredProducts.length - 1)
-                                                                        );
-                                                                        return;
-                                                                    }
+                                                                if (column === "productName" && e.key === "Enter") {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
 
-                                                                    if (e.key === "ArrowUp") {
-                                                                        e.preventDefault();
-                                                                        setSelectedIndex((prev) =>
-                                                                            Math.max(prev - 1, 0)
-                                                                        );
-                                                                        return;
-                                                                    }
+                                                                    lastFocusedCell.current = e.target;
+                                                                    setSelectedRow(rowIndex);
+                                                                    setShowProductPopup(true);
+                                                                    return;
                                                                 }
+
                                                                 handleTableKey(e, rowIndex, colIndex);
                                                             }}
                                                         />
@@ -633,30 +638,9 @@ export default function PurchaseEntry() {
                         </form>
                     </div>
 
-                    {showSearch && (
-                        <div className="product-search-popup">
-                            <table>
-                                <tbody>
-                                    {filteredProducts.map((item, index) => (
-                                        <tr
-                                            key={item.productId}
-                                            className={selectedIndex === index ? "active" : ""}
-                                            onClick={() => chooseProduct(item)}
-                                        >
-                                            <td>{item.productName}</td>
-                                            <td>{item.company}</td>
-                                            <td>{item.batch}</td>
-                                            <td>{item.mrp}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-
                     <AddProduct
                         isOpen={showAddProductPopup}
-                        onClose={() => setShowAddProductPopup(false)}
+                        onClose={closeAddProduct}
                         newProduct={newProduct}
                         onChange={handleNewProductChange}
                         onSave={saveNewProduct}
@@ -674,7 +658,7 @@ export default function PurchaseEntry() {
 
                     <AddCompany
                         isOpen={showAddCompanyPopup}
-                        onClose={() => setShowAddCompanyPopup(false)}
+                        onClose={(closeAddCompany)}
                         newCompany={newCompany}
                         onChange={handleCompanyChange}
                         onSave={saveCompany}
@@ -683,6 +667,47 @@ export default function PurchaseEntry() {
                         emailRef={emailRef}
                         gstRef={gstNoRef}
                         onFieldKeyDown={handleCompanyPopupKey}
+                    />
+
+                    <CompanyList
+                        show={showCompanySearch}
+                        companies={companies}
+                        searchText={companySearchText}
+                        onClose={() => {
+                            setShowCompanySearch(false);
+                            setTimeout(() => {
+                                lastFocusedCell.current?.focus();
+                            }, 50);
+                        }}
+                        onSelect={(company) => {
+                            setCompanySearchText(company.companyName);
+                            setShowCompanySearch(false);
+
+                            setTimeout(() => {
+                                invoiceRef.current?.focus();
+                            }, 100);
+                        }}
+                    />
+
+                    <ProductList
+                        show={showProductPopup}
+                        onClose={() => {
+                            setShowProductPopup(false);
+
+                            setTimeout(() => {
+                                lastFocusedCell.current?.focus();
+                            }, 50);
+                        }}
+                        onSelect={(product) => {
+                            updateCell(selectedRow, "productId", product.itemCode);
+                            updateCell(selectedRow, "productName", product.productName);
+                            updateCell(selectedRow, "gst", product.gst);
+                            updateCell(selectedRow, "hsn", product.hsn);
+                            setShowProductPopup(false);
+                            setTimeout(() => {
+                                tableRefs.current[selectedRow]?.[2]?.focus(); // Batch
+                            }, 100);
+                        }}
                     />
                 </main>
             </div>

@@ -15,6 +15,9 @@ import SaleInvoice from "./Components/SaleInvoice";
 import PrintInvoice from "./Components/PrintFormate";
 import EditSale from "./Components/EditBill";
 import Stock from "./Pages/Stock";
+import StaffReport from "./Pages/StaffReport";
+import Analytics from "./Pages/Analytics";
+import Appointment from "./Pages/Appointment";
 
 const PurchaseEntry = lazy(() => import("./Components/PurchaseEntry"));
 // import EditPurchase from "./Components/EditPurchase";
@@ -63,7 +66,11 @@ export default function App() {
           <Route path="/dashboard/purchase" element={<Purchase />} />
           {/* <Route path="/dashboard/purchase/edit/:billNumber" element={<EditPurchase />} /> */}
           <Route path="/dashboard/stock-report" element={<Stock />} />
-          <Route path="/dashboard/purchase/purchase-entry" element={<Suspense fallback={<Loader />}><PurchaseEntry /></Suspense>} /></Routes>
+          <Route path="/dashboard/purchase/purchase-entry" element={<Suspense fallback={<Loader />}><PurchaseEntry /></Suspense>} />
+          <Route path="/dashboard/staff-report" element={<StaffReport />} />
+          <Route path="/dashboard/analytics" element={<Suspense fallback={<Loader />}><Analytics /></Suspense>} />
+          <Route path="/dashboard/appointments" element={<Suspense fallback={<Loader />}><Appointment /></Suspense>} />
+        </Routes>
       <ToastContainer
         position="bottom-right"
         autoClose={3000}

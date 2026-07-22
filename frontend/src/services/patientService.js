@@ -1,4 +1,4 @@
-import { collection, doc, setDoc, serverTimestamp, onSnapshot, runTransaction, } from "firebase/firestore";
+import { collection, doc, setDoc, serverTimestamp, onSnapshot, runTransaction, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
 // Generate next Patient Code
@@ -27,7 +27,7 @@ export const getNextPatientCode = async () => {
     return newId;
   });
 
-  return `CUS${nextId.toString().padStart(4, "0")}`;
+  return `P${nextId.toString().padStart(4, "0")}`;
 };
 
 // Add Patient
@@ -51,4 +51,11 @@ export const subscribePatients = (callback) => {
 
     callback(patients);
   });
+};
+
+export const updatePatient = async (patientCode, data) => {
+    await updateDoc(
+        doc(db, "patients", patientCode),
+        data
+    );
 };

@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { subscribeProducts } from "../services/productService";
 import "../CSS/PopupList.css";
 
-export default function ProductList({ show, onClose, onSelect }) {
+export default function CompanyList({
+    show,
+    companies = [],
+    onClose,
+    onSelect,
+}) {
 
-    const [products, setProducts] = useState([]);
     const [search, setSearch] = useState("");
     const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -12,29 +15,23 @@ export default function ProductList({ show, onClose, onSelect }) {
     const rowRefs = useRef([]);
 
     useEffect(() => {
-
         if (!show) return;
-
-        const unsubscribe = subscribeProducts(setProducts);
 
         setTimeout(() => {
             searchRef.current?.focus();
         }, 100);
-
-        return () => unsubscribe();
-
     }, [show]);
 
-    const filteredProducts = (products || []).filter((product) => {
+    const filteredCompanies = (companies || []).filter((company) => {
 
         const text = search.toLowerCase();
 
         return (
-            (product.productName || "").toLowerCase().includes(text) ||
-            (product.itemCode || "").toLowerCase().includes(text) ||
-            (product.companyName || "").toLowerCase().includes(text)
+            (company.companyName || "").toLowerCase().includes(text) ||
+            (company.companiesCode || "").toLowerCase().includes(text) ||
+            (company.mobile || "").toLowerCase().includes(text) ||
+            (company.email || "").toLowerCase().includes(text)
         );
-
     });
 
     useEffect(() => {
@@ -48,23 +45,23 @@ export default function ProductList({ show, onClose, onSelect }) {
             });
         }
 
-    }, [selectedIndex, filteredProducts]);
+    }, [selectedIndex, filteredCompanies]);
 
     const handleKeyDown = (e) => {
-
-        if (!filteredProducts.length) return;
 
         switch (e.key) {
 
             case "ArrowDown":
                 e.preventDefault();
+                if (!filteredCompanies.length) return;
                 setSelectedIndex((prev) =>
-                    Math.min(prev + 1, filteredProducts.length - 1)
+                    Math.min(prev + 1, filteredCompanies.length - 1)
                 );
                 break;
 
             case "ArrowUp":
                 e.preventDefault();
+                if (!filteredCompanies.length) return;
                 setSelectedIndex((prev) =>
                     Math.max(prev - 1, 0)
                 );
@@ -72,18 +69,21 @@ export default function ProductList({ show, onClose, onSelect }) {
 
             case "Enter":
                 e.preventDefault();
-                onSelect(filteredProducts[selectedIndex]);
-                onClose();
+
+                if (filteredCompanies.length) {
+                    onSelect(filteredCompanies[selectedIndex]);
+                    onClose();
+                }
                 break;
 
             case "Escape":
+                e.preventDefault();
                 onClose();
                 break;
 
             default:
                 break;
         }
-
     };
 
     if (!show) return null;
@@ -92,18 +92,16 @@ export default function ProductList({ show, onClose, onSelect }) {
         <div className="popup-overlay">
             <div className="customer-popup">
                 <div className="popup-header">
-                    <h4>Select Product</h4>
-                    <button
-                        className="btn-close"
-                        onClick={onClose}
-                    ></button>
+                    <h4>Select Company</h4>
+                    <button type="button" className="btn-close" onClick={onClose}></button>
                 </div>
 
                 <div className="popup-body">
+
                     <input
                         ref={searchRef}
                         className="form-control mb-3"
-                        placeholder="Search Product..."
+                        placeholder="Search Company..."
                         value={search}
                         onChange={(e) => {
                             setSearch(e.target.value);
@@ -116,28 +114,28 @@ export default function ProductList({ show, onClose, onSelect }) {
                         <table className="table table-hover table-bordered">
                             <thead className="table-success sticky-top">
                                 <tr>
-                                    <th style={{ width: 140 }}>Item Code</th>
-                                    <th>Product Name</th>
-                                    <th>Company</th>
+                                    <th style={{ width: "120px" }}>Code</th>
+                                    <th>Company Name</th>
+                                    <th style={{ width: "150px" }}>Mobile</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                {filteredProducts.length === 0 ? (
+                                {filteredCompanies.length === 0 ? (
                                     <tr>
                                         <td
                                             colSpan={3}
                                             className="text-center py-4"
                                         >
-                                            No Product Found
+                                            No Company Found
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredProducts.map((product, index) => (
+                                    filteredCompanies.map((company, index) => (
 
                                         <tr
-                                            ref={(el) => rowRefs.current[index] = el}
-                                            key={product.itemCode}
+                                            key={company.companiesCode}
+                                            ref={(el) => (rowRefs.current[index] = el)}
                                             className={
                                                 index === selectedIndex
                                                     ? "table-primary"
@@ -145,13 +143,13 @@ export default function ProductList({ show, onClose, onSelect }) {
                                             }
                                             onClick={() => {
                                                 setSelectedIndex(index);
-                                                onSelect(product);
+                                                onSelect(company);
                                                 onClose();
                                             }}
                                         >
-                                            <td>{product.itemCode}</td>
-                                            <td>{product.productName}</td>
-                                            <td>{product.companyName}</td>
+                                            <td>{company.companiesCode}</td>
+                                            <td>{company.companyName}</td>
+                                            <td>{company.mobile}</td>
                                         </tr>
                                     ))
                                 )}

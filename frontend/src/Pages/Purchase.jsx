@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
@@ -6,6 +6,7 @@ import "../CSS/Sale.css";
 import "../CSS/Purchase.css";
 import * as XLSX from "xlsx";
 
+import { subscribePurchases } from "../services/purchaseService";
 
 export default function Purchase() {
     const navigate = useNavigate();
@@ -13,29 +14,12 @@ export default function Purchase() {
     const [selectedDate, setSelectedDate] = useState("");
     const [showExportPopup, setShowExportPopup] = useState(false);
 
-    const purchaseData = [
-        {
-            billnumber: "PUR001",
-            supplier: "Dabur India Ltd.",
-            totalamount: 12450,
-            netamount: 12100,
-            date: "2026-07-10",
-        },
-        {
-            billnumber: "PUR002",
-            supplier: "Baidyanath",
-            totalamount: 8450,
-            netamount: 8300,
-            date: "2026-07-09",
-        },
-        {
-            billnumber: "PUR003",
-            supplier: "Patanjali Ayurveda",
-            totalamount: 16980,
-            netamount: 16500,
-            date: "2026-07-08",
-        },
-    ];
+    const [purchaseData, setPurchaseData] = useState([]);
+
+    useEffect(() => {
+        const unsubscribe = subscribePurchases(setPurchaseData);
+        return () => unsubscribe();
+    }, []);
 
     const handleAddProduct = () => {
         navigate("/dashboard/purchase/purchase-entry");
@@ -43,13 +27,20 @@ export default function Purchase() {
 
     const filteredPurchase = purchaseData.filter((purchase) => {
 
-        const matchesSearch = purchase.supplier
-            .toLowerCase()
-            .includes(search.toLowerCase());
+        const matchesSearch =
+            (purchase.companyName || "")
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+            (purchase.invoiceNo || "")
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+            (purchase.purchaseId || "")
+                .toLowerCase()
+                .includes(search.toLowerCase());
 
         const matchesDate =
             selectedDate === "" ||
-            purchase.date === selectedDate;
+            purchase.invoiceDate === selectedDate;
 
         return matchesSearch && matchesDate;
 
@@ -57,11 +48,13 @@ export default function Purchase() {
 
     const exportToExcel = () => {
         const exportData = filteredPurchase.map((purchase) => ({
-            "Purchase No": purchase.billnumber,
-            "Supplier": purchase.supplier,
-            "Date": purchase.date,
-            "Total Amount": purchase.totalamount,
-            "Net Amount": purchase.netamount,
+            "Purchase ID": purchase.purchaseId,
+            "Company": purchase.companyName,
+            "Invoice No": purchase.invoiceNo,
+            "Date": purchase.invoiceDate,
+            "Items": purchase.totalItems,
+            "Quantity": purchase.totalQty,
+            "Total Amount": purchase.totalAmount,
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -154,21 +147,30 @@ export default function Purchase() {
                             <thead>
                                 <tr>
                                     <th>Purchase No.</th>
+                                    <th>Company Name</th>
                                     <th>Date</th>
                                     <th>Total Amount</th>
-                                    <th>Net Amount</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                {filteredPurchase.map((purchase) => (
-                                    <tr key={purchase.billnumber}>
-                                        <td>{purchase.billnumber}</td>
+                                {filteredPurchase.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="py-5">
+                                            <div className="flex flex-col items-center justify-center text-gray-500">
+                                                <i className="bi bi-search text-3xl mb-2"></i>
+                                                <h6 className="m-0">No Bill Available</h6>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                filteredPurchase.map((purchase) => (
+                                    <tr key={purchase.purchaseId}>
+                                        <td>{purchase.purchaseId}</td>
+                                        <td className="font-bold">{purchase.companyName}</td>
                                         <td>
-                                            {new Date(
-                                                purchase.date
-                                            ).toLocaleDateString(
+                                            {new Date(purchase.invoiceDate).toLocaleDateString(
                                                 "en-GB",
                                                 {
                                                     day: "2-digit",
@@ -177,8 +179,7 @@ export default function Purchase() {
                                                 }
                                             )}
                                         </td>
-                                        <td>₹{purchase.totalamount}</td>
-                                        <td>₹{purchase.netamount}</td>
+                                        <td>₹{purchase.totalAmount}</td>
 
                                         <td className="gap-2 flex justify-center">
                                             <button className="download-btn" onClick={() => setShowExportPopup(true)}>
@@ -190,7 +191,8 @@ export default function Purchase() {
                                             </button>
                                         </td>
                                     </tr>
-                                ))}
+                                ))
+                                )}
                             </tbody>
                         </table>
                     </div>

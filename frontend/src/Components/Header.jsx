@@ -15,7 +15,7 @@ export default function Header() {
       <h3 className="text-black">Welcome to the Dashboard, <span className="text-primary">{displayName}</span></h3>
 
       <div className="profile">
-        <i className="bi bi-bell-fill notification-icon"></i>
+        <i className="bi bi-bell-fill notification-icon hidden md:block"></i>
 
         <div className="avatar">
           <img src="https://i.pravatar.cc/50" alt="Profile" />

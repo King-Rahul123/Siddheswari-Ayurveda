@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { subscribeCustomers } from "../services/customerService";
-import "../CSS/CustomerList.css";
+import "../CSS/PopupList.css";
 
 export default function CustomerList({ show, onClose, onSelect }) {
     const [customers, setCustomers] = useState([]);

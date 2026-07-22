@@ -6,14 +6,19 @@ import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import AddPatient from "../Popup/TakeAppointment";
 import AddDoctor from "../Popup/AddDoctor";
+import AddStaff from "../Popup/AddStaff";
+import AddCustomer from "../Popup/AddCustomer";
 import { changePassword } from "../services/authService";
 import { subscribeCustomers } from "../services/customerService";
+import { subscribePatients } from "../services/patientService";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [showAppointmentPopup, setShowAppointmentPopup] = useState(false);
   const [showDoctorPopup, setShowDoctorPopup] = useState(false);
-  const [appointments] = useState([]);
+  const [showStaffPopup, setShowStaffPopup] = useState(false);
+  const [showCustomerPopup, setShowCustomerPopup] = useState(false);
+  const [appointments, setAppointments] = useState([]);
   const [customerCount, setCustomerCount] = useState(0);
 
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -29,11 +34,23 @@ export default function Dashboard() {
   );
 
   useEffect(() => {
-    const unsubscribe = subscribeCustomers((customers) => {
+    const unsubscribeCustomers = subscribeCustomers((customers) => {
       setCustomerCount(customers.length);
     });
 
-    return () => unsubscribe();
+    const unsubscribePatients = subscribePatients((patients) => {
+      // Sort by appointment date (latest first)
+      const sorted = [...patients].sort(
+        (a, b) => new Date(b.appointDate) - new Date(a.appointDate)
+      );
+
+      setAppointments(sorted);
+    });
+
+    return () => {
+      unsubscribeCustomers();
+      unsubscribePatients();
+    };
   }, []);
 
   if (!loggedInUser) {
@@ -48,16 +65,16 @@ export default function Dashboard() {
       action: () => setShowAppointmentPopup(true),
     },
     {
-      title: "Stock",
+      title: "Add Staff",
       icon: "bi-box-seam-fill",
       color: "#1976d2",
-      action: () => navigate("/dashboard/stock-report"),
+      action: () => setShowStaffPopup(true),
     },
     {
       title: "Add Customer",
       icon: "bi-people-fill",
       color: "#8e24aa",
-      action: () => navigate("/dashboard/customer"),
+      action: () => setShowCustomerPopup(true),
     },
     {
       title: "Add Doctor",
@@ -84,7 +101,7 @@ export default function Dashboard() {
       title: "Stock Amount",
       value: "₹0",
       icon: "bi-box-seam-fill",
-      route: "/dashboard/sales",
+      route: "/dashboard/stock-report",
     },
     {
       title: "Performance",
@@ -190,9 +207,9 @@ export default function Dashboard() {
                   <tbody>
                     {appointments.length > 0 ? (
                       appointments.map((appointment, index) => (
-                        <tr key={index}>
-                          <td>{appointment.patient}</td>
-                          <td>{appointment.date}</td>
+                        <tr key={index} className="text-center">
+                          <td>{appointment.name}</td>
+                          <td>{appointment.appointDate}</td>
                           <td>{appointment.problem}</td>
                           <td>{appointment.doctor}</td>
                         </tr>
@@ -222,7 +239,12 @@ export default function Dashboard() {
               </div>
 
               <div className="shortcut-grid">
-                  {shortcuts.map((item, index) => (
+                  {shortcuts.filter(
+                      (item) =>
+                        loggedInUser.role === "admin" ||
+                        (item.title !== "Add Staff" && item.title !== "Add Doctor")
+                    )
+                    .map((item, index) => (
                       <div
                           key={index}
                           className="shortcut-card"
@@ -330,6 +352,16 @@ export default function Dashboard() {
         <AddDoctor
           show={showDoctorPopup}
           onClose={() => setShowDoctorPopup(false)}
+        />
+
+        <AddStaff
+          show={showStaffPopup}
+          onClose={() => setShowStaffPopup(false)}
+        />
+
+        <AddCustomer
+          show={showCustomerPopup}
+          onClose={() => setShowCustomerPopup(false)}
         />
       </div>
     </div>

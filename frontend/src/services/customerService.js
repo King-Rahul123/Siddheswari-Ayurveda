@@ -1,4 +1,16 @@
-import { collection, doc, setDoc, serverTimestamp, onSnapshot, runTransaction, query, where, getDocs } from "firebase/firestore";
+import { 
+  collection,
+  doc, 
+  setDoc, 
+  serverTimestamp, 
+  onSnapshot, 
+  runTransaction, 
+  query, 
+  where, 
+  getDocs, 
+  updateDoc, 
+  deleteDoc
+} from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
 // Generate next Customer Code
@@ -55,6 +67,20 @@ export const checkCustomerPhone = async (phone) => {
   }
 
   return null;
+};
+
+// Update Customer
+export const updateCustomer = async (customerCode, customerData) => {
+  const customerRef = doc(db, "customer", customerCode);
+
+  await updateDoc(customerRef, {
+    ...customerData,
+  });
+};
+
+// Delete Customer
+export const deleteCustomer = async (customerCode) => {
+  await deleteDoc(doc(db, "customer", customerCode));
 };
 
 // Real-time customers

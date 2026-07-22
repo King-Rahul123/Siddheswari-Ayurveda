@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import "../CSS/Customer.css";
 import "../CSS/Card.css"
-import { addCustomer, getNextCustomerCode, checkCustomerPhone } from "../services/customerService";
+import { addCustomer, updateCustomer, getNextCustomerCode, checkCustomerPhone } from "../services/customerService";
 
-export default function AddCustomer({ show, onClose }) {
-    const [customerForm, setCustomerForm] = useState({
+export default function AddCustomer({
+    show,
+    onClose,
+    editMode,
+    customerForm,
+    setCustomerForm,
+}) {
+    const emptyCustomer = {
         name: "",
         age: "",
         gender: "",
@@ -14,82 +20,92 @@ export default function AddCustomer({ show, onClose }) {
         address: "",
         city: "",
         state: "",
-    });
+    };
+
+    const [localForm, setLocalForm] = useState(emptyCustomer);
+
+    const form = customerForm ?? localForm;
+    const setForm = setCustomerForm ?? setLocalForm;
 
     const handleChange = (e) => {
-        setCustomerForm({
-        ...customerForm,
-        [e.target.name]: e.target.value,
-        });
+        const { name, value } = e.target;
+
+        setForm((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
     };
+
+    useEffect(() => {
+        if (show) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "auto";
+        }
+
+        return () => {
+            document.body.style.overflow = "auto";
+        };
+    }, [show]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const existingCustomer = await checkCustomerPhone(customerForm.phone);
-        if (existingCustomer) {
-            toast.warning(
-                `${existingCustomer.phone} is already registered.`,
-                {
-                    icon: false,
-                    className: "ayurveda-toast",
-                }
-            );
-            return;
-        }
-
-        // Prepare customer data first
-        const customer = {
-            customerCode: await getNextCustomerCode(),
-            ...customerForm,
-        };
-
-        // Clear form and close popup immediately
-        setCustomerForm({
-            name: "",
-            age: "",
-            gender: "",
-            phone: "",
-            email: "",
-            address: "",
-            city: "",
-            state: "",
-        });
-
-        onClose();
-
-        // Save in background
         try {
-            await addCustomer(customer);
+            if (editMode) {
+                await updateCustomer(form.customerCode, form);
 
-            toast.success(
-            `🌿 ${customer.name} has been registered successfully.`,
-            {
-                icon: false,
-                className: "ayurveda-toast",
+                toast.success(
+                    `🌿 ${form.name} updated successfully.`,
+                    {
+                        icon: false,
+                        className: "ayurveda-toast",
+                    }
+                );
+            } else {
+                const existingCustomer = await checkCustomerPhone(form.phone);
+
+                if (existingCustomer) {
+                    toast.warning(
+                        `${existingCustomer.phone} is already registered.`,
+                        {
+                            icon: false,
+                            className: "ayurveda-toast",
+                        }
+                    );
+                    return;
+                }
+
+                const newCustomer = {
+                    customerCode: await getNextCustomerCode(),
+                    ...form,
+                };
+
+                await addCustomer(newCustomer);
+
+                toast.success(
+                    `🌿 ${newCustomer.name} has been registered successfully.`,
+                    {
+                        icon: false,
+                        className: "ayurveda-toast",
+                    }
+                );
             }
-            );
+
+            resetForm();
+            onClose();
         } catch (error) {
             console.error(error);
-
-            toast.error("Failed to save customer.");
-
-            // Optional: reopen popup if save fails
-            // onOpen?.();
+            toast.error(
+                editMode
+                    ? "Failed to update customer."
+                    : "Failed to save customer."
+            );
         }
     };
 
     const resetForm = () => {
-        setCustomerForm({
-            name: "",
-            age: "",
-            gender: "",
-            phone: "",
-            email: "",
-            address: "",
-            city: "",
-            state: "",
-        });
+        setForm(emptyCustomer);
     };
 
     const handleCancel = () => {
@@ -100,15 +116,19 @@ export default function AddCustomer({ show, onClose }) {
     if (!show) return null;
 
     return (
-        <div className="customer-popup-overlay" onClick={onClose}>
+        <div className="customer-popup-overlay" onClick={handleCancel}>
             <div className="rounded-r rounded-2xl customer-popup" onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div className="popup-header">
                     <div className="popup-title">
                         <div className="popup-icon"><i className="bi bi-person-plus-fill"></i></div>
                         <div>
-                            <h5>Add New Customer</h5>
-                            <p>Register a new patient for consultation</p>
+                            <h5>{editMode ? "Edit Customer" : "Add New Customer"}</h5>
+                            <p>
+                                {editMode
+                                    ? "Update customer information"
+                                    : "Register a new customer"}
+                            </p>
                         </div>
                     </div>
                     <button className="close-btn" onClick={handleCancel}>&times;</button>
@@ -126,17 +146,17 @@ export default function AddCustomer({ show, onClose }) {
                         <div className="popup-grid">
                             <div className="form-group">
                                 <label>Full Name *</label>
-                                <input type="text" name="name" placeholder="Enter customer name" value={customerForm.name} onChange={handleChange} required />
+                                <input type="text" name="name" placeholder="Enter customer name" value={form.name} onChange={handleChange} required />
                             </div>
 
                             <div className="form-group">
                                 <label>Phone Number *</label>
-                                <input type="tel" name="phone" placeholder="Enter mobile number" value={customerForm.phone} onChange={handleChange} required />
+                                <input type="tel" name="phone" placeholder="Enter mobile number" value={form.phone} onChange={handleChange} required />
                             </div>
 
                             <div className="form-group">
                                 <label>Gender *</label>
-                                <select name="gender" value={customerForm.gender} onChange={handleChange} required >
+                                <select name="gender" value={form.gender} onChange={handleChange} required >
                                     <option value="">Select Gender</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
@@ -146,7 +166,7 @@ export default function AddCustomer({ show, onClose }) {
 
                             <div className="form-group">
                                 <label>Email Address</label>
-                                <input type="email" name="email" placeholder="example@gmail.com" value={customerForm.email} onChange={handleChange} />
+                                <input type="email" name="email" placeholder="example@gmail.com" value={form.email} onChange={handleChange} />
                             </div>
                         </div>
 
@@ -158,18 +178,18 @@ export default function AddCustomer({ show, onClose }) {
 
                         <div className="form-group mb-2">
                             <label>Address</label>
-                            <textarea rows="3" name="address" placeholder="Enter address" value={customerForm.address} onChange={handleChange} />
+                            <textarea rows="3" name="address" placeholder="Enter address" value={form.address} onChange={handleChange} />
                         </div>
 
                         <div className="popup-grid">
                             <div className="form-group">
                                 <label>City</label>
-                                <input type="text" name="city" placeholder="City" value={customerForm.city} onChange={handleChange} />
+                                <input type="text" name="city" placeholder="City" value={form.city} onChange={handleChange} />
                             </div>
 
                             <div className="form-group">
                                 <label>State</label>
-                                <input type="text" name="state" placeholder="State" value={customerForm.state} onChange={handleChange} />
+                                <input type="text" name="state" placeholder="State" value={form.state} onChange={handleChange} />
                             </div>
                         </div>
                     </div>
@@ -177,9 +197,9 @@ export default function AddCustomer({ show, onClose }) {
                     {/* Footer */}
                     <div className="popup-footer">
                         <button type="button" className="cancel-btn" onClick={handleCancel}>Cancel</button>
-                        <button type="submit" className="save-btn" onClick={handleSubmit}>
+                        <button type="submit" className="save-btn">
                             <i className="bi bi-check-circle-fill"></i>
-                            Save Customer
+                            {editMode ? "Update Customer" : "Save Customer"}
                         </button>
                     </div>
                 </form>

@@ -427,18 +427,21 @@
   justify-content: center;
   align-items: center;
   padding: 20px;
+  overflow: hidden;
   z-index: 9999;
 }
 
 .customer-popup {
   width: 850px;
   max-width: 100%;
-  max-height: 92vh;
+  max-height: calc(100vh - 40px);
   overflow-y: auto;
   background: #ffffff;
   border: 2px solid #e8f5e9;
   box-shadow: 0 20px 50px rgba(46, 125, 50, 0.15);
   animation: popupFade 0.3s ease;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
 }
 
 /* Scrollbar */
@@ -498,7 +501,7 @@
 }
 
 .customer-popup .popup-body {
-  padding: 10px 32px;
+  padding: 0 32px;
 }
 
 .customer-popup .section-title {
@@ -535,7 +538,7 @@
   border: 1px solid #dcedc8;
   border-radius: 16px;
   background: #fafdf9;
-  font-size: 15px;
+  font-size: 15px; 
   color: #424242;
   transition: all 0.3s ease;
   outline: none;
@@ -649,8 +652,8 @@
 @media (max-width: 768px) {
     .customer-popup {
         width: 100%;
-        max-height: 95vh;
-        border-radius: 24px;
+        max-height: 100vh;
+        border-radius: 20px;
     }
 
   .customer-popup .popup-header,
