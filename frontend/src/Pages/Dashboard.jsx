@@ -8,7 +8,7 @@ import AddPatient from "../Popup/TakeAppointment";
 import AddDoctor from "../Popup/AddDoctor";
 import AddStaff from "../Popup/AddStaff";
 import AddCustomer from "../Popup/AddCustomer";
-import { changePassword } from "../services/authService";
+import { changePassword, addStaff } from "../services/authService";
 import { subscribeCustomers } from "../services/customerService";
 import { subscribePatients } from "../services/patientService";
 
@@ -357,6 +357,7 @@ export default function Dashboard() {
         <AddStaff
           show={showStaffPopup}
           onClose={() => setShowStaffPopup(false)}
+          onSave={addStaff}
         />
 
         <AddCustomer

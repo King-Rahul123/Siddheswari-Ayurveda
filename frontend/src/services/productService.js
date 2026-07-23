@@ -1,61 +1,48 @@
-import {
-  collection,
-  doc,
-  setDoc,
-  serverTimestamp,
-  onSnapshot,
-  runTransaction,
-} from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { API_BASE_URL } from "../api/config";
 
 // Generate Next Product Code
 export const getNextProductCode = async () => {
-  const counterRef = doc(db, "counters", "product");
-
-  const nextId = await runTransaction(db, async (transaction) => {
-    const counterDoc = await transaction.get(counterRef);
-
-    let currentId = 0;
-
-    if (counterDoc.exists()) {
-      currentId = counterDoc.data().lastId || 0;
-    }
-
-    const newId = currentId + 1;
-
-    transaction.set(
-      counterRef,
-      {
-        lastId: newId,
-      },
-      { merge: true }
-    );
-
-    return newId;
-  });
-
-  return `PCM${nextId.toString().padStart(3, "0")}`;
+  const res = await fetch(`${API_BASE_URL}/products/next-code`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to generate product code");
+  return data.code;
 };
 
 // Add Product
 export const addProduct = async (product) => {
-  await setDoc(
-    doc(db, "products", product.itemCode),
-    {
-      ...product,
-      createdAt: serverTimestamp(),
-    }
-  );
+  const res = await fetch(`${API_BASE_URL}/products`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(product)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to add product");
+  return data;
 };
 
 // Real-time Products
 export const subscribeProducts = (callback) => {
-  return onSnapshot(collection(db, "products"), (snapshot) => {
-    const products = snapshot.docs.map((doc) => ({
-      docId: doc.id,
-      ...doc.data(),
-    }));
+  let isMounted = true;
 
-    callback(products);
-  });
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/products`);
+      if (res.ok) {
+        const products = await res.json();
+        if (isMounted) {
+          callback(products.map((p) => ({ docId: p.itemCode || p._id, ...p })));
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    }
+  };
+
+  fetchProducts();
+  const interval = setInterval(fetchProducts, 3000);
+
+  return () => {
+    isMounted = false;
+    clearInterval(interval);
+  };
 };

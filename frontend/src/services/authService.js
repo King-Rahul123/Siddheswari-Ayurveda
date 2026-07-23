@@ -1,32 +1,27 @@
-import { doc, getDoc, updateDoc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { API_BASE_URL } from "../api/config";
 
 export const login = async (username, password) => {
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
+  });
 
-    const userRef = doc(db, "staff", username);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Login failed");
+  }
 
-    const userSnap = await getDoc(userRef);
+  // Save login session
+  localStorage.setItem(
+    "loggedInUser",
+    JSON.stringify({
+      username: data.username,
+      ...data
+    })
+  );
 
-    if (!userSnap.exists()) {
-        throw new Error("Username not found");
-    }
-
-    const user = userSnap.data();
-
-    if (user.password !== password) {
-        throw new Error("Incorrect password");
-    }
-
-    // Save login session
-    localStorage.setItem(
-        "loggedInUser",
-        JSON.stringify({
-            username,
-            ...user,
-        })
-    );
-
-    return user;
+  return data;
 };
 
 export const logout = () => {
@@ -34,89 +29,79 @@ export const logout = () => {
   sessionStorage.clear();
 };
 
-export const changePassword = async (
-  username,
-  currentPassword,
-  newPassword
-) => {
-  const userRef = doc(db, "staff", username);
-
-  const userSnap = await getDoc(userRef);
-
-  if (!userSnap.exists()) {
-    throw new Error("User not found");
-  }
-
-  const user = userSnap.data();
-
-  // Check current password
-  if (user.password !== currentPassword) {
-    throw new Error("Current password is incorrect");
-  }
-
-  // Update password
-  await updateDoc(userRef, {
-    password: newPassword,
+export const changePassword = async (username, currentPassword, newPassword) => {
+  const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, currentPassword, newPassword })
   });
 
-  // Update localStorage
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to change password");
+  }
 
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "{}");
   localStorage.setItem(
     "loggedInUser",
     JSON.stringify({
       ...loggedInUser,
-      password: newPassword,
+      password: newPassword
     })
   );
 
   return true;
 };
 
-export const addStaff = async (staff) => {
-  const staffRef = doc(db, "staff", staff.username);
-
-  const staffSnap = await getDoc(staffRef);
-
-  if (staffSnap.exists()) {
-      throw new Error("Username already exists");
+export const getStaffList = async () => {
+  const res = await fetch(`${API_BASE_URL}/auth/staff`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to fetch staff list");
   }
+  return data;
+};
 
-  await setDoc(staffRef, {
-    name: staff.name.trim(),
-    email: staff.email.trim(),
-    phone: staff.phone.trim(),
-    password: staff.password,
-    role: staff.role,
-    createdAt: serverTimestamp(),
+export const addStaff = async (staff) => {
+  const res = await fetch(`${API_BASE_URL}/auth/staff`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(staff)
   });
 
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to add staff");
+  }
   return true;
 };
 
 export const updateStaff = async (staff) => {
-  const staffRef = doc(db, "staff", staff.username);
-
-  await updateDoc(staffRef, {
-    name: staff.name?.trim() || "",
-    email: staff.email?.trim() || "",
-    phone: staff.phone?.trim() || "",
-    role: staff.role || "",
-    salary: staff.salary || "",
-    address: staff.address || "",
+  const res = await fetch(`${API_BASE_URL}/auth/staff/${staff.username}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(staff)
   });
 
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to update staff");
+  }
   return true;
 };
 
 export const deleteStaff = async (username) => {
-  const staffRef = doc(db, "staff", username);
+  const res = await fetch(`${API_BASE_URL}/auth/staff/${username}`, {
+    method: "DELETE"
+  });
 
-  await deleteDoc(staffRef);
-
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to delete staff");
+  }
   return true;
 };
 
 export const resetPassword = () => {
-    throw new Error("Reset password is not implemented.");
+  throw new Error("Reset password is not implemented.");
 };

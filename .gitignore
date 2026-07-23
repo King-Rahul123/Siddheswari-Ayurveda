@@ -1,0 +1,29 @@
+# Dependencies
+node_modules
+.venv
+venv
+env
+ENV
+__pycache__
+*.pyc
+
+# Environment & local config
+.env
+.env.local
+.env.*.local
+*.log
+
+# Build outputs
+dist
+dist-ssr
+build
+
+# IDE & OS files
+.vscode
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

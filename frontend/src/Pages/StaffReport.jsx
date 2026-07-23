@@ -10,9 +10,7 @@ import "../CSS/Sale.css";
 import "../CSS/Staff.css";
 import "../CSS/Card.css";
 
-import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase/firebase";
-import { addStaff, updateStaff, deleteStaff } from "../services/authService";
+import { getStaffList, addStaff, updateStaff, deleteStaff } from "../services/authService";
 
 export default function StaffReport() {
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
@@ -30,25 +28,27 @@ export default function StaffReport() {
     const [editMode, setEditMode] = useState(false);
     
     useEffect(() => {
-        const unsubscribe = onSnapshot(
-            collection(db, "staff"),
-            (snapshot) => {
-                const data = snapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    username: doc.id,
-                    ...doc.data(),
-                }));
-
-                setStaffList(data);
-                setLoading(false);
-            },
-            (error) => {
+        let isMounted = true;
+        const fetchStaff = async () => {
+            try {
+                const data = await getStaffList();
+                if (isMounted) {
+                    setStaffList(data.map(item => ({ id: item.username || item._id, ...item })));
+                    setLoading(false);
+                }
+            } catch (error) {
                 console.error(error);
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
-        );
+        };
 
-        return () => unsubscribe();
+        fetchStaff();
+        const interval = setInterval(fetchStaff, 3000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, []);
 
     const filteredStaff = useMemo(() => {
