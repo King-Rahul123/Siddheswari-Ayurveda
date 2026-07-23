@@ -1,92 +1,56 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  writeBatch,
-  serverTimestamp,
-  onSnapshot,
-  runTransaction,
-} from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { API_BASE_URL } from "../api/config";
 
 // Show next bill number without incrementing
 export const getCurrentSaleId = async () => {
-  const counterRef = doc(db, "counters", "sale");
-  const counterDoc = await getDoc(counterRef);
-  let currentId = 0;
-  if (counterDoc.exists()) {
-    currentId = counterDoc.data().lastId || 0;
-  }
-  const nextId = currentId + 1;
-  
-  return `SDA-${nextId.toString().padStart(5, "0")}`;
+  const res = await fetch(`${API_BASE_URL}/sales/current-id`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to fetch current sale ID");
+  return data.saleId;
 };
 
 // Generate Next Sale ID
 export const getNextSaleId = async () => {
-  const counterRef = doc(db, "counters", "sale");
-  const nextId = await runTransaction(db, async (transaction) => {
-    const counterDoc = await transaction.get(counterRef);
-    let currentId = 0;
-
-    if (counterDoc.exists()) {
-      currentId = counterDoc.data().lastId || 0;
-    }
-    const newId = currentId + 1;
-    transaction.set(
-      counterRef,
-      {
-        lastId: newId,
-      },
-      { merge: true }
-    );
-
-    return newId;
-  });
-
-  return `SDA-${nextId.toString().padStart(5, "0")}`;
+  const res = await fetch(`${API_BASE_URL}/sales/next-id`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to generate sale ID");
+  return data.saleId;
 };
 
 // Save Sale with Items
 export const addSale = async (saleData, items) => {
-  const saleRef = doc(db, "sales", saleData.saleId);
-
-  const batch = writeBatch(db);
-
-  // Sale Header
-  batch.set(saleRef, {
-    ...saleData,
-    createdAt: serverTimestamp(),
+  const res = await fetch(`${API_BASE_URL}/sales`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ saleData, items })
   });
-
-  // Sale Items
-  items.forEach((item, index) => {
-    const itemRef = doc(
-      collection(db, "sales", saleData.saleId, "items"),
-      (index + 1).toString()
-    );
-
-    batch.set(itemRef, {
-      itemCode: item.itemCode,
-      batch: item.batch,
-      qty: Number(item.qty),
-      rate: Number(item.rate),
-      discount: Number(item.discount || 0),
-      amount: Number(item.amount),
-    });
-  });
-
-  await batch.commit();
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to save sale");
+  return data;
 };
 
 // Real-time Sales
 export const subscribeSales = (callback) => {
-  return onSnapshot(collection(db, "sales"), (snapshot) => {
-    const sales = snapshot.docs.map((doc) => ({
-      docId: doc.id,
-      ...doc.data(),
-    }));
+  let isMounted = true;
 
-    callback(sales);
-  });
+  const fetchSales = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/sales`);
+      if (res.ok) {
+        const sales = await res.json();
+        if (isMounted) {
+          callback(sales.map((s) => ({ docId: s.saleId || s._id, ...s })));
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching sales:", err);
+    }
+  };
+
+  fetchSales();
+  const interval = setInterval(fetchSales, 3000);
+
+  return () => {
+    isMounted = false;
+    clearInterval(interval);
+  };
 };

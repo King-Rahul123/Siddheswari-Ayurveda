@@ -35,12 +35,18 @@ export default function Customer() {
       "Created On",
     ];
 
+    const formatCustomerDate = (dt) => {
+      if (!dt) return "-";
+      if (typeof dt.toDate === "function") return dt.toDate().toLocaleDateString("en-IN");
+      try { return new Date(dt).toLocaleDateString("en-IN"); } catch(e) { return "-"; }
+    };
+
     const rows = filteredCustomers.map((customer) => [
-      customer.customerCode,
-      customer.name,
-      customer.gender,
-      customer.phone,
-      customer.createdAt ? customer.createdAt.toDate().toLocaleDateString("en-IN") : "-",
+      customer.customerCode || "",
+      customer.name || customer.customerName || "",
+      customer.gender || "",
+      customer.phone || "",
+      formatCustomerDate(customer.createdAt),
     ]);
 
     const csvContent = [
@@ -61,13 +67,19 @@ export default function Customer() {
   };
 
   const exportToExcel = () => {
+    const formatCustomerDate = (dt) => {
+      if (!dt) return "-";
+      if (typeof dt.toDate === "function") return dt.toDate().toLocaleDateString("en-IN");
+      try { return new Date(dt).toLocaleDateString("en-IN"); } catch(e) { return "-"; }
+    };
+
     const excelData = filteredCustomers.map((customer, index) => ({
       Sl: index + 1,
-      "Customer ID": customer.customerCode,
-      Name: customer.name,
-      Gender: customer.gender,
-      Phone: customer.phone,
-      "Created On": customer.createdAt ? customer.createdAt.toDate().toLocaleDateString("en-IN") : "-",
+      "Customer ID": customer.customerCode || "",
+      Name: customer.name || customer.customerName || "",
+      Gender: customer.gender || "",
+      Phone: customer.phone || "",
+      "Created On": formatCustomerDate(customer.createdAt),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(excelData);
@@ -89,18 +101,19 @@ export default function Customer() {
 
   useEffect(() => {
     const unsubscribe = subscribeCustomers((data) => {
-      setCustomers(data);
+      setCustomers(data || []);
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  const filteredCustomers = customers.filter(
-    (customer) =>
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone.includes(searchTerm)
-  );
+  const filteredCustomers = (customers || []).filter((customer) => {
+    const custName = (customer.name || customer.customerName || "").toLowerCase();
+    const custPhone = (customer.phone || "").toString();
+    const term = (searchTerm || "").toLowerCase();
+    return custName.includes(term) || custPhone.includes(term);
+  });
 
   const handleDelete = async (customerCode) => {
     const confirmDelete = window.confirm(
@@ -214,16 +227,16 @@ export default function Customer() {
 
                         <td className="text-center">
                           <div className="customer-info">
-                            <h6>{customer.name}</h6>
+                            <h6>{customer.name || customer.customerName || "-"}</h6>
                           </div>
                         </td>
 
-                        <td className="text-center text-sm">{customer.customerCode}</td>
-                        <td className="text-center text-sm">{customer.gender}</td>
-                        <td className="text-center text-sm">{customer.phone}</td>
+                        <td className="text-center text-sm">{customer.customerCode || "-"}</td>
+                        <td className="text-center text-sm">{customer.gender || "-"}</td>
+                        <td className="text-center text-sm">{customer.phone || "-"}</td>
                         <td className="text-center text-sm">
                           {customer.createdAt
-                            ? customer.createdAt.toDate().toLocaleDateString("en-IN")
+                            ? (typeof customer.createdAt.toDate === "function" ? customer.createdAt.toDate().toLocaleDateString("en-IN") : new Date(customer.createdAt).toLocaleDateString("en-IN"))
                             : "-"}
                         </td>
 

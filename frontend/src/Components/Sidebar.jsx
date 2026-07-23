@@ -49,7 +49,7 @@ export default function Sidebar() {
       <div>
         <div className="logo">
           <img
-            src="/Logo.jpg"
+            src="/logo.png"
             alt="Logo"
             className="w-16 h-16 rounded-full"
           />

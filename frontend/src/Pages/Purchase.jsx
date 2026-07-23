@@ -26,25 +26,33 @@ export default function Purchase() {
     };
 
     const filteredPurchase = purchaseData.filter((purchase) => {
+        const supplierName = purchase.companyName || purchase.supplier || "";
+        const invNo = purchase.invoiceNo || "";
+        const pId = purchase.purchaseId || "";
+        const query = search.toLowerCase();
 
         const matchesSearch =
-            (purchase.companyName || "")
-                .toLowerCase()
-                .includes(search.toLowerCase()) ||
-            (purchase.invoiceNo || "")
-                .toLowerCase()
-                .includes(search.toLowerCase()) ||
-            (purchase.purchaseId || "")
-                .toLowerCase()
-                .includes(search.toLowerCase());
+            supplierName.toLowerCase().includes(query) ||
+            invNo.toLowerCase().includes(query) ||
+            pId.toLowerCase().includes(query);
 
-        const matchesDate =
-            selectedDate === "" ||
-            purchase.invoiceDate === selectedDate;
+        const pDate = purchase.invoiceDate || purchase.date || "";
+        const matchesDate = selectedDate === "" || pDate === selectedDate;
 
         return matchesSearch && matchesDate;
-
     });
+
+    const formatPurchaseDate = (dateVal) => {
+        if (!dateVal) return "-";
+        try {
+            const d = typeof dateVal.toDate === "function" ? dateVal.toDate() : new Date(dateVal);
+            return isNaN(d.getTime()) ? String(dateVal) : d.toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+            });
+        } catch(e) { return String(dateVal); }
+    };
 
     const exportToExcel = () => {
         const exportData = filteredPurchase.map((purchase) => ({
@@ -166,20 +174,11 @@ export default function Purchase() {
                                     </tr>
                                 ) : (
                                 filteredPurchase.map((purchase) => (
-                                    <tr key={purchase.purchaseId}>
-                                        <td>{purchase.purchaseId}</td>
-                                        <td className="font-bold">{purchase.companyName}</td>
-                                        <td>
-                                            {new Date(purchase.invoiceDate).toLocaleDateString(
-                                                "en-GB",
-                                                {
-                                                    day: "2-digit",
-                                                    month: "short",
-                                                    year: "numeric",
-                                                }
-                                            )}
-                                        </td>
-                                        <td>₹{purchase.totalAmount}</td>
+                                    <tr key={purchase.purchaseId || purchase._id}>
+                                        <td>{purchase.purchaseId || "-"}</td>
+                                        <td className="font-bold">{purchase.companyName || purchase.supplier || "-"}</td>
+                                        <td>{formatPurchaseDate(purchase.invoiceDate || purchase.date || purchase.createdAt)}</td>
+                                        <td>₹{Number(purchase.totalAmount || purchase.totalamount || 0).toFixed(2)}</td>
 
                                         <td className="gap-2 flex justify-center">
                                             <button className="download-btn" onClick={() => setShowExportPopup(true)}>

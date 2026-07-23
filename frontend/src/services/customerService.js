@@ -1,96 +1,78 @@
-import { 
-  collection,
-  doc, 
-  setDoc, 
-  serverTimestamp, 
-  onSnapshot, 
-  runTransaction, 
-  query, 
-  where, 
-  getDocs, 
-  updateDoc, 
-  deleteDoc
-} from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { API_BASE_URL } from "../api/config";
 
 // Generate next Customer Code
 export const getNextCustomerCode = async () => {
-  const counterRef = doc(db, "counters", "customer");
-
-  const nextId = await runTransaction(db, async (transaction) => {
-    const counterDoc = await transaction.get(counterRef);
-
-    let currentId = 0;
-
-    if (counterDoc.exists()) {
-      currentId = counterDoc.data().lastId || 0;
-    }
-
-    const newId = currentId + 1;
-
-    transaction.set(
-      counterRef,
-      {
-        lastId: newId,
-      },
-      { merge: true }
-    );
-
-    return newId;
-  });
-
-  return `CUS${nextId.toString().padStart(4, "0")}`;
+  const res = await fetch(`${API_BASE_URL}/customers/next-code`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to generate customer code");
+  return data.code;
 };
 
 // Add Customer
 export const addCustomer = async (customer) => {
-  await setDoc(
-    doc(db, "customer", customer.customerCode),
-    {
-      ...customer,
-      createdAt: serverTimestamp(),
-    }
-  );
+  const res = await fetch(`${API_BASE_URL}/customers`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(customer)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to add customer");
+  return data;
 };
 
 // Check customer by phone number
 export const checkCustomerPhone = async (phone) => {
-  const q = query(
-    collection(db, "customer"),
-    where("phone", "==", phone)
-  );
-
-  const snapshot = await getDocs(q);
-
-  if (!snapshot.empty) {
-    return snapshot.docs[0].data();
-  }
-
-  return null;
+  const res = await fetch(`${API_BASE_URL}/customers/check-phone/${encodeURIComponent(phone)}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to check phone");
+  return data;
 };
 
 // Update Customer
 export const updateCustomer = async (customerCode, customerData) => {
-  const customerRef = doc(db, "customer", customerCode);
-
-  await updateDoc(customerRef, {
-    ...customerData,
+  const res = await fetch(`${API_BASE_URL}/customers/${encodeURIComponent(customerCode)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(customerData)
   });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to update customer");
+  return data;
 };
 
 // Delete Customer
 export const deleteCustomer = async (customerCode) => {
-  await deleteDoc(doc(db, "customer", customerCode));
+  const res = await fetch(`${API_BASE_URL}/customers/${encodeURIComponent(customerCode)}`, {
+    method: "DELETE"
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to delete customer");
+  return data;
 };
 
-// Real-time customers
+// Real-time customers (polling wrapper)
 export const subscribeCustomers = (callback) => {
-  return onSnapshot(collection(db, "customer"), (snapshot) => {
-    const customers = snapshot.docs.map((doc) => ({
-      docId: doc.id,
-      ...doc.data(),
-    }));
+  let isMounted = true;
 
-    callback(customers);
-  });
+  const fetchCustomers = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/customers`);
+      if (res.ok) {
+        const customers = await res.json();
+        if (isMounted) {
+          callback(customers.map((c) => ({ docId: c.customerCode || c._id, ...c })));
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching customers:", err);
+    }
+  };
+
+  fetchCustomers();
+  const interval = setInterval(fetchCustomers, 3000);
+
+  return () => {
+    isMounted = false;
+    clearInterval(interval);
+  };
 };

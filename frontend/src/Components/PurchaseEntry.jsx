@@ -38,7 +38,7 @@ export default function PurchaseEntry() {
     const navigate = useNavigate();
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
     const tableRefs = useRef([]);
-    const [rows,setRows]=useState(createRows);
+    const [rows, setRows] = useState(createRows);
 
     const popupCompanyRef = useRef(null);
     const companyRef = useRef(null);
@@ -54,6 +54,8 @@ export default function PurchaseEntry() {
     const [showAddProductPopup, setShowAddProductPopup] = useState(false);
     const [showAddCompanyPopup, setShowAddCompanyPopup] = useState(false);
     const [showProductPopup, setShowProductPopup] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showPreviewModal, setShowPreviewModal] = useState(false);
     const [selectedRow, setSelectedRow] = useState(0);
 
     const [activeField, setActiveField] = useState("");
@@ -64,6 +66,7 @@ export default function PurchaseEntry() {
         itemCode: "",
         hsn: "",
         gst: "",
+        mrp: "",
         unit: "",
         minStock: "",
         discount: "",
@@ -92,23 +95,19 @@ export default function PurchaseEntry() {
     };
 
     const moveNext = (row, col) => {
-
         if (col < columns.length - 1) {
             tableRefs.current[row]?.[col + 1]?.focus();
         } else if (row < rows.length - 1) {
             tableRefs.current[row + 1]?.[0]?.focus();
         }
-
     };
 
     const movePrevious = (row, col) => {
-
         if (col > 0) {
             tableRefs.current[row]?.[col - 1]?.focus();
         } else if (row > 0) {
             tableRefs.current[row - 1]?.[columns.length - 1]?.focus();
         }
-
     };
 
     const handleTableKey = (e, row, col) => {
@@ -151,7 +150,6 @@ export default function PurchaseEntry() {
         setRows(createRows());
         tableRefs.current[0]?.[0]?.focus();
     }, []);
-
 
     const handlePopupKeyDown = (event, nextRef, isLastField = false) => {
         if (event.key !== "Enter") return;
@@ -196,30 +194,32 @@ export default function PurchaseEntry() {
             return;
         }
 
-        // Save current data
         const product = { ...newProduct };
-
-        // Close popup immediately
         closeAddProduct();
 
-        // Clear form
         setNewProduct({
             companyName: "",
             productName: "",
             itemCode: "",
             hsn: "",
             gst: "",
+            mrp: "",
             unit: "",
             minStock: "",
             discount: "",
         });
 
         try {
-            const itemCode = await getNextProductCode();
+            const itemCode = product.itemCode?.trim() || await getNextProductCode();
 
             await addProduct({
-                ...product,
+                productName: product.productName,
                 itemCode,
+                hsnCode: product.hsn || "",
+                gstRate: Number(product.gst || 0),
+                mrp: Number(product.mrp || 0),
+                minStock: Number(product.minStock || 0),
+                discount: Number(product.discount || 0)
             });
 
             toast.success("Product Added");
@@ -263,11 +263,33 @@ export default function PurchaseEntry() {
         });
     }, []);
 
-    const handleSubmit = useCallback(async (e) => {
-        if (e) e.preventDefault();
+    const triggerSaveFlow = useCallback(() => {
+        const validItems = rows.filter((r) => r.productName && r.productName.trim() !== "");
+        if (validItems.length === 0) {
+            toast.error("Please add at least one product before saving.");
+            return;
+        }
+        setShowConfirmModal(true);
+    }, [rows]);
+
+    const executeSavePurchase = useCallback(async () => {
         try {
             const purchaseId = await getNextPurchaseId();
-            const items = rows.filter((r) => r.productName !== "");
+            const items = rows
+                .filter((r) => r.productName && r.productName.trim() !== "")
+                .map((r) => {
+                    const code = r.itemCode || r.productId || "";
+                    return {
+                        ...r,
+                        itemCode: code,
+                        productId: code,
+                        productName: r.productName.trim(),
+                        qty: Number(r.qty || 0),
+                        expiryDate: r.expiry,
+                        amount: Number(r.qty || 0) * Number(r.mrp || 0)
+                    };
+                });
+
             const totalQty = items.reduce(
                 (sum, item) => sum + Number(item.qty || 0),
                 0
@@ -277,18 +299,20 @@ export default function PurchaseEntry() {
                     sum + Number(item.qty || 0) * Number(item.mrp || 0),
                 0
             );
+
             const purchase = {
                 purchaseId,
                 companyName: companySearchText,
-                companyCode: "",
+                supplier: companySearchText,
                 invoiceNo,
                 invoiceDate,
+                date: invoiceDate,
                 totalItems: items.length,
                 totalQty,
                 totalAmount,
                 createdBy: loggedInUser?.username || "",
             };
-            
+
             await addPurchase(purchase, items);
 
             for (const item of items) {
@@ -301,23 +325,24 @@ export default function PurchaseEntry() {
                     purchaseId: purchase.purchaseId,
                     batch: item.batch,
                     expiry: item.expiry,
+                    expiryDate: item.expiry,
                     mrp: item.mrp,
-                    purchaseRate: item.purchaseRate,
-                    saleRate: item.saleRate,
-                    qty: Number(item.qty) + Number(item.freeQty || 0),
-                    freeQty: item.freeQty || 0,
+                    qty: Number(item.qty || 0),
                     gst: item.gst,
                     hsn: item.hsn,
                 });
             }
 
-            toast.success("Purchase Saved");
+            toast.success("Purchase Saved Successfully!");
+            setShowConfirmModal(false);
+            setShowPreviewModal(false);
             clearForm();
+            navigate("/dashboard/purchase");
         } catch (err) {
-            console.log(err);
+            console.error(err);
             toast.error("Failed to save purchase");
         }
-    }, [rows, companySearchText, invoiceNo, invoiceDate, clearForm, loggedInUser]);
+    }, [rows, companySearchText, invoiceNo, invoiceDate, clearForm, loggedInUser, navigate]);
 
     useEffect(() => {
         const shortcuts = (e) => {
@@ -339,22 +364,27 @@ export default function PurchaseEntry() {
 
             if (e.key === "End") {
                 e.preventDefault();
-                handleSubmit();
+                triggerSaveFlow();
             }
 
             if (e.key === "Escape") {
                 e.preventDefault();
-                // Close Add Product popup first
+                if (showConfirmModal) {
+                    setShowConfirmModal(false);
+                    return;
+                }
+                if (showPreviewModal) {
+                    setShowPreviewModal(false);
+                    return;
+                }
                 if (showAddProductPopup) {
                     closeAddProduct();
                     return;
                 }
-                // Close Add Company Popup
                 if (showAddCompanyPopup) {
                     closeAddCompany();
                     return;
                 }
-
                 if (showCompanySearch) {
                     setShowCompanySearch(false);
                     requestAnimationFrame(() => {
@@ -362,7 +392,6 @@ export default function PurchaseEntry() {
                     });
                     return;
                 }
-                // Close Product Search popup
                 if (showProductPopup) {
                     setShowProductPopup(false);
                     requestAnimationFrame(() => {
@@ -370,7 +399,6 @@ export default function PurchaseEntry() {
                     });
                     return;
                 }
-                // Otherwise go back
                 navigate(-1);
             }
         };
@@ -380,9 +408,11 @@ export default function PurchaseEntry() {
         return () => {
             window.removeEventListener("keydown", shortcuts);
         };
-    }, [clearForm, 
-        handleSubmit, 
+    }, [
+        triggerSaveFlow,
         navigate, 
+        showConfirmModal,
+        showPreviewModal,
         showAddProductPopup, 
         showAddCompanyPopup, 
         activeField, 
@@ -451,6 +481,9 @@ export default function PurchaseEntry() {
         }
     };
 
+    const activeRowsCount = rows.filter((r) => r.productName && r.productName.trim() !== "").length;
+    const activeTotalAmount = rows.filter((r) => r.productName && r.productName.trim() !== "").reduce((sum, item) => sum + Number(item.qty || 0) * Number(item.mrp || 0), 0);
+
     return (
         <div className="dashboard">
             <Sidebar />
@@ -466,13 +499,13 @@ export default function PurchaseEntry() {
                             </div>
                             <div className="text-xs md:flex gap-4 hidden">
                                 <span><strong>Enter:</strong> Next Field</span>
-                                <span><strong>F2:</strong> New Product</span>
+                                <span><strong>F2:</strong> New Entry</span>
                                 <span><strong>End:</strong> Save</span>
                                 <span><strong>Esc:</strong> Exit</span>
                             </div>
                         </div>
 
-                        <form>
+                        <form onSubmit={(e) => { e.preventDefault(); triggerSaveFlow(); }}>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <div className="form-group">
                                     <label>Company Name</label>
@@ -492,8 +525,22 @@ export default function PurchaseEntry() {
                                                 e.preventDefault();
                                                 e.stopPropagation();
 
-                                                lastFocusedCell.current = e.target;
-                                                setShowCompanySearch(true);
+                                                if (companySearchText.trim() === "") {
+                                                    setShowCompanySearch(true);
+                                                    return;
+                                                }
+                                                const match = companies.find(
+                                                    (c) =>
+                                                        c.companyName.toLowerCase() ===
+                                                        companySearchText.toLowerCase()
+                                                );
+
+                                                if (match) {
+                                                    setCompanySearchText(match.companyName);
+                                                    invoiceRef.current?.focus();
+                                                } else {
+                                                    setShowCompanySearch(true);
+                                                }
                                             }
                                         }}
                                     />
@@ -507,10 +554,10 @@ export default function PurchaseEntry() {
                                         placeholder="Enter invoice number"
                                         value={invoiceNo}
                                         onChange={(e) => setInvoiceNo(e.target.value)}
-                                        onKeyDown={(e)=>{
-                                            if(e.key==="Enter"){
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter") {
                                                 e.preventDefault();
-                                                dateRef.current.focus();
+                                                dateRef.current?.focus();
                                             }
                                         }}
                                     />
@@ -523,10 +570,9 @@ export default function PurchaseEntry() {
                                         type="date"
                                         value={invoiceDate}
                                         onChange={(e) => setInvoiceDate(e.target.value)}
-                                        onKeyDown={(e)=>{
-                                            if(e.key==="Enter"){
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter") {
                                                 e.preventDefault();
-                                                // If empty, automatically set today's date
                                                 if (!invoiceDate) {
                                                     setInvoiceDate(getToday());
                                                 }
@@ -546,9 +592,9 @@ export default function PurchaseEntry() {
                                             <th>HSN</th>
                                             <th>Batch</th>
                                             <th>Qty</th>
-                                            <th>Expiry</th>
+                                            <th>Expiry (MM/YY)</th>
                                             <th>MRP</th>
-                                            <th>GST</th>
+                                            <th>GST %</th>
                                             <th>Dis %</th>
                                         </tr>
                                     </thead>
@@ -586,24 +632,14 @@ export default function PurchaseEntry() {
                                                                 let value = e.target.value;
 
                                                                 if (column === "expiry") {
-                                                                    // Only numbers
                                                                     value = value.replace(/\D/g, "");
-                                                                    // Maximum 4 digits (MMYY)
                                                                     value = value.slice(0, 4);
-                                                                    // Validate month
                                                                     if (value.length >= 2) {
                                                                         let month = parseInt(value.substring(0, 2), 10);
-                                                                        if (month > 12) {
-                                                                            month = 12;
-                                                                        }
-                                                                        if (month < 1 && value.length === 2) {
-                                                                            month = 1;
-                                                                        }
-                                                                        value =
-                                                                            month.toString().padStart(2, "0") +
-                                                                            value.substring(2);
+                                                                        if (month > 12) month = 12;
+                                                                        if (month < 1 && value.length === 2) month = 1;
+                                                                        value = month.toString().padStart(2, "0") + value.substring(2);
                                                                     }
-                                                                    // Add '/'
                                                                     if (value.length > 2) {
                                                                         value = value.substring(0, 2) + "/" + value.substring(2);
                                                                     }
@@ -635,6 +671,19 @@ export default function PurchaseEntry() {
                                     </tbody>
                                 </table>
                             </div>
+
+                            <div className="flex justify-between items-center mt-4 p-3 bg-white rounded shadow">
+                                <div className="text-sm font-semibold text-gray-700">
+                                    Total Items: {activeRowsCount} | Net Total: ₹{activeTotalAmount.toFixed(2)}
+                                </div>
+                                <button
+                                    type="button"
+                                    className="save-btn bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded font-semibold transition"
+                                    onClick={triggerSaveFlow}
+                                >
+                                    Save Purchase (End)
+                                </button>
+                            </div>
                         </form>
                     </div>
 
@@ -658,7 +707,7 @@ export default function PurchaseEntry() {
 
                     <AddCompany
                         isOpen={showAddCompanyPopup}
-                        onClose={(closeAddCompany)}
+                        onClose={closeAddCompany}
                         newCompany={newCompany}
                         onChange={handleCompanyChange}
                         onSave={saveCompany}
@@ -701,14 +750,163 @@ export default function PurchaseEntry() {
                         onSelect={(product) => {
                             updateCell(selectedRow, "productId", product.itemCode);
                             updateCell(selectedRow, "productName", product.productName);
-                            updateCell(selectedRow, "gst", product.gst);
-                            updateCell(selectedRow, "hsn", product.hsn);
+                            updateCell(selectedRow, "gst", product.gst || product.gstRate || "");
+                            updateCell(selectedRow, "hsn", product.hsn || product.hsnCode || "");
+                            if (product.batch) {
+                                updateCell(selectedRow, "batch", product.batch);
+                            }
+                            if (product.expiry) {
+                                updateCell(selectedRow, "expiry", product.expiry);
+                            }
+                            if (product.mrp || product.price) {
+                                updateCell(selectedRow, "mrp", product.mrp || product.price);
+                            }
+                            if (product.discount) {
+                                updateCell(selectedRow, "discount", product.discount);
+                            }
                             setShowProductPopup(false);
                             setTimeout(() => {
-                                tableRefs.current[selectedRow]?.[2]?.focus(); // Batch
+                                tableRefs.current[selectedRow]?.[2]?.focus();
                             }, 100);
                         }}
                     />
+
+                    {/* Confirmation Modal */}
+                    {showConfirmModal && (
+                        <div className="popup-overlay flex items-center justify-center bg-black/50 fixed inset-0 z-50">
+                            <div className="popup-box max-w-md w-full bg-white rounded-lg shadow-2xl p-6 border">
+                                <div className="popup-header flex justify-between items-center border-b pb-3 mb-4">
+                                    <h4 className="text-lg font-bold text-gray-800 m-0">Confirm Purchase Entry</h4>
+                                    <button
+                                        type="button"
+                                        className="btn-close text-gray-500 hover:text-gray-800 text-xl font-bold"
+                                        onClick={() => setShowConfirmModal(false)}
+                                    >&times;</button>
+                                </div>
+                                <div className="popup-body space-y-3 mb-6">
+                                    <p className="text-gray-600 text-sm">
+                                        Do you want to save this purchase entry or preview the details first?
+                                    </p>
+                                    <div className="bg-gray-50 p-3 rounded text-sm space-y-1 border">
+                                        <div><strong>Supplier:</strong> {companySearchText || "N/A"}</div>
+                                        <div><strong>Invoice No:</strong> {invoiceNo || "N/A"}</div>
+                                        <div><strong>Date:</strong> {invoiceDate}</div>
+                                        <div><strong>Total Items:</strong> {activeRowsCount}</div>
+                                        <div><strong>Total Amount:</strong> ₹{activeTotalAmount.toFixed(2)}</div>
+                                    </div>
+                                </div>
+                                <div className="popup-footer flex justify-end gap-3 pt-3 border-t">
+                                    <button
+                                        type="button"
+                                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium text-sm"
+                                        onClick={() => setShowConfirmModal(false)}
+                                    >
+                                        Edit Entry
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium text-sm"
+                                        onClick={() => {
+                                            setShowConfirmModal(false);
+                                            setShowPreviewModal(true);
+                                        }}
+                                    >
+                                        Preview
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 font-medium text-sm"
+                                        onClick={executeSavePurchase}
+                                    >
+                                        Continue & Save
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Preview Modal */}
+                    {showPreviewModal && (
+                        <div className="popup-overlay flex items-center justify-center bg-black/50 fixed inset-0 z-50">
+                            <div className="popup-box max-w-4xl w-full bg-white rounded-lg shadow-2xl p-6 border max-h-[90vh] overflow-y-auto">
+                                <div className="popup-header flex justify-between items-center border-b pb-3 mb-4">
+                                    <h4 className="text-xl font-bold text-gray-800 m-0">Purchase Entry Preview</h4>
+                                    <button
+                                        type="button"
+                                        className="btn-close text-gray-500 hover:text-gray-800 text-xl font-bold"
+                                        onClick={() => setShowPreviewModal(false)}
+                                    >&times;</button>
+                                </div>
+                                <div className="popup-body space-y-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded text-sm border">
+                                        <div><strong>Supplier:</strong> {companySearchText || "-"}</div>
+                                        <div><strong>Invoice No:</strong> {invoiceNo || "-"}</div>
+                                        <div><strong>Invoice Date:</strong> {invoiceDate}</div>
+                                        <div><strong>Created By:</strong> {loggedInUser?.username || "Admin"}</div>
+                                    </div>
+
+                                    <div className="table-responsive">
+                                        <table className="w-full text-left text-sm border-collapse border">
+                                            <thead>
+                                                <tr className="bg-emerald-100 text-emerald-900 border-b">
+                                                    <th className="p-2 border">#</th>
+                                                    <th className="p-2 border">Product Name</th>
+                                                    <th className="p-2 border">HSN</th>
+                                                    <th className="p-2 border">Batch</th>
+                                                    <th className="p-2 border">Expiry (MM/YY)</th>
+                                                    <th className="p-2 border text-right">Qty</th>
+                                                    <th className="p-2 border text-right">MRP (₹)</th>
+                                                    <th className="p-2 border text-right">GST %</th>
+                                                    <th className="p-2 border text-right">Total (₹)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {rows.filter(r => r.productName && r.productName.trim() !== "").map((item, idx) => (
+                                                    <tr key={idx} className="border-b hover:bg-gray-50">
+                                                        <td className="p-2 border">{idx + 1}</td>
+                                                        <td className="p-2 border font-semibold">{item.productName}</td>
+                                                        <td className="p-2 border">{item.hsn || "-"}</td>
+                                                        <td className="p-2 border">{item.batch || "-"}</td>
+                                                        <td className="p-2 border">{item.expiry || "-"}</td>
+                                                        <td className="p-2 border text-right">{item.qty || 0}</td>
+                                                        <td className="p-2 border text-right">₹{Number(item.mrp || 0).toFixed(2)}</td>
+                                                        <td className="p-2 border text-right">{item.gst || 0}%</td>
+                                                        <td className="p-2 border text-right font-bold">
+                                                            ₹{(Number(item.qty || 0) * Number(item.mrp || 0)).toFixed(2)}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="flex justify-between items-center bg-emerald-50 p-4 rounded text-emerald-950 font-semibold border border-emerald-200">
+                                        <div>Total Items: {rows.filter(r => r.productName && r.productName.trim() !== "").length}</div>
+                                        <div>Total Quantity: {rows.filter(r => r.productName && r.productName.trim() !== "").reduce((sum, i) => sum + Number(i.qty || 0), 0)}</div>
+                                        <div className="text-lg text-emerald-700">
+                                            Grand Total: ₹{activeTotalAmount.toFixed(2)}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="popup-footer flex justify-end gap-3 pt-4 border-t mt-4">
+                                    <button
+                                        type="button"
+                                        className="px-5 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium text-sm"
+                                        onClick={() => setShowPreviewModal(false)}
+                                    >
+                                        Edit Entry
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="px-5 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 font-medium text-sm"
+                                        onClick={executeSavePurchase}
+                                    >
+                                        Confirm & Save Purchase
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </main>
             </div>
         </div>

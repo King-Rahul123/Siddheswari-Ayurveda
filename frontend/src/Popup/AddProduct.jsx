@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 export default function AddProduct({
     isOpen,
@@ -21,13 +21,33 @@ export default function AddProduct({
     const [showCompanySearch, setShowCompanySearch] = useState(false);
     const [selectedCompanyIndex, setSelectedCompanyIndex] = useState(0);
     
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleEscape = (e) => {
+            if (e.key === "Escape") {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof e.stopImmediatePropagation === "function") {
+                    e.stopImmediatePropagation();
+                }
+                onClose();
+            }
+        };
+
+        window.addEventListener("keydown", handleEscape, true);
+        return () => {
+            window.removeEventListener("keydown", handleEscape, true);
+        };
+    }, [isOpen, onClose]);
+
     const filteredCompanies = useMemo(() => {
-        if (!companySearch.trim()) return companies;
+        if (!companySearch.trim()) return companies || [];
     
-            return companies.filter((company) =>
-                company.companyName
-            .toLowerCase()
-            .includes(companySearch.toLowerCase())
+        return (companies || []).filter((company) =>
+            (company.companyName || "")
+                .toLowerCase()
+                .includes(companySearch.toLowerCase())
         );
     }, [companies, companySearch]);
 
@@ -44,90 +64,12 @@ export default function AddProduct({
 
 					<div className="popup-body">
 						<div className="form-group">
-							<label>Company Name</label>
-							<input
-								ref={popupCompanyRef}
-								name="companyName"
-								value={newProduct.companyName}
-								onChange={(e) => {
-                                    onChange(e);
-                                    setCompanySearch(e.target.value);
-                                    setShowCompanySearch(true);
-                                    setSelectedCompanyIndex(0);
-                                }}
-								onKeyDown={(e) => {
-									if (showCompanySearch) {
-										if (e.key === "ArrowDown") {
-											e.preventDefault();
-											setSelectedCompanyIndex((prev) =>
-												Math.min(prev + 1, filteredCompanies.length - 1)
-											);
-											return;
-										}
-										if (e.key === "ArrowUp") {
-											e.preventDefault();
-											setSelectedCompanyIndex((prev) =>
-												Math.max(prev - 1, 0)
-											);
-											return;
-										}
-										if (e.key === "Enter") {
-											e.preventDefault();
-                                            const company = filteredCompanies[selectedCompanyIndex];
-                                            if (company) {
-                                                onChange({
-                                                    target: {
-                                                        name: "companyName",
-                                                        value: company.companyName,
-                                                    },
-                                                });
-                                                setCompanySearch(company.companyName);
-                                                setShowCompanySearch(false);
-                                                productNameRef.current?.focus();
-                                            }
-											return;
-										}
-									}
-									onFieldKeyDown(e, productNameRef);
-								}}
-							/>
-                            {showCompanySearch && (
-                                <div className="text-xs">
-                                    <table>
-                                        <tbody>
-                                            {filteredCompanies.map((company, index) => (
-                                                <tr
-                                                    key={company.companiesCode}
-                                                    className={selectedCompanyIndex === index ? "active" : ""}
-                                                    onClick={() => {
-                                                        onChange({
-                                                            target: {
-                                                                name: "companyName",
-                                                                value: company.companyName,
-                                                            },
-                                                        });
-
-                                                        setCompanySearch(company.companyName);
-                                                        setShowCompanySearch(false);
-
-                                                        productNameRef.current?.focus();
-                                                    }}
-                                                >
-                                                    <td>{company.companyName}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-						</div>
-
-						<div className="form-group">
-							<label>Product Name</label>
+							<label>Product Name *</label>
 							<input
 								ref={productNameRef}
 								name="productName"
-								value={newProduct.productName}
+								placeholder="Enter product name"
+								value={newProduct.productName || ""}
 								onChange={onChange}
 								onKeyDown={(event) => onFieldKeyDown(event, itemCodeRef)}
 							/>
@@ -139,7 +81,8 @@ export default function AddProduct({
 								<input
 									ref={itemCodeRef}
 									name="itemCode"
-									value={newProduct.itemCode}
+									placeholder="Item code"
+									value={newProduct.itemCode || ""}
 									onChange={onChange}
 									onKeyDown={(event) => onFieldKeyDown(event, hsnRef)}
 								/>
@@ -150,9 +93,21 @@ export default function AddProduct({
 								<input
 									ref={hsnRef}
 									name="hsn"
-									value={newProduct.hsn}
+									placeholder="HSN code"
+									value={newProduct.hsn || ""}
 									onChange={onChange}
 									onKeyDown={(event) => onFieldKeyDown(event, gstRef)}
+								/>
+							</div>
+
+							<div className="form-group">
+								<label>MRP (₹)</label>
+								<input
+									name="mrp"
+									type="number"
+									placeholder="Enter MRP"
+									value={newProduct.mrp || ""}
+									onChange={onChange}
 								/>
 							</div>
 
@@ -161,7 +116,7 @@ export default function AddProduct({
 								<select
 									ref={gstRef}
 									name="gst"
-									value={newProduct.gst}
+									value={newProduct.gst || ""}
 									onChange={onChange}
 									onKeyDown={(event) => onFieldKeyDown(event, unitRef)}
 								>
@@ -175,23 +130,13 @@ export default function AddProduct({
 							</div>
 
 							<div className="form-group">
-								<label>Unit</label>
-								<input
-									ref={unitRef}
-									name="unit"
-									value={newProduct.unit}
-									onChange={onChange}
-									onKeyDown={(event) => onFieldKeyDown(event, minStockRef)}
-								/>
-							</div>
-
-							<div className="form-group">
 								<label>Minimum Stock</label>
 								<input
 									ref={minStockRef}
 									name="minStock"
 									type="number"
-									value={newProduct.minStock}
+									placeholder="Min stock"
+									value={newProduct.minStock || ""}
 									onChange={onChange}
 									onKeyDown={(event) => onFieldKeyDown(event, discountRef)}
 								/>
@@ -203,7 +148,8 @@ export default function AddProduct({
 									ref={discountRef}
 									name="discount"
 									type="number"
-									value={newProduct.discount}
+									placeholder="Discount %"
+									value={newProduct.discount || ""}
 									onChange={onChange}
 									onKeyDown={(event) => onFieldKeyDown(event, null, true)}
 								/>

@@ -12,7 +12,6 @@ export default function ProductList({ show, onClose, onSelect }) {
     const rowRefs = useRef([]);
 
     useEffect(() => {
-
         if (!show) return;
 
         const unsubscribe = subscribeProducts(setProducts);
@@ -21,41 +20,59 @@ export default function ProductList({ show, onClose, onSelect }) {
             searchRef.current?.focus();
         }, 100);
 
-        return () => unsubscribe();
+        const handleEscape = (e) => {
+            if (e.key === "Escape") {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof e.stopImmediatePropagation === "function") {
+                    e.stopImmediatePropagation();
+                }
+                onClose();
+            }
+        };
 
-    }, [show]);
+        window.addEventListener("keydown", handleEscape, true);
+
+        return () => {
+            unsubscribe();
+            window.removeEventListener("keydown", handleEscape, true);
+        };
+    }, [show, onClose]);
 
     const filteredProducts = (products || []).filter((product) => {
-
         const text = search.toLowerCase();
 
         return (
             (product.productName || "").toLowerCase().includes(text) ||
             (product.itemCode || "").toLowerCase().includes(text) ||
-            (product.companyName || "").toLowerCase().includes(text)
+            (product.companyName || product.company || "").toLowerCase().includes(text)
         );
-
     });
 
     useEffect(() => {
-
         const row = rowRefs.current[selectedIndex];
-
         if (row) {
             row.scrollIntoView({
                 block: "nearest",
                 behavior: "smooth",
             });
         }
-
     }, [selectedIndex, filteredProducts]);
 
     const handleKeyDown = (e) => {
+        if (e.key === "Escape") {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof e.stopImmediatePropagation === "function") {
+                e.stopImmediatePropagation();
+            }
+            onClose();
+            return;
+        }
 
         if (!filteredProducts.length) return;
 
         switch (e.key) {
-
             case "ArrowDown":
                 e.preventDefault();
                 setSelectedIndex((prev) =>
@@ -76,14 +93,9 @@ export default function ProductList({ show, onClose, onSelect }) {
                 onClose();
                 break;
 
-            case "Escape":
-                onClose();
-                break;
-
             default:
                 break;
         }
-
     };
 
     if (!show) return null;
@@ -118,7 +130,6 @@ export default function ProductList({ show, onClose, onSelect }) {
                                 <tr>
                                     <th style={{ width: 140 }}>Item Code</th>
                                     <th>Product Name</th>
-                                    <th>Company</th>
                                 </tr>
                             </thead>
 
@@ -126,7 +137,7 @@ export default function ProductList({ show, onClose, onSelect }) {
                                 {filteredProducts.length === 0 ? (
                                     <tr>
                                         <td
-                                            colSpan={3}
+                                            colSpan={2}
                                             className="text-center py-4"
                                         >
                                             No Product Found
@@ -134,10 +145,9 @@ export default function ProductList({ show, onClose, onSelect }) {
                                     </tr>
                                 ) : (
                                     filteredProducts.map((product, index) => (
-
                                         <tr
-                                            ref={(el) => rowRefs.current[index] = el}
-                                            key={product.itemCode}
+                                            ref={(el) => (rowRefs.current[index] = el)}
+                                            key={product.itemCode || index}
                                             className={
                                                 index === selectedIndex
                                                     ? "table-primary"
@@ -151,7 +161,6 @@ export default function ProductList({ show, onClose, onSelect }) {
                                         >
                                             <td>{product.itemCode}</td>
                                             <td>{product.productName}</td>
-                                            <td>{product.companyName}</td>
                                         </tr>
                                     ))
                                 )}

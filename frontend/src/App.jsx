@@ -60,10 +60,12 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/customer" element={<Customer />} />
           <Route path="/dashboard/sales" element={<Sales />} />
+          <Route path="/dashboard/sale-report" element={<Sales />} />
           <Route path="/dashboard/sales/sale-invoice" element={<SaleInvoice />} />
           <Route path="/print-invoice" element={<PrintInvoice />} />
           <Route path="/dashboard/sales/edit/:billnumber" element={<EditSale />} />
           <Route path="/dashboard/purchase" element={<Purchase />} />
+          <Route path="/dashboard/purchase-report" element={<Purchase />} />
           {/* <Route path="/dashboard/purchase/edit/:billNumber" element={<EditPurchase />} /> */}
           <Route path="/dashboard/stock-report" element={<Stock />} />
           <Route path="/dashboard/purchase/purchase-entry" element={<Suspense fallback={<Loader />}><PurchaseEntry /></Suspense>} />

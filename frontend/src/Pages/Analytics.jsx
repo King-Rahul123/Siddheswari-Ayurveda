@@ -14,15 +14,7 @@ import {
     Bar,
 } from "recharts";
 
-import {
-    collection,
-    getDocs,
-    query,
-    orderBy,
-    limit,
-} from "firebase/firestore";
-import { db } from "../firebase/firebase";
-
+import { API_BASE_URL } from "../api/config";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import "../CSS/Analytics.css";
@@ -47,129 +39,20 @@ export default function Analytics() {
     const [lowStockProducts, setLowStockProducts] = useState([]);
     
     const loadAnalytics = async () => {
-        const salesSnap = await getDocs(collection(db, "sales"));
-        const customerSnap = await getDocs(collection(db, "customer"));
-        const productSnap = await getDocs(collection(db, "product"));
-        
-        const sales = salesSnap.docs.map(doc => doc.data());
-        const customers = customerSnap.docs.length;
-        const products = productSnap.docs.map(doc => doc.data());
-        
-        let revenue = 0;
-        let todaySales = 0;
-        
-        const monthly = {};
-        const payment = {};
-        const top = {};
-        
-        const today = new Date().toDateString();
-        
-        sales.forEach((sale) => {
-            const amount = Number(sale.grandTotal || sale.total || 0);
-            
-            revenue += amount;
-            
-            let date;
-            
-            if (sale.createdAt?.toDate) {
-                date = sale.createdAt.toDate();
-            } else if (sale.date) {
-                date = new Date(sale.date);
-            } else {
-                date = new Date();
+        try {
+            const res = await fetch(`${API_BASE_URL}/analytics/overview`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.stats) setStats(data.stats);
+                if (data.salesData) setSalesData(data.salesData);
+                if (data.paymentData) setPaymentData(data.paymentData);
+                if (data.topProducts) setTopProducts(data.topProducts);
+                if (data.activities) setActivities(data.activities);
+                if (data.lowStockProducts) setLowStockProducts(data.lowStockProducts);
             }
-            
-            if (date.toDateString() === today) {
-                todaySales += amount;
-            }
-            
-            const month = date.toLocaleString("default", {
-                month: "short",
-            });
-            
-            monthly[month] = (monthly[month] || 0) + amount;
-
-            payment[sale.paymentMethod || "Cash"] =
-            (payment[sale.paymentMethod || "Cash"] || 0) + amount;
-            
-            if (Array.isArray(sale.items)) {
-                sale.items.forEach((item) => {
-                    const name = item.productName || item.name || "Unknown";
-                    top[name] = (top[name] || 0) + Number(item.quantity || 0);
-                });
-            }
-        });
-        
-        const lowStock = products.filter(
-            (p) => Number(p.stock || 0) > 0 && Number(p.stock || 0) <= 10
-        ).length;
-
-        const outOfStock = products.filter(
-            (p) => Number(p.stock || 0) === 0
-        ).length;
-        
-        const inStock = products.filter(
-            (p) => Number(p.stock || 0) > 10
-        ).length;
-        
-        setLowStockProducts(
-            products
-                .filter((p) => Number(p.stock || 0) <= 10)
-                .sort((a, b) => Number(a.stock || 0) - Number(b.stock || 0))
-        );
-
-        setStats({
-            revenue,
-            todaySales,
-            customers,
-            products: products.length,
-            lowStock,
-            inStock,
-            outOfStock
-        });
-        
-        const monthOrder = [
-            "Jan","Feb","Mar","Apr","May","Jun",
-            "Jul","Aug","Sep","Oct","Nov","Dec"
-        ];
-        
-        setSalesData(
-            monthOrder
-            .filter((m) => monthly[m])
-            .map((m) => ({
-                month: m,
-                sales: monthly[m],
-            }))
-        );
-        
-        setPaymentData(
-            Object.keys(payment).map((k) => ({
-                name: k,
-                value: payment[k],
-            }))
-        );
-        
-        setTopProducts(
-            Object.entries(top)
-            .map(([name, qty]) => ({
-                name,
-                qty,
-            }))
-            .sort((a, b) => b.qty - a.qty)
-            .slice(0, 5)
-        );
-
-        const recent = await getDocs(
-            query(
-                collection(db, "sales"),
-                orderBy("createdAt", "desc"),
-                limit(5)
-            )
-        );
-        
-        setActivities(
-            recent.docs.map((doc) => doc.data())
-        );
+        } catch (error) {
+            console.error("Failed to load analytics:", error);
+        }
     };
 
     useEffect(() => {

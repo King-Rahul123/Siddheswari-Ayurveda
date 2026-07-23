@@ -1,72 +1,48 @@
-import {
-  collection,
-  doc,
-//   setDoc,
-  writeBatch,
-  serverTimestamp,
-  onSnapshot,
-  runTransaction,
-} from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { API_BASE_URL } from "../api/config";
 
 // Generate Purchase ID
 export const getNextPurchaseId = async () => {
-  const counterRef = doc(db, "counters", "purchase");
-
-  const nextId = await runTransaction(db, async (transaction) => {
-    const counterDoc = await transaction.get(counterRef);
-
-    let currentId = 0;
-
-    if (counterDoc.exists()) {
-      currentId = counterDoc.data().lastId || 0;
-    }
-
-    const newId = currentId + 1;
-
-    transaction.set(counterRef, { lastId: newId }, { merge: true });
-
-    return newId;
-  });
-
-  const year = new Date().getFullYear();
-
-  return `PUR${year}${nextId.toString().padStart(4, "0")}`;
+  const res = await fetch(`${API_BASE_URL}/purchases/next-id`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to generate purchase ID");
+  return data.purchaseId;
 };
 
 // Save Purchase with Items
 export const addPurchase = async (purchaseData, items) => {
-  const purchaseRef = doc(db, "purchases", purchaseData.purchaseId);
-
-  const batch = writeBatch(db);
-
-  // Purchase Header
-  batch.set(purchaseRef, {
-    ...purchaseData,
-    createdAt: serverTimestamp(),
+  const res = await fetch(`${API_BASE_URL}/purchases`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ purchaseData, items })
   });
-
-  // Purchase Items
-  items.forEach((item, index) => {
-    const itemRef = doc(
-      collection(db, "purchases", purchaseData.purchaseId, "items"),
-      (index + 1).toString()
-    );
-
-    batch.set(itemRef, item);
-  });
-
-  await batch.commit();
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to save purchase");
+  return data;
 };
 
 // Real-time Purchase List
 export const subscribePurchases = (callback) => {
-  return onSnapshot(collection(db, "purchases"), (snapshot) => {
-    const purchases = snapshot.docs.map((doc) => ({
-      docId: doc.id,
-      ...doc.data(),
-    }));
+  let isMounted = true;
 
-    callback(purchases);
-  });
+  const fetchPurchases = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/purchases`);
+      if (res.ok) {
+        const purchases = await res.json();
+        if (isMounted) {
+          callback(purchases.map((p) => ({ docId: p.purchaseId || p._id, ...p })));
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching purchases:", err);
+    }
+  };
+
+  fetchPurchases();
+  const interval = setInterval(fetchPurchases, 3000);
+
+  return () => {
+    isMounted = false;
+    clearInterval(interval);
+  };
 };

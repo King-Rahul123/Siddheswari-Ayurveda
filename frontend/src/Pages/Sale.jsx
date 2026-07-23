@@ -33,6 +33,28 @@ export default function Sales() {
         return matchesSearch && matchesDate;
     });
 
+    const totalRevenue = salesData.reduce(
+        (sum, sale) => sum + Number(sale.grandTotal || sale.netAmount || sale.totalAmount || sale.total || 0),
+        0
+    );
+
+    const totalOrders = salesData.length;
+
+    const todayStr = new Date().toISOString().split("T")[0];
+    const todaySales = salesData
+        .filter((sale) => {
+            const saleDateStr = sale.date || (sale.createdAt ? new Date(sale.createdAt).toISOString().split("T")[0] : "");
+            return saleDateStr === todayStr;
+        })
+        .reduce(
+            (sum, sale) => sum + Number(sale.grandTotal || sale.netAmount || sale.totalAmount || sale.total || 0),
+            0
+        );
+
+    const activeCustomers = new Set(
+        salesData.map((s) => s.customerCode || s.customerName).filter(Boolean)
+    ).size;
+
     return (
         <div className="dashboard">
         <Sidebar />
@@ -50,25 +72,25 @@ export default function Sales() {
                     <div className="sales-stats">
                         <div className="sales-card">
                             <i className="bi bi-currency-rupee"></i>
-                            <h4>₹58,650</h4>
+                            <h4>₹{totalRevenue.toLocaleString("en-IN")}</h4>
                             <p>Total revenue</p>
                         </div>
 
                         <div className="sales-card">
                             <i className="bi bi-bag-check-fill"></i>
-                            <h4>245</h4>
+                            <h4>{totalOrders}</h4>
                             <p>Total orders</p>
                         </div>
 
                         <div className="sales-card">
                             <i className="bi bi-graph-up-arrow"></i>
-                            <h4>₹8,450</h4>
+                            <h4>₹{todaySales.toLocaleString("en-IN")}</h4>
                             <p>Today's sales</p>
                         </div>
 
                         <div className="sales-card">
                             <i className="bi bi-people-fill"></i>
-                            <h4>178</h4>
+                            <h4>{activeCustomers}</h4>
                             <p>Active customers</p>
                         </div>
                     </div>
@@ -115,8 +137,8 @@ export default function Sales() {
                                             <td>{sale.saleId}</td>
                                             <td>{sale.date}</td>
                                             <td>{sale.customerName}</td>
-                                            <td>₹{Number(sale.totalAmount || 0).toFixed(2)}</td>
-                                            <td>₹{Number(sale.netAmount || 0).toFixed(2)}</td>
+                                            <td>₹{Number(sale.totalAmount || sale.total || 0).toFixed(2)}</td>
+                                            <td>₹{Number(sale.grandTotal || sale.netAmount || sale.totalAmount || 0).toFixed(2)}</td>
                                             <td className="gap-2 flex justify-center">
                                                 <button className="edit-btn" onClick={() =>navigate(`/dashboard/sales/edit/${sale.saleId}`)}><i className="bi bi-pencil-square text-gray-500"></i></button>
                                                 <button className="view-btn"><i className="bi bi-printer text-blue-500 text-base"></i></button>
