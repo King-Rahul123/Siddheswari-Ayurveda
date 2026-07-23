@@ -20,10 +20,25 @@ export default function CompanyList({
         setTimeout(() => {
             searchRef.current?.focus();
         }, 100);
-    }, [show]);
+
+        const handleEscape = (e) => {
+            if (e.key === "Escape") {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof e.stopImmediatePropagation === "function") {
+                    e.stopImmediatePropagation();
+                }
+                onClose();
+            }
+        };
+
+        window.addEventListener("keydown", handleEscape, true);
+        return () => {
+            window.removeEventListener("keydown", handleEscape, true);
+        };
+    }, [show, onClose]);
 
     const filteredCompanies = (companies || []).filter((company) => {
-
         const text = search.toLowerCase();
 
         return (
@@ -35,7 +50,6 @@ export default function CompanyList({
     });
 
     useEffect(() => {
-
         const row = rowRefs.current[selectedIndex];
 
         if (row) {
@@ -44,13 +58,20 @@ export default function CompanyList({
                 behavior: "smooth",
             });
         }
-
     }, [selectedIndex, filteredCompanies]);
 
     const handleKeyDown = (e) => {
+        if (e.key === "Escape") {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof e.stopImmediatePropagation === "function") {
+                e.stopImmediatePropagation();
+            }
+            onClose();
+            return;
+        }
 
         switch (e.key) {
-
             case "ArrowDown":
                 e.preventDefault();
                 if (!filteredCompanies.length) return;
@@ -69,16 +90,10 @@ export default function CompanyList({
 
             case "Enter":
                 e.preventDefault();
-
                 if (filteredCompanies.length) {
                     onSelect(filteredCompanies[selectedIndex]);
                     onClose();
                 }
-                break;
-
-            case "Escape":
-                e.preventDefault();
-                onClose();
                 break;
 
             default:
@@ -97,7 +112,6 @@ export default function CompanyList({
                 </div>
 
                 <div className="popup-body">
-
                     <input
                         ref={searchRef}
                         className="form-control mb-3"
@@ -132,9 +146,8 @@ export default function CompanyList({
                                     </tr>
                                 ) : (
                                     filteredCompanies.map((company, index) => (
-
                                         <tr
-                                            key={company.companiesCode}
+                                            key={company.companiesCode || index}
                                             ref={(el) => (rowRefs.current[index] = el)}
                                             className={
                                                 index === selectedIndex

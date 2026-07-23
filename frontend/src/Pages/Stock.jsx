@@ -1,82 +1,100 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import "../CSS/Stock.css";
+import { subscribeStock } from "../services/stockService";
+import { subscribeProducts } from "../services/productService";
 
 export default function Stock() {
     const [search, setSearch] = useState("");
+    const [products, setProducts] = useState([]);
+    const [stockItems, setStockItems] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const stockData = [
-        {
-        id: 1,
-        code: "P001",
-        product: "Paracetamol 500",
-        brand: "Cipla",
-        category: "Tablet",
-        batch: "BT1001",
-        stock: 150,
-        minStock: 20,
-        mrp: 25,
-        expiry: "12/2027",
-        },
-        {
-        id: 2,
-        code: "P002",
-        product: "Dolo 650",
-        brand: "Micro Labs",
-        category: "Tablet",
-        batch: "BT1002",
-        stock: 8,
-        minStock: 20,
-        mrp: 32,
-        expiry: "09/2026",
-        },
-        {
-        id: 3,
-        code: "P003",
-        product: "Vitamin C",
-        brand: "Himalaya",
-        category: "Syrup",
-        batch: "BT1003",
-        stock: 0,
-        minStock: 15,
-        mrp: 120,
-        expiry: "05/2026",
-        },
-        {
-        id: 4,
-        code: "P004",
-        product: "Liv-52",
-        brand: "Himalaya",
-        category: "Tablet",
-        batch: "BT1004",
-        stock: 65,
-        minStock: 15,
-        mrp: 180,
-        expiry: "01/2028",
-        },
-        {
-        id: 5,
-        code: "P005",
-        product: "Ashwagandha",
-        brand: "Baidyanath",
-        category: "Capsule",
-        batch: "BT1005",
-        stock: 12,
-        minStock: 25,
-        mrp: 250,
-        expiry: "08/2027",
-        },
-    ];
+    useEffect(() => {
+        const unsubProd = subscribeProducts((data) => {
+            setProducts(data || []);
+            setLoading(false);
+        });
+        const unsubStock = subscribeStock((data) => {
+            setStockItems(data || []);
+        });
+        return () => {
+            unsubProd();
+            unsubStock();
+        };
+    }, []);
+
+    // Consolidate database products and stock records
+    const aggregatedMap = new Map();
+
+    // 1. Load all products from Product database collection
+    (products || []).forEach((p) => {
+        const code = p.itemCode || p.code || p._id || "";
+        const name = p.productName || p.name || "Unnamed Product";
+        const key = (code || name).toString().toLowerCase();
+
+        aggregatedMap.set(key, {
+            id: p._id || code,
+            code: code,
+            product: name,
+            batch: p.batch || "-",
+            stock: Number(p.stock || 0),
+            minStock: Number(p.minStock || 0),
+            mrp: Number(p.mrp || p.price || 0),
+            expiry: p.expiry || p.expiryDate || "-"
+        });
+    });
+
+    // 2. Merge/Update from Stock database collection
+    (stockItems || []).forEach((s, idx) => {
+        const code = s.itemCode || s.code || "";
+        const name = s.productName || s.product || "";
+        const batch = s.batch || "";
+        const key = (code || name).toString().toLowerCase();
+
+        const sQty = Number(s.qty ?? s.stock ?? 0);
+        const sMrp = Number(s.mrp || s.rate || 0);
+
+        if (key && aggregatedMap.has(key)) {
+            const existing = aggregatedMap.get(key);
+            if (existing.stock < sQty) {
+                existing.stock = sQty;
+            }
+            if (batch && batch !== "-") existing.batch = batch;
+            if (sMrp > 0) existing.mrp = sMrp;
+            if (s.expiryDate || s.expiry) existing.expiry = s.expiryDate || s.expiry;
+        } else if (key) {
+            aggregatedMap.set(key, {
+                id: s.stockId || s._id || `stock_${idx}`,
+                code: code || `STK${idx + 1}`,
+                product: name || "Unnamed Product",
+                batch: batch || "-",
+                stock: sQty,
+                minStock: Number(s.minStock || 0),
+                mrp: sMrp,
+                expiry: s.expiryDate || s.expiry || "-"
+            });
+        }
+    });
+
+    const stockData = Array.from(aggregatedMap.values());
 
     const filteredStock = stockData.filter((item) =>
-        item.product.toLowerCase().includes(search.toLowerCase())
+        (item.product || "").toLowerCase().includes(search.toLowerCase()) ||
+        (item.code || "").toLowerCase().includes(search.toLowerCase()) ||
+        (item.batch || "").toLowerCase().includes(search.toLowerCase())
     );
 
+    const getMinStockThreshold = (item) => {
+        const val = Number(item.minStock || 0);
+        return val > 0 ? val : 5;
+    };
+
     const totalProducts = stockData.length;
-    const inStock = stockData.filter((x) => x.stock > x.minStock).length;
+    const inStock = stockData.filter((x) => x.stock > getMinStockThreshold(x)).length;
     const lowStock = stockData.filter(
-        (x) => x.stock > 0 && x.stock <= x.minStock
+        (x) => x.stock > 0 && x.stock <= getMinStockThreshold(x)
     ).length;
     const outOfStock = stockData.filter((x) => x.stock === 0).length;
 
@@ -148,35 +166,49 @@ export default function Stock() {
                             </thead>
 
                             <tbody>
-                                {filteredStock.length > 0 ? ( filteredStock.map((item, index) => (
-                                    <tr key={item.id}>
-                                        <td>{index + 1}</td>
-                                        <td>{item.product}</td>
-                                        <td>{item.code}</td>
-                                        <td>{item.batch}</td>
-                                        <td>₹{item.mrp}</td>
-                                        <td
-                                            className={
-                                            item.stock === 0
-                                                ? "text-red-600 fw-bold"
-                                                : item.stock <= item.minStock
-                                                ? "text-warning fw-bold"
-                                                : "text-success fw-bold"
-                                            }
-                                        >
-                                            {item.stock}
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan="7" className="text-center py-4">
+                                            Loading stock data...
                                         </td>
-
-                                        <td>{item.expiry}</td>
                                     </tr>
-                                ))
+                                ) : filteredStock.length > 0 ? (
+                                    filteredStock.map((item, index) => {
+                                        const threshold = getMinStockThreshold(item);
+                                        const isOutOfStock = item.stock === 0;
+                                        const isLowStock = item.stock > 0 && item.stock <= threshold;
+                                        const isInStock = item.stock > threshold;
+
+                                        return (
+                                            <tr key={item.id || index}>
+                                                <td>{index + 1}</td>
+                                                <td>{item.product}</td>
+                                                <td>{item.code}</td>
+                                                <td>{item.batch}</td>
+                                                <td>₹{Number(item.mrp || 0).toFixed(2)}</td>
+                                                <td
+                                                    className={
+                                                        isOutOfStock
+                                                            ? "text-red-600 fw-bold"
+                                                            : isLowStock
+                                                            ? "text-warning fw-bold text-yellow-600"
+                                                            : "text-emerald-600 fw-bold text-success"
+                                                    }
+                                                >
+                                                    {item.stock}
+                                                </td>
+
+                                                <td>{item.expiry}</td>
+                                            </tr>
+                                        );
+                                    })
                                 ) : (
-                                <tr>
-                                    <td colSpan="12" className="empty-state">
-                                    <i className="bi bi-box-seam"></i>
-                                    <p>No products found.</p>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td colSpan="7" className="empty-state">
+                                            <i className="bi bi-box-seam"></i>
+                                            <p>No stock records found.</p>
+                                        </td>
+                                    </tr>
                                 )}
                             </tbody>
                         </table>

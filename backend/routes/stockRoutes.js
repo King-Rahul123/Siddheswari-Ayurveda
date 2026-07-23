@@ -24,10 +24,38 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Add Stock
+// Add or Update Stock (Upsert by itemCode/productName + batch)
 router.post("/", async (req, res) => {
   try {
     const stockData = req.body;
+    const code = (stockData.itemCode || stockData.productId || "").toString().trim();
+    const name = (stockData.productName || "").toString().trim();
+    const batch = (stockData.batch || "").toString().trim();
+    const qtyNum = Number(stockData.qty || 0);
+
+    let filter = null;
+    if (code !== "") {
+      filter = batch ? { itemCode: code, batch } : { itemCode: code };
+    } else if (name !== "") {
+      const nameRegex = new RegExp("^" + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "$", "i");
+      filter = batch ? { productName: nameRegex, batch } : { productName: nameRegex };
+    }
+
+    if (filter) {
+      let existingStock = await Stock.findOne(filter);
+
+      if (existingStock) {
+        existingStock.qty = Number(existingStock.qty || 0) + qtyNum;
+        if (stockData.mrp) existingStock.mrp = Number(stockData.mrp);
+        if (stockData.expiry || stockData.expiryDate) existingStock.expiryDate = stockData.expiry || stockData.expiryDate;
+        if (stockData.hsn) existingStock.hsn = stockData.hsn;
+        if (stockData.gst) existingStock.gst = Number(stockData.gst);
+        if (stockData.productName) existingStock.productName = stockData.productName;
+        await existingStock.save();
+        return res.json(existingStock);
+      }
+    }
+
     let stockId = stockData.stockId;
     if (!stockId) {
       const nextId = await getNextSequence("stock");
@@ -36,7 +64,8 @@ router.post("/", async (req, res) => {
 
     const stock = new Stock({
       ...stockData,
-      stockId
+      stockId,
+      qty: qtyNum
     });
 
     await stock.save();
