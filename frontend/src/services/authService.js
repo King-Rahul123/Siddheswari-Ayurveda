@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../api/config";
+import { apiFetch } from "../api/apiClient";
 
 export const login = async (username, password) => {
   const res = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -12,27 +13,28 @@ export const login = async (username, password) => {
     throw new Error(data.message || "Login failed");
   }
 
-  // Save login session
-  localStorage.setItem(
-    "loggedInUser",
-    JSON.stringify({
-      username: data.username,
-      ...data
-    })
-  );
+  // Save token and user details
+  if (data.token) {
+    localStorage.setItem("token", data.token);
+  }
+  if (data.user) {
+    localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+  } else {
+    localStorage.setItem("loggedInUser", JSON.stringify(data));
+  }
 
   return data;
 };
 
 export const logout = () => {
+  localStorage.removeItem("token");
   localStorage.removeItem("loggedInUser");
   sessionStorage.clear();
 };
 
 export const changePassword = async (username, currentPassword, newPassword) => {
-  const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
+  const res = await apiFetch("/auth/change-password", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, currentPassword, newPassword })
   });
 
@@ -41,20 +43,11 @@ export const changePassword = async (username, currentPassword, newPassword) => 
     throw new Error(data.message || "Failed to change password");
   }
 
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "{}");
-  localStorage.setItem(
-    "loggedInUser",
-    JSON.stringify({
-      ...loggedInUser,
-      password: newPassword
-    })
-  );
-
   return true;
 };
 
 export const getStaffList = async () => {
-  const res = await fetch(`${API_BASE_URL}/auth/staff`);
+  const res = await apiFetch("/auth/staff");
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data.message || "Failed to fetch staff list");
@@ -63,9 +56,8 @@ export const getStaffList = async () => {
 };
 
 export const addStaff = async (staff) => {
-  const res = await fetch(`${API_BASE_URL}/auth/staff`, {
+  const res = await apiFetch("/auth/staff", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(staff)
   });
 
@@ -77,9 +69,8 @@ export const addStaff = async (staff) => {
 };
 
 export const updateStaff = async (staff) => {
-  const res = await fetch(`${API_BASE_URL}/auth/staff/${staff.username}`, {
+  const res = await apiFetch(`/auth/staff/${staff.username}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(staff)
   });
 
@@ -91,7 +82,7 @@ export const updateStaff = async (staff) => {
 };
 
 export const deleteStaff = async (username) => {
-  const res = await fetch(`${API_BASE_URL}/auth/staff/${username}`, {
+  const res = await apiFetch(`/auth/staff/${username}`, {
     method: "DELETE"
   });
 

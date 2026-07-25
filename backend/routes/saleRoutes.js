@@ -1,9 +1,15 @@
 const express = require("express");
 const router = express.Router();
+const fs = require("fs");
+const path = require("path");
 const Sale = require("../models/Sale");
 const Product = require("../models/Product");
 const Stock = require("../models/Stock");
 const { getNextSequence, getCurrentSequence } = require("../models/Counter");
+const authMiddleware = require("../middleware/authMiddleware");
+const { generateSalePDF } = require("../utils/pdfGenerator");
+
+router.use(authMiddleware);
 
 // Show current sale ID without incrementing
 router.get("/current-id", async (req, res) => {
@@ -38,7 +44,47 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Save Sale with Items and Decrease Stock
+// Stream / Download PDF invoice
+router.get("/pdf/:saleId", async (req, res) => {
+  try {
+    const { saleId } = req.params;
+    let sale = await Sale.findOne({ saleId });
+    if (!sale) {
+      sale = await Sale.findOne({ saleId: saleId.replace(/_/g, " ") }) || await Sale.findOne({ saleId: saleId.replace(/_/g, "-") });
+    }
+
+    const safeSaleId = (saleId || "INVOICE").replace(/[/\\?%*:|"<>]/g, "_");
+    
+    let filePath = sale?.pdfPath;
+
+    if (!filePath || !fs.existsSync(filePath)) {
+      filePath = path.join("D:\\Mongodb_Siddheswari\\Invoices", `${safeSaleId}.pdf`);
+      if (!fs.existsSync(filePath)) {
+        filePath = path.join("D:\\Mongodb_Siddheswari", `${safeSaleId}.pdf`);
+      }
+    }
+
+    // If file does not exist on disk but sale document exists, re-generate PDF on demand
+    if (!fs.existsSync(filePath)) {
+      if (sale) {
+        filePath = await generateSalePDF(sale.toObject(), sale.items);
+        sale.pdfPath = filePath;
+        await sale.save();
+      } else {
+        return res.status(404).json({ message: "Sale invoice not found in database" });
+      }
+    }
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${safeSaleId}.pdf"`);
+    const stream = fs.createReadStream(filePath);
+    stream.pipe(res);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Save Sale with Items, Decrease Stock, and generate PDF
 router.post("/", async (req, res) => {
   try {
     const { saleData, items } = req.body;
@@ -59,7 +105,6 @@ router.post("/", async (req, res) => {
         });
       }
 
-      // Check stock in Stock collection first, then Product collection
       let availableStock = 0;
       let stockDoc = null;
 
@@ -78,7 +123,6 @@ router.post("/", async (req, res) => {
       if (stockDoc) {
         availableStock = Number(stockDoc.qty || 0);
       } else {
-        // Fallback to Product document stock
         const prodDoc = code
           ? await Product.findOne({ itemCode: code })
           : await Product.findOne({ productName: new RegExp("^" + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "$", "i") });
@@ -108,18 +152,25 @@ router.post("/", async (req, res) => {
 
     await sale.save();
 
+    // Generate PDF invoice and store path
+    try {
+      const pdfPath = await generateSalePDF(sale.toObject(), items);
+      sale.pdfPath = pdfPath;
+      await sale.save();
+    } catch (pdfErr) {
+      console.error("Error generating PDF invoice:", pdfErr);
+    }
+
     // Decrease Product stock and Stock collection batch quantities for each sold item
     for (const item of (items || [])) {
       const code = item.itemCode || item.productId;
       const qtyNum = Number(item.qty || 0);
       if (code && qtyNum > 0) {
-        // Decrease total stock in Product collection
         await Product.findOneAndUpdate(
           { itemCode: code },
           { $inc: { stock: -qtyNum } }
         );
 
-        // Decrease stock in Stock batch collection
         if (item.batch && item.batch !== "-") {
           await Stock.findOneAndUpdate(
             { itemCode: code, batch: item.batch },

@@ -367,7 +367,7 @@ export default function SaleInvoice() {
 
       setToast({
         show: true,
-        message: `${saleData.saleId} saved successfully`,
+        message: `${saleData.saleId} saved & PDF stored in D:\\Mongodb_Siddheswari`,
         type: "success",
       });
       return true;

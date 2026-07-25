@@ -4,8 +4,10 @@ import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import "../CSS/Sale.css";
 import { subscribeSales } from "../services/saleService";
+import { API_BASE_URL } from "../api/config";
 
 export default function Sales() {
+
     const navigate = useNavigate();
     const [search, setSearch] = useState("");
     const [selectedDate, setSelectedDate] = useState("");
@@ -141,7 +143,16 @@ export default function Sales() {
                                             <td>₹{Number(sale.grandTotal || sale.netAmount || sale.totalAmount || 0).toFixed(2)}</td>
                                             <td className="gap-2 flex justify-center">
                                                 <button className="edit-btn" onClick={() =>navigate(`/dashboard/sales/edit/${sale.saleId}`)}><i className="bi bi-pencil-square text-gray-500"></i></button>
-                                                <button className="view-btn"><i className="bi bi-printer text-blue-500 text-base"></i></button>
+                                                <button
+                                                    className="view-btn"
+                                                    title="View / Download PDF Invoice"
+                                                    onClick={() => {
+                                                        const token = localStorage.getItem("token");
+                                                        window.open(`${API_BASE_URL}/sales/pdf/${encodeURIComponent(sale.saleId)}?token=${encodeURIComponent(token || "")}`, "_blank");
+                                                    }}
+                                                >
+                                                    <i className="bi bi-file-earmark-pdf text-blue-500 text-base"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                     ))

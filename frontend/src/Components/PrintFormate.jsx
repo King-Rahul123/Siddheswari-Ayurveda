@@ -10,98 +10,140 @@ export default function PrintInvoice() {
     invoiceDate,
     customerName,
     mobile,
-    items,
-    subTotal,
-    discount,
-    gstAmount,
-    netAmount,
+    items = [],
+    subTotal = 0,
+    discount = 0,
+    gstAmount = 0,
+    netAmount = 0,
   } = state || {};
 
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       window.print();
-    }, 500);
+    }, 400);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className="print-container">
-      <div className="invoice-header-print">
-        <h1>SIDDHESWARI AYURVEDA</h1>
-        <p>Kushpata (Near Baro Haat Kali Mandir), Ghatal, Paschim Medinipur</p>
-        <p>Mobile: +91 8145322318</p>
-      </div>
-
-      <h2 className="text-black text-center underline">Sales Invoice</h2>
-
-      <div className="invoice-details">
-        <div>
-          <strong>Invoice No:</strong> {billNumber}
+    <div className="print-page-wrapper">
+      <div className="print-card">
+        {/* Background Light Logo Watermark */}
+        <div className="watermark-overlay">
+          <img src="/logo.png" alt="Siddheswari Logo Watermark" className="watermark-img" />
         </div>
 
-        <div>
-          <strong>Date:</strong> {invoiceDate}
+        {/* Header Bar */}
+        <div className="print-header-bar">
+          <div className="header-brand">
+            <img src="/deltas.png" alt="Deltas Logo" className="brand-logo-img" />
+          </div>
+
+          <div className="header-meta">
+            <p><strong>Invoice No:</strong> {billNumber || "N/A"}</p>
+            <p><strong>Date:</strong> {invoiceDate || new Date().toISOString().split("T")[0]}</p>
+          </div>
         </div>
-      </div>
 
-      <div className="customer-details">
-        <p><strong>Customer:</strong> {customerName}</p>
-        <p><strong>Mobile:</strong> {mobile}</p>
-      </div>
+        <div className="divider-line" />
 
-      <table className="print-table">
-        <thead>
-          <tr>
-            <th className="w-12">Sl.</th>
-            <th className="w-50">Product</th>
-            <th className="w-24">Batch</th>
-            <th className="w-16">Qty</th>
-            <th className="w-24">MRP</th>
-            <th className="w-24">Rate</th>
-            <th className="w-24">GST%</th>
-            <th className="w-24">Total</th>
-          </tr>
-        </thead>
+        {/* Title Banner */}
+        <div className="invoice-title-banner">
+          <h3>TAX INVOICE / SALES INVOICE</h3>
+        </div>
 
-        <tbody>
-          {items?.map((item, index) => (
-            <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{item.product}</td>
-              <td>{item.batch}</td>
-              <td>{item.qty}</td>
-              <td>{item.mrp}</td>
-              <td>{item.rate}</td>
-              <td>{item.gst}</td>
-              <td>
-                ₹
-                {(
-                  item.qty * item.rate
-                ).toFixed(2)}
-              </td>
+        <div className="divider-line" />
+
+        {/* Customer Information */}
+        <div className="customer-info-box">
+          <p><strong>Customer Name :</strong> {customerName || "Walk-in Customer"}</p>
+          <p><strong>Mobile :</strong> {mobile || "N/A"}</p>
+        </div>
+
+        <div className="divider-line" />
+
+        {/* Products Table */}
+        <table className="printable-table">
+          <thead>
+            <tr>
+              <th style={{ width: "35px" }}>Sl</th>
+              <th>Product</th>
+              <th style={{ width: "75px" }}>Batch</th>
+              <th style={{ width: "65px" }}>Exp</th>
+              <th style={{ width: "45px" }}>Qty</th>
+              <th style={{ width: "70px", textAlign: "right" }}>Rate</th>
+              <th style={{ width: "55px", textAlign: "right" }}>Disc</th>
+              <th style={{ width: "55px", textAlign: "right" }}>GST</th>
+              <th style={{ width: "85px", textAlign: "right" }}>Amount</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {items.map((item, index) => {
+              const qty = Number(item.qty || 0);
+              const rate = Number(item.rate || 0);
+              const disc = Number(item.discount || 0);
+              const gst = Number(item.gst || 0);
+              const itemSub = qty * rate;
+              const discAmt = (itemSub * disc) / 100;
+              const afterDisc = itemSub - discAmt;
+              const gstAmt = (afterDisc * gst) / 100;
+              const amount = Number(item.amount || (afterDisc + gstAmt));
 
-      <div className="invoice-total">
-        <p>Subtotal : ₹{subTotal?.toFixed(2)}</p>
-        <p>Discount : ₹{discount?.toFixed(2)}</p>
-        <p>GST : ₹{gstAmount?.toFixed(2)}</p>
+              return (
+                <tr key={index}>
+                  <td style={{ textAlign: "center" }}>{index + 1}</td>
+                  <td>{item.productName || item.product || "Product"}</td>
+                  <td style={{ textAlign: "center" }}>{item.batch || "-"}</td>
+                  <td style={{ textAlign: "center" }}>{item.expiry || "-"}</td>
+                  <td style={{ textAlign: "center" }}>{qty}</td>
+                  <td style={{ textAlign: "right" }}>₹{rate.toFixed(2)}</td>
+                  <td style={{ textAlign: "right" }}>{disc}%</td>
+                  <td style={{ textAlign: "right" }}>{gst}%</td>
+                  <td style={{ textAlign: "right" }}>₹{amount.toFixed(2)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
 
-        <h2>Net Amount : ₹{netAmount?.toFixed(2)}</h2>
-      </div>
+        <div className="divider-line" />
 
-      <div className="signature-section">
-        <div>
-          ____________________
-          <br />
-          Customer Signature
+        {/* Summary Block */}
+        <div className="invoice-summary-block">
+          <div className="summary-col">
+            <div className="summary-row">
+              <span>Subtotal</span>
+              <strong>₹{Number(subTotal).toFixed(2)}</strong>
+            </div>
+            <div className="summary-row">
+              <span>Discount</span>
+              <strong>₹{Number(discount).toFixed(2)}</strong>
+            </div>
+            <div className="summary-row">
+              <span>GST</span>
+              <strong>₹{Number(gstAmount).toFixed(2)}</strong>
+            </div>
+            <div className="summary-row grand-total-row">
+              <span>Grand Total</span>
+              <strong>₹{Number(netAmount).toFixed(2)}</strong>
+            </div>
+          </div>
         </div>
 
-        <div>
-          ____________________
-          <br />
-          Authorized Signature
+        <div className="divider-line" />
+
+        {/* Signature Section */}
+        <div className="signature-area">
+          <div className="seller-signature-box">
+            <div className="sig-line" />
+            <p>Seller Signature</p>
+          </div>
+        </div>
+
+        <div className="divider-line" />
+
+        {/* Tagline Footer */}
+        <div className="print-footer-tagline">
+          <span>PURE • NATURAL • TRUSTED</span>
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
-import { API_BASE_URL } from "../api/config";
+import { apiFetch } from "../api/apiClient";
 
 // Generate Purchase ID
 export const getNextPurchaseId = async () => {
-  const res = await fetch(`${API_BASE_URL}/purchases/next-id`);
+  const res = await apiFetch("/purchases/next-id");
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Failed to generate purchase ID");
   return data.purchaseId;
@@ -10,9 +10,8 @@ export const getNextPurchaseId = async () => {
 
 // Save Purchase with Items
 export const addPurchase = async (purchaseData, items) => {
-  const res = await fetch(`${API_BASE_URL}/purchases`, {
+  const res = await apiFetch("/purchases", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ purchaseData, items })
   });
   const data = await res.json();
@@ -26,7 +25,7 @@ export const subscribePurchases = (callback) => {
 
   const fetchPurchases = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/purchases`);
+      const res = await apiFetch("/purchases");
       if (res.ok) {
         const purchases = await res.json();
         if (isMounted) {

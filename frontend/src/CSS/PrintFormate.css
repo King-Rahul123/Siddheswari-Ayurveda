@@ -1,62 +1,241 @@
-.print-container {
-  width: 100%;
-  padding: 20px;
-  background: white;
-  color: black;
-  font-family: Arial, sans-serif;
+.print-page-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 30px;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #0f172a;
 }
 
-.invoice-header-print {
-  text-align: center;
-  margin-bottom: 15px;
+.print-card{
+  width:210mm;
+  min-height:297mm;
+  padding:12mm 14mm;
+  margin:auto;
+  background:#fff;
+  box-sizing:border-box;
+  position:relative;
 }
 
-.invoice-header-print h1 {
-  margin: 0;
-  font-size: 25px;
+@page{
+    size:A4;
+    margin:10mm;
 }
 
-.invoice-details {
+/* Background Watermark Image */
+.watermark-overlay {
+  position: absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:.2;
+  z-index:0;
+}
+
+.watermark-img {
+  width: 460px;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.55;
+}
+.print-card > *:not(.watermark-overlay) {
+    position: relative;
+    z-index: 2;
+}
+
+.print-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Header Bar */
+.print-header-bar {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 18px;
 }
 
-.customer-details {
-  margin-bottom: 15px;
+.brand-logo-img {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
 }
 
-.print-table {
+.header-meta {
+  text-align: right;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #334155;
+}
+
+.header-meta p {
+  margin: 3px 0;
+}
+
+.divider-line {
+  height: 1px;
+  background-color: #cbd5e1;
+  margin: 12px 0;
+}
+
+/* Title Banner */
+.invoice-title-banner {
+  text-align: center;
+  padding: 4px 0;
+}
+
+.invoice-title-banner h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #0f172a;
+}
+
+/* Customer Info */
+.customer-info-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 13.5px;
+  color: #1e293b;
+  padding:12px;
+  border:1px solid #d7e2d7;
+  border-radius:10px;
+background:#fafdfb;
+}
+
+.customer-info-box p {
+  margin: 0;
+}
+
+/* Table */
+.printable-table {
   width: 100%;
   border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 13px;
 }
 
-.print-table th,
-.print-table td {
-  border: 1px solid #000;
-  padding-left: 8px;
-  padding-right: 8px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  text-align: center;
+.printable-table th {
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+  padding: 8px 6px;
+  text-align: left;
 }
 
-.invoice-total {
-  margin-top: 20px;
-  text-align: right;
+.printable-table td {
+  border: 1px solid #e2e8f0;
+  padding: 7px 6px;
+  color: #334155;
 }
 
-.signature-section {
+/* Summary Block */
+.invoice-summary-block {
+  display: flex;
+  justify-content: flex-end;
+  margin: 12px 0;
+}
+
+.summary-col {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13.5px;
+}
+
+.summary-row {
   display: flex;
   justify-content: space-between;
-  margin-top: 60px;
+  color: #475569;
+}
+
+.grand-total-row {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 2px solid #0f172a;
+  font-size: 15px;
+  font-weight: 800;
+  color: black;
+}
+
+/* Signature Section */
+.signature-area {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 40px;
+  margin-bottom: 10px;
+}
+
+.seller-signature-box {
+  text-align: center;
+  width: 200px;
+}
+
+.sig-line {
+  border-bottom: 1px solid #475569;
+  margin-bottom: 6px;
+}
+
+.seller-signature-box p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+}
+
+/* Tagline Footer */
+.print-footer-tagline {
+  text-align: center;
+  padding: 8px 0 2px 0;
+}
+
+.print-footer-tagline span {
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: #16a34a;
 }
 
 @media print {
   body {
+    background: #ffffff !important;
     margin: 0;
+    padding: 0;
   }
 
-  .print-container {
-    padding: 10px;
+  .print-page-wrapper {
+    padding: 0;
+    background: transparent;
   }
+
+  .print-card {
+    border: none;
+    box-shadow: none;
+    max-width: 100%;
+    width: 100%;
+    padding: 18px;
+  }
+
+  .watermark-overlay {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    pointer-events: none;
+    user-select: none;
+
+    z-index: 0;
+  }
+
 }

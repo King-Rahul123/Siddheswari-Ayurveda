@@ -55,9 +55,8 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route element={<ProtectedRoute />}></Route>
+        <Route element={<ProtectedRoute />}>
           {/* Dashboard */}
-          {/* <Route path="/dashboard" element={<DashboardLayout />}> */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/customer" element={<Customer />} />
           <Route path="/dashboard/sales" element={<Sales />} />
@@ -67,13 +66,12 @@ export default function App() {
           <Route path="/dashboard/sales/edit/:billnumber" element={<EditSale />} />
           <Route path="/dashboard/purchase" element={<Purchase />} />
           <Route path="/dashboard/purchase-report" element={<Purchase />} />
-          {/* <Route path="/dashboard/purchase/edit/:billNumber" element={<EditPurchase />} /> */}
           <Route path="/dashboard/stock-report" element={<Stock />} />
           <Route path="/dashboard/purchase/purchase-entry" element={<Suspense fallback={<Loader />}><PurchaseEntry /></Suspense>} />
           <Route path="/dashboard/staff-report" element={<StaffReport />} />
           <Route path="/dashboard/analytics" element={<Suspense fallback={<Loader />}><Analytics /></Suspense>} />
           <Route path="/dashboard/appointments" element={<Suspense fallback={<Loader />}><Appointment /></Suspense>} />
-        <Route/>
+        </Route>
       </Routes>
       <ToastContainer
         position="bottom-right"

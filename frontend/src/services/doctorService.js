@@ -1,8 +1,8 @@
-import { API_BASE_URL } from "../api/config";
+import { apiFetch } from "../api/apiClient";
 
 // Generate next Doctor Code
 export const getNextDoctorCode = async () => {
-  const res = await fetch(`${API_BASE_URL}/doctors/next-code`);
+  const res = await apiFetch("/doctors/next-code");
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Failed to generate doctor code");
   return data.code;
@@ -10,9 +10,8 @@ export const getNextDoctorCode = async () => {
 
 // Add Doctor
 export const addDoctor = async (doctor) => {
-  const res = await fetch(`${API_BASE_URL}/doctors`, {
+  const res = await apiFetch("/doctors", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(doctor)
   });
   const data = await res.json();
@@ -26,7 +25,7 @@ export const subscribeDoctors = (callback) => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/doctors`);
+      const res = await apiFetch("/doctors");
       if (res.ok) {
         const doctors = await res.json();
         if (isMounted) {

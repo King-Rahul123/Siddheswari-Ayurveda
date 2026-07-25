@@ -4,6 +4,10 @@ const Purchase = require("../models/Purchase");
 const Product = require("../models/Product");
 const Stock = require("../models/Stock");
 const { getNextSequence } = require("../models/Counter");
+const authMiddleware = require("../middleware/authMiddleware");
+
+router.use(authMiddleware);
+
 
 // Generate Next Purchase ID
 router.get("/next-id", async (req, res) => {
