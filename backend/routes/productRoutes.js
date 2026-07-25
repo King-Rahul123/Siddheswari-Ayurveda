@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
+const Stock = require("../models/Stock");
 const { getNextSequence } = require("../models/Counter");
 
 // Generate Next Product Code
@@ -40,6 +41,27 @@ router.post("/", async (req, res) => {
     });
 
     await product.save();
+
+    // Ensure record exists in Stock collection
+    await Stock.findOneAndUpdate(
+      { itemCode: product.itemCode },
+      {
+        $set: {
+          stockId: `STK_${product.itemCode}`,
+          itemCode: product.itemCode,
+          productName: product.productName,
+          batch: product.batch || "-",
+          mrp: product.mrp || 0,
+          rate: product.mrp || 0,
+          expiryDate: product.expiry || "-"
+        },
+        $setOnInsert: {
+          qty: Number(product.stock || 0)
+        }
+      },
+      { upsert: true, new: true }
+    );
+
     res.status(201).json(product);
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-// import Header from "../Components/Header";
 import Sidebar from "./Sidebar";
 import "../CSS/Card.css";
 import "../CSS/SaleInvoice.css";
@@ -9,72 +8,22 @@ import ProductList from "../Popup/ProductList";
 import { addSale, getNextSaleId, getCurrentSaleId } from "../services/saleService";
 
 export default function SaleInvoice() {
-
   const navigate = useNavigate();
   const [customer, setCustomer] = useState({
-      customerCode: "",
-      customerName: "",
-      phone: "",
+    customerCode: "",
+    customerName: "",
+    phone: "",
   });
 
   const [showCustomerPopup, setShowCustomerPopup] = useState(false);
   const [showProductPopup, setShowProductPopup] = useState(false);
+  const [showEndConfirmModal, setShowEndConfirmModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState(0);
 
-  const handleEnterKey = (e) => {
-    if (e.key === "+" || e.code === "NumpadAdd") {
-      e.preventDefault();
-      addRow();
-
-      setTimeout(() => {
-        const rows = invoiceRef.current?.querySelectorAll(
-          "tbody tr input:first-child"
-        );
-
-        rows?.[rows.length - 1]?.focus();
-      }, 50);
-    }
-    const form = e.currentTarget;
-
-    const elements = Array.from(
-      form.querySelectorAll(
-        "input, select, textarea, button"
-      )
-    ).filter(
-      (el) =>
-        !el.disabled &&
-        el.type !== "hidden" &&
-        !el.readOnly
-    );
-
-    const currentIndex = elements.indexOf(
-      document.activeElement
-    );
-
-    // Enter → Next Field
-    if (e.key === "Enter") {
-      e.preventDefault();
-
-      if (
-        currentIndex > -1 &&
-        currentIndex < elements.length - 1
-      ) {
-        elements[currentIndex + 1].focus();
-      }
-    }
-
-    // Backspace on empty field → Previous Field
-    if (
-      e.key === "Backspace" &&
-      e.target.value === ""
-    ) {
-      e.preventDefault();
-
-      if (currentIndex > 0) {
-        elements[currentIndex - 1].focus();
-      }
-    }
-  };
+  const [saleId, setSaleId] = useState("");
+  const [invoiceDate, setInvoiceDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
 
   const [toast, setToast] = useState({
     show: false,
@@ -83,108 +32,77 @@ export default function SaleInvoice() {
   });
 
   const loggedInUser = JSON.parse(
-    localStorage.getItem("loggedInUser")
+    localStorage.getItem("loggedInUser") || "{}"
   );
-
-  const saveInvoice = async () => {
-    try {
-      const validItems = items.filter(
-        (item) => item.productName.trim() !== ""
-      );
-
-      const totalQty = validItems.reduce(
-        (sum, item) => sum + Number(item.qty || 0),
-        0
-      );
-
-      const generatedSaleId = await getNextSaleId();
-
-      const saleData = {
-        saleId: generatedSaleId,
-        customerCode: customer.customerCode,
-        customerName: customer.customerName,
-        date: invoiceDate,
-        totalQty,
-        totalAmount: netAmount,
-        createdBy: loggedInUser.username,
-      };
-
-      await addSale(saleData, validItems);
-
-      const nextDisplayId = await getCurrentSaleId();
-      setSaleId(nextDisplayId);
-
-      // Clear customer
-      setCustomer({
-        customerCode: "",
-        customerName: "",
-        phone: "",
-      });
-
-      // Clear items
-      setItems([
-        {
-          itemCode: "",
-          productName: "",
-          batch: "",
-          expiry: "",
-          qty: 0,
-          mrp: 0,
-          rate: 0,
-          discount: 0,
-          gst: 0,
-          amount: 0,
-        },
-      ]);
-
-      setToast({
-        show: true,
-        message: `${saleId} saved successfully`,
-        type: "success",
-      });
-    } catch (err) {
-      console.error(err);
-
-      setToast({
-        show: true,
-        message: "Failed to save invoice",
-        type: "error",
-      });
-    }
-  };
 
   const firstProductRef = useRef(null);
   const invoiceRef = useRef(null);
   const lastFocusedElement = useRef(null);
 
-  //Generate Bill Number based on the current year and a counter stored in localStorage
-  const [saleId, setSaleId] = useState("");
-  const [invoiceDate, setInvoiceDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [items, setItems] = useState([
+    {
+      itemCode: "",
+      productName: "",
+      batch: "",
+      expiry: "",
+      qty: "",
+      mrp: "",
+      rate: "",
+      discount: "",
+      gst: "",
+      amount: 0,
+    },
+  ]);
 
   useEffect(() => {
     async function loadBillNo() {
-    const id = await getCurrentSaleId();
-      setSaleId(id);
+      try {
+        const id = await getCurrentSaleId();
+        setSaleId(id);
+      } catch (err) {
+        console.error("Error fetching sale ID:", err);
+      }
     }
     loadBillNo();
   }, []);
 
-  const [items, setItems] = useState([
-    {
-      itemCode:"",
-      productName:"",
-      batch:"",
-      expiry:"",
-      qty:0,
-      mrp:0,
-      rate:0,
-      discount:0,
-      gst:0,
-      amount:0,
-  }
-  ]);
+  // Global listener for End key shortcut
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if (e.key === "End") {
+        e.preventDefault();
+        setShowEndConfirmModal(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleGlobalKeyDown);
+    };
+  }, []);
+
+  // Modal key controls for End key confirmation modal
+  useEffect(() => {
+    if (!showEndConfirmModal) return;
+
+    const handleModalKeyDown = (e) => {
+      if (e.key === "Escape" || e.key.toLowerCase() === "c") {
+        e.preventDefault();
+        setShowEndConfirmModal(false);
+      } else if (e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        setShowEndConfirmModal(false);
+        saveInvoice();
+      } else if (e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        setShowEndConfirmModal(false);
+        handlePrint();
+      }
+    };
+
+    window.addEventListener("keydown", handleModalKeyDown);
+    return () => window.removeEventListener("keydown", handleModalKeyDown);
+  }, [showEndConfirmModal, items, customer, invoiceDate]);
 
   const addRow = () => {
     setItems((prev) => [
@@ -199,37 +117,288 @@ export default function SaleInvoice() {
         rate: "",
         discount: "",
         gst: "",
+        amount: 0,
       },
     ]);
   };
 
+  const addRowAndFocusNext = (currentIndex) => {
+    if (currentIndex === items.length - 1) {
+      setItems((prev) => [
+        ...prev,
+        {
+          itemCode: "",
+          productName: "",
+          batch: "",
+          expiry: "",
+          qty: "",
+          mrp: "",
+          rate: "",
+          discount: "",
+          gst: "",
+          amount: 0,
+        },
+      ]);
+    }
+
+    setTimeout(() => {
+      const rows = invoiceRef.current?.querySelectorAll("tbody tr");
+      const nextRow = rows?.[currentIndex + 1];
+      const prodInput = nextRow?.querySelector("input[name='productName']");
+      if (prodInput) {
+        prodInput.focus();
+      }
+    }, 50);
+  };
+
   const updateItem = (index, field, value) => {
-    const updated = [...items];
-    updated[index][field] = value;
-    updated[index].amount =
-      Number(updated[index].qty || 0) *
-      Number(updated[index].rate || 0);
+    setItems((prevItems) => {
+      const updated = [...prevItems];
+      const current = { ...updated[index], [field]: value };
+
+      const qty = Number(current.qty || 0);
+      const rate = Number(current.rate || 0);
+      const discount = Number(current.discount || 0);
+
+      // Warn if user enters qty greater than available stock
+      if (field === "qty" && current.availableStock !== undefined && qty > current.availableStock) {
+        setToast({
+          show: true,
+          message: `Quantity (${qty}) exceeds available stock (${current.availableStock}) for "${current.productName || 'product'}"`,
+          type: "error",
+        });
+      }
+
+      const itemSubtotal = qty * rate;
+      const itemDiscountAmt = (itemSubtotal * discount) / 100;
+      current.amount = itemSubtotal - itemDiscountAmt;
+
+      updated[index] = current;
+      return updated;
+    });
+  };
+
+  const selectProductInRow = (rowIndex, product) => {
+    setItems((prevItems) => {
+      const updated = [...prevItems];
+      const currentQty = Number(updated[rowIndex]?.qty || 0);
+      const newQty = currentQty > 0 ? currentQty : 1;
+
+      const rate = Number(product.rate || product.mrp || 0);
+      const mrp = Number(product.mrp || rate || 0);
+      const gst = Number(product.gst ?? product.gstRate ?? 0);
+      const discount = Number(product.discount || 0);
+
+      const batch = product.batch || "";
+      let expiry = product.expiry || product.expiryDate || "";
+      const availStock = product.stock !== undefined ? Number(product.stock) : undefined;
+
+      if (availStock !== undefined && newQty > availStock) {
+        setToast({
+          show: true,
+          message: `Selected product "${product.productName}" has only ${availStock} unit(s) in stock`,
+          type: "error",
+        });
+      }
+
+      const itemSubtotal = newQty * rate;
+      const itemDiscountAmt = (itemSubtotal * discount) / 100;
+      const amount = itemSubtotal - itemDiscountAmt;
+
+      updated[rowIndex] = {
+        ...updated[rowIndex],
+        itemCode: product.itemCode || "",
+        productName: product.productName || "",
+        batch: batch,
+        expiry: expiry,
+        qty: newQty,
+        mrp: mrp,
+        rate: rate,
+        discount: discount,
+        gst: gst,
+        amount: amount,
+        availableStock: availStock,
+      };
+      return updated;
+    });
+
+    setShowProductPopup(false);
+
+    // Auto-focus Qty input of the selected row
+    setTimeout(() => {
+      const rows = invoiceRef.current?.querySelectorAll("tbody tr");
+      const targetRow = rows?.[rowIndex];
+      if (targetRow) {
+        const qtyInput = targetRow.querySelector("input[name='qty']");
+        if (qtyInput) {
+          qtyInput.focus();
+          qtyInput.select?.();
+        }
+      }
+    }, 100);
+  };
+
+  const deleteRow = (index) => {
+    if (items.length === 1) return;
+    const updated = items.filter((_, i) => i !== index);
     setItems(updated);
   };
 
   const subTotal = items.reduce(
-    (sum, item) => sum + item.qty * item.rate,
+    (sum, item) => sum + Number(item.qty || 0) * Number(item.rate || 0),
     0
   );
 
-  const discount = subTotal > 1000 ? subTotal * 0.1 : 0;
-
-  const gstAmount = items.reduce(
+  const totalItemDiscount = items.reduce(
     (sum, item) =>
-      sum + (item.qty * item.rate * item.gst) / 100,
+      sum +
+      (Number(item.qty || 0) * Number(item.rate || 0) * Number(item.discount || 0)) / 100,
     0
   );
 
-  const netAmount = subTotal + gstAmount;
-  
-  const handlePrint = () => {
+  const gstAmount = items.reduce((sum, item) => {
+    const qty = Number(item.qty || 0);
+    const rate = Number(item.rate || 0);
+    const discount = Number(item.discount || 0);
+    const itemSub = qty * rate;
+    const afterDisc = itemSub - (itemSub * discount) / 100;
+    return sum + (afterDisc * Number(item.gst || 0)) / 100;
+  }, 0);
+
+  const netAmount = subTotal - totalItemDiscount + gstAmount;
+
+  const handleEnterKey = (e) => {
+    if (e.key === "+" || e.code === "NumpadAdd") {
+      e.preventDefault();
+      addRow();
+
+      setTimeout(() => {
+        const rows = invoiceRef.current?.querySelectorAll(
+          "tbody tr input[name='productName']"
+        );
+        rows?.[rows.length - 1]?.focus();
+      }, 50);
+    }
+  };
+
+  const saveInvoice = async () => {
+    try {
+      const validItems = items.filter(
+        (item) => item.productName && item.productName.trim() !== ""
+      );
+
+      if (validItems.length === 0) {
+        setToast({
+          show: true,
+          message: "Please add at least one product before saving",
+          type: "error",
+        });
+        return false;
+      }
+
+      // Check quantities against stock and handle invalid quantities
+      for (const item of validItems) {
+        const qtyNum = Number(item.qty || 0);
+        if (qtyNum <= 0) {
+          setToast({
+            show: true,
+            message: `Please enter a valid quantity greater than 0 for "${item.productName}"`,
+            type: "error",
+          });
+          return false;
+        }
+        if (item.availableStock !== undefined && qtyNum > item.availableStock) {
+          setToast({
+            show: true,
+            message: `Cannot save bill: Quantity (${qtyNum}) exceeds available stock (${item.availableStock}) for "${item.productName}"`,
+            type: "error",
+          });
+          return false;
+        }
+      }
+
+      const totalQty = validItems.reduce(
+        (sum, item) => sum + Number(item.qty || 0),
+        0
+      );
+
+      const generatedSaleId = await getNextSaleId();
+
+      const saleData = {
+        saleId: generatedSaleId,
+        customerCode: customer.customerCode,
+        customerName: customer.customerName,
+        date: invoiceDate,
+        totalQty,
+        totalAmount: subTotal,
+        discountTotal: totalItemDiscount,
+        netAmount: netAmount,
+        grandTotal: netAmount,
+        createdBy: loggedInUser?.username || "Admin",
+      };
+
+      await addSale(saleData, validItems);
+
+      const nextDisplayId = await getCurrentSaleId();
+      setSaleId(nextDisplayId);
+
+      // Clear customer
+      setCustomer({
+        customerCode: "",
+        customerName: "",
+        phone: "",
+      });
+
+      // Reset items
+      setItems([
+        {
+          itemCode: "",
+          productName: "",
+          batch: "",
+          expiry: "",
+          qty: "",
+          mrp: "",
+          rate: "",
+          discount: "",
+          gst: "",
+          amount: 0,
+        },
+      ]);
+
+      setToast({
+        show: true,
+        message: `${saleData.saleId} saved successfully`,
+        type: "success",
+      });
+      return true;
+    } catch (err) {
+      console.error(err);
+      setToast({
+        show: true,
+        message: err.message || "Failed to save invoice",
+        type: "error",
+      });
+      return false;
+    }
+  };
+
+  const handlePrint = async () => {
+    const validItems = items.filter(
+      (item) => item.productName && item.productName.trim() !== ""
+    );
+
+    if (validItems.length === 0) {
+      setToast({
+        show: true,
+        message: "Please add at least one product before printing",
+        type: "error",
+      });
+      return;
+    }
+
     const currentBillNo = saleId;
-    saveInvoice();
+    const savedSuccess = await saveInvoice();
+    if (!savedSuccess) return;
 
     navigate("/print-invoice", {
       state: {
@@ -237,20 +406,13 @@ export default function SaleInvoice() {
         invoiceDate,
         customerName: customer.customerName,
         mobile: customer.phone,
-        items,
+        items: validItems,
         subTotal,
-        discount,
+        discount: totalItemDiscount,
         gstAmount,
         netAmount,
       },
     });
-  };
-
-  const deleteRow = (index) => {
-    if (items.length === 1) return; // Keep at least one row
-
-    const updated = items.filter((_, i) => i !== index);
-    setItems(updated);
   };
 
   return (
@@ -258,8 +420,6 @@ export default function SaleInvoice() {
       <Sidebar />
 
       <div className="dashboard-wrapper">
-        {/* <Header /> */}
-
         <main className="dashboard-content">
           {toast.show && (
             <div
@@ -275,7 +435,6 @@ export default function SaleInvoice() {
                       : "bi-check-circle-fill"
                   }`}
                 ></i>
-
                 <span>{toast.message}</span>
               </div>
             </div>
@@ -283,51 +442,81 @@ export default function SaleInvoice() {
 
           <div className="invoice-header">
             <div className="flex items-center gap-3">
-              <i className="bi bi-arrow-left bg-gray-500 py-1 px-2 text-white rounded-lg" onClick={() => window.history.back()}></i>
+              <i
+                className="bi bi-arrow-left bg-gray-500 py-1 px-2 text-white rounded-lg cursor-pointer"
+                onClick={() => window.history.back()}
+              ></i>
               <h2>Sales Invoice</h2>
             </div>
             <div className="flex items-center gap-2">
-              <button type="button" className="print-btn" onClick={handlePrint}>Save & Print</button>
-              <button type="button" className="save-btn" onClick={saveInvoice}>Save</button>
+              <button
+                type="button"
+                className="print-btn"
+                onClick={handlePrint}
+              >
+                Save & Print
+              </button>
+              <button
+                type="button"
+                className="save-btn"
+                onClick={saveInvoice}
+              >
+                Save
+              </button>
             </div>
           </div>
 
-          <form ref={invoiceRef} className="invoice-card" onKeyDown={handleEnterKey}>
+          <form
+            ref={invoiceRef}
+            className="invoice-card"
+            onKeyDown={handleEnterKey}
+          >
             <div className="invoice-info">
-              <input 
-                type="text" 
-                placeholder="Sale ID" 
-                value={saleId} 
+              <input
+                type="text"
+                placeholder="Sale ID"
+                value={saleId}
                 readOnly
               />
 
-              <input 
-                autoFocus 
-                type="date" 
-                value={invoiceDate} 
+              <input
+                autoFocus
+                type="date"
+                value={invoiceDate}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    const custInput = invoiceRef.current?.querySelector("input[placeholder='Customer Name']");
+                    custInput?.focus();
+                  }
+                }}
                 onChange={(e) => setInvoiceDate(e.target.value)}
               />
 
               <input
-                  type="text"
-                  placeholder="Customer Name"
-                  value={customer.customerName}
-                  onKeyDown={(e)=>{
-                      if(e.key==="Enter"){
-                        e.preventDefault();
-                        e.stopPropagation();
-                        lastFocusedElement.current = e.target;
-                        setShowCustomerPopup(true);
-                      }
-                  }}
+                type="text"
+                placeholder="Customer Name"
+                value={customer.customerName}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    lastFocusedElement.current = e.target;
+                    setShowCustomerPopup(true);
+                  }
+                }}
+                onChange={(e) =>
+                  setCustomer({ ...customer, customerName: e.target.value })
+                }
               />
 
-              <input 
-                type="text" 
-                placeholder="Mobile Number" 
-                value={customer.phone} 
-                onChange={(e) => 
-                  setCustomer({ ...customer, phone: e.target.value })} 
+              <input
+                type="text"
+                placeholder="Mobile Number"
+                value={customer.phone}
+                onChange={(e) =>
+                  setCustomer({ ...customer, phone: e.target.value })
+                }
                 readOnly
               />
             </div>
@@ -353,7 +542,8 @@ export default function SaleInvoice() {
                     <td>{index + 1}</td>
                     <td>
                       <input
-                        ref={index===0 ? firstProductRef : null}
+                        name="productName"
+                        ref={index === 0 ? firstProductRef : null}
                         type="text"
                         value={item.productName}
                         placeholder="Product Name"
@@ -366,114 +556,151 @@ export default function SaleInvoice() {
                           }
                         }}
                         onChange={(e) =>
-                          updateItem( index, "productName", e.target.value )
+                          updateItem(index, "productName", e.target.value)
                         }
                       />
                     </td>
 
                     <td>
                       <input
+                        name="batch"
                         type="text"
+                        placeholder="Batch"
                         value={item.batch}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            const rows = invoiceRef.current?.querySelectorAll("tbody tr");
+                            rows?.[index]?.querySelector("input[name='qty']")?.focus();
+                          }
+                        }}
                         onChange={(e) =>
-                          updateItem(
-                            index,
-                            "batch",
-                            e.target.value
-                          )
+                          updateItem(index, "batch", e.target.value)
                         }
                       />
                     </td>
 
                     <td>
                       <input
+                        name="qty"
                         type="number"
+                        placeholder="Qty"
                         value={item.qty}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            const rows = invoiceRef.current?.querySelectorAll("tbody tr");
+                            rows?.[index]?.querySelector("input[name='discount']")?.focus();
+                          }
+                        }}
                         onChange={(e) =>
-                          updateItem(
-                            index,
-                            "qty",
-                            Number(e.target.value)
-                          )
+                          updateItem(index, "qty", e.target.value)
                         }
                       />
                     </td>
 
                     <td>
                       <input
+                        name="mrp"
                         type="number"
+                        placeholder="MRP"
                         value={item.mrp}
-                        onChange={(e) =>
-                          updateItem(
-                            index,
-                            "mrp",
-                            Number(e.target.value)
-                          )
-                        }
+                        readOnly
+                        title="Fixed as per database product record"
+                        className="bg-gray-100 cursor-not-allowed"
                       />
                     </td>
 
                     <td>
                       <input
+                        name="rate"
                         type="number"
+                        placeholder="Rate"
                         value={item.rate}
-                        onChange={(e) =>
-                          updateItem( index, "rate", Number(e.target.value) )
-                        }
+                        readOnly
+                        title="Fixed as per database product record"
+                        className="bg-gray-100 cursor-not-allowed"
                       />
                     </td>
 
                     <td>
                       <input
+                        name="expiry"
                         type="text"
                         placeholder="MM/YYYY"
                         maxLength={7}
                         value={item.expiry}
-                        onChange={(e) => {
-                          let value = e.target.value.replace(/\D/g, "");
-                          if (value.length > 6) value = value.slice(0, 6);
-                          if (value.length > 2) {
-                            value = value.slice(0, 2) + "/" + value.slice(2);
-                          }
-                          updateItem(index, "expiry", value);
-                        }}
+                        readOnly
+                        title="Fixed as per database product record"
+                        className="bg-gray-100 cursor-not-allowed"
                       />
                     </td>
 
                     <td>
                       <input
+                        name="discount"
                         type="number"
+                        placeholder="Dis %"
                         value={item.discount}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addRowAndFocusNext(index);
+                          }
+                        }}
                         onChange={(e) =>
-                          updateItem( index, "discount", Number(e.target.value) )
+                          updateItem(index, "discount", e.target.value)
                         }
                       />
                     </td>
 
                     <td>
                       <input
+                        name="gst"
                         type="number"
+                        placeholder="GST %"
                         value={item.gst}
-                        onChange={(e) =>
-                          updateItem( index, "gst", Number(e.target.value) )
-                        }
+                        readOnly
+                        title="Fixed as per database product record"
+                        className="bg-gray-100 cursor-not-allowed"
                       />
                     </td>
 
                     <td className="amount-cell">
                       <div className="amount-wrapper">
-                        <span className="amount-value">₹{Number(item.amount).toFixed(2)}</span>
-                        <button type="button" className="delete-row-btn" onClick={() => deleteRow(index)} title="Delete Row">&times;</button>
+                        <span className="amount-value">
+                          ₹{Number(item.amount || 0).toFixed(2)}
+                        </span>
+                        <button
+                          type="button"
+                          className="delete-row-btn"
+                          onClick={() => deleteRow(index)}
+                          title="Delete Row"
+                        >
+                          &times;
+                        </button>
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <button type="button" className="add-row-btn" onClick={addRow}>+ Add Product</button>
+            <div className="flex justify-between items-center">
+              <button
+                type="button"
+                className="add-row-btn"
+                onClick={addRow}
+              >
+                + Add Product
+              </button>
+              <p className="text-xs text-gray-500 italic">
+                Tip: Press <kbd className="bg-gray-200 px-1 rounded">Enter</kbd> on GST% to add next row, or press <kbd className="bg-gray-200 px-1 rounded">End</kbd> to save/preview bill.
+              </p>
+            </div>
             <div className="invoice-summary">
               <h4>Subtotal : ₹{subTotal.toFixed(2)}</h4>
-              <h4>Discount : ₹{discount.toFixed(2)}</h4>
+              <h4>Discount : ₹{totalItemDiscount.toFixed(2)}</h4>
               <h4>GST : ₹{gstAmount.toFixed(2)}</h4>
               <h3>Net Amount : ₹{netAmount.toFixed(2)}</h3>
             </div>
@@ -489,16 +716,16 @@ export default function SaleInvoice() {
                 lastFocusedElement.current?.focus();
               }, 50);
             }}
-            onSelect={(customerData)=>{
-                setCustomer({
-                    customerCode:customerData.customerCode,
-                    customerName:customerData.name,
-                    phone:customerData.phone,
-                });
-                setShowCustomerPopup(false);
-                setTimeout(()=>{
-                    firstProductRef.current?.focus();
-                },100);
+            onSelect={(customerData) => {
+              setCustomer({
+                customerCode: customerData.customerCode,
+                customerName: customerData.name,
+                phone: customerData.phone,
+              });
+              setShowCustomerPopup(false);
+              setTimeout(() => {
+                firstProductRef.current?.focus();
+              }, 100);
             }}
           />
         )}
@@ -512,14 +739,85 @@ export default function SaleInvoice() {
             }, 50);
           }}
           onSelect={(product) => {
-            updateItem(selectedRow, "itemCode", product.itemCode);
-            updateItem(selectedRow, "productName", product.productName);
-            updateItem(selectedRow, "mrp", product.mrp);
-            updateItem(selectedRow, "gst", product.gst);
-            setShowProductPopup(false);
+            selectProductInRow(selectedRow, product);
           }}
         />
+
+        {/* Confirmation Modal when pressing END key */}
+        {showEndConfirmModal && (
+          <div
+            className="popup-overlay"
+            style={{ zIndex: 9999 }}
+            onClick={() => setShowEndConfirmModal(false)}
+          >
+            <div
+              className="customer-popup"
+              style={{ maxWidth: "440px", borderRadius: "20px", padding: "24px" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="popup-header" style={{ marginBottom: "16px" }}>
+                <h4 style={{ margin: 0, color: "#14532d", fontWeight: "700" }}>
+                  Confirm Invoice Action
+                </h4>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowEndConfirmModal(false)}
+                ></button>
+              </div>
+
+              <div className="popup-body" style={{ textAlign: "center" }}>
+                <p style={{ fontSize: "15px", color: "#475569", marginBottom: "20px" }}>
+                  What would you like to do with sale invoice <strong>{saleId}</strong>?
+                </p>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <button
+                    type="button"
+                    className="save-btn"
+                    style={{ width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: "8px" }}
+                    onClick={async () => {
+                      setShowEndConfirmModal(false);
+                      await saveInvoice();
+                    }}
+                  >
+                    <i className="bi bi-check-circle-fill"></i> Save Invoice (Press S)
+                  </button>
+
+                  <button
+                    type="button"
+                    className="print-btn"
+                    style={{ width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: "8px" }}
+                    onClick={() => {
+                      setShowEndConfirmModal(false);
+                      handlePrint();
+                    }}
+                  >
+                    <i className="bi bi-printer-fill"></i> Save & Preview/Print (Press P)
+                  </button>
+
+                  <button
+                    type="button"
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "16px",
+                      border: "1px solid #cbd5e1",
+                      background: "#f1f5f9",
+                      fontWeight: "600",
+                      color: "#475569",
+                      cursor: "pointer"
+                    }}
+                    onClick={() => setShowEndConfirmModal(false)}
+                  >
+                    Cancel (Press Esc)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+}

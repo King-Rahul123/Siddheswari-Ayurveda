@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { subscribeProducts } from "../services/productService";
+import { subscribeStock } from "../services/stockService";
 import "../CSS/PopupList.css";
 
 export default function ProductList({ show, onClose, onSelect }) {
 
     const [products, setProducts] = useState([]);
+    const [stocks, setStocks] = useState([]);
     const [search, setSearch] = useState("");
     const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -14,7 +16,8 @@ export default function ProductList({ show, onClose, onSelect }) {
     useEffect(() => {
         if (!show) return;
 
-        const unsubscribe = subscribeProducts(setProducts);
+        const unsubscribeProd = subscribeProducts(setProducts);
+        const unsubscribeStock = subscribeStock(setStocks);
 
         setTimeout(() => {
             searchRef.current?.focus();
@@ -34,12 +37,33 @@ export default function ProductList({ show, onClose, onSelect }) {
         window.addEventListener("keydown", handleEscape, true);
 
         return () => {
-            unsubscribe();
+            unsubscribeProd();
+            unsubscribeStock();
             window.removeEventListener("keydown", handleEscape, true);
         };
     }, [show, onClose]);
 
-    const filteredProducts = (products || []).filter((product) => {
+    // Map product with stock from Stock collection if available
+    const stockMap = new Map();
+    (stocks || []).forEach((s) => {
+        const code = (s.itemCode || s.code || "").toLowerCase();
+        if (code) {
+            stockMap.set(code, Number(s.qty ?? s.stock ?? 0));
+        }
+    });
+
+    const productsWithStock = (products || []).map((p) => {
+        const codeKey = (p.itemCode || p.code || "").toLowerCase();
+        const availableStock = stockMap.has(codeKey)
+            ? stockMap.get(codeKey)
+            : Number(p.stock || 0);
+        return {
+            ...p,
+            stock: availableStock
+        };
+    });
+
+    const filteredProducts = productsWithStock.filter((product) => {
         const text = search.toLowerCase();
 
         return (
@@ -130,6 +154,7 @@ export default function ProductList({ show, onClose, onSelect }) {
                                 <tr>
                                     <th style={{ width: 140 }}>Item Code</th>
                                     <th>Product Name</th>
+                                    <th style={{ width: 100 }} className="text-center">Stock</th>
                                 </tr>
                             </thead>
 
@@ -137,7 +162,7 @@ export default function ProductList({ show, onClose, onSelect }) {
                                 {filteredProducts.length === 0 ? (
                                     <tr>
                                         <td
-                                            colSpan={2}
+                                            colSpan={3}
                                             className="text-center py-4"
                                         >
                                             No Product Found
@@ -161,6 +186,9 @@ export default function ProductList({ show, onClose, onSelect }) {
                                         >
                                             <td>{product.itemCode}</td>
                                             <td>{product.productName}</td>
+                                            <td className={`text-center font-bold ${Number(product.stock || 0) <= 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+                                                {product.stock ?? 0}
+                                            </td>
                                         </tr>
                                     ))
                                 )}

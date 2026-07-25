@@ -12,73 +12,61 @@ export default function Stock() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubProd = subscribeProducts((data) => {
-            setProducts(data || []);
-            setLoading(false);
-        });
         const unsubStock = subscribeStock((data) => {
             setStockItems(data || []);
+            setLoading(false);
+        });
+        const unsubProd = subscribeProducts((data) => {
+            setProducts(data || []);
         });
         return () => {
-            unsubProd();
             unsubStock();
+            unsubProd();
         };
     }, []);
 
-    // Consolidate database products and stock records
-    const aggregatedMap = new Map();
-
-    // 1. Load all products from Product database collection
+    // Create a minStock map from products
+    const prodMinStockMap = new Map();
     (products || []).forEach((p) => {
-        const code = p.itemCode || p.code || p._id || "";
-        const name = p.productName || p.name || "Unnamed Product";
-        const key = (code || name).toString().toLowerCase();
-
-        aggregatedMap.set(key, {
-            id: p._id || code,
-            code: code,
-            product: name,
-            batch: p.batch || "-",
-            stock: Number(p.stock || 0),
-            minStock: Number(p.minStock || 0),
-            mrp: Number(p.mrp || p.price || 0),
-            expiry: p.expiry || p.expiryDate || "-"
-        });
+        const code = (p.itemCode || "").toLowerCase();
+        if (code) prodMinStockMap.set(code, Number(p.minStock || 0));
     });
 
-    // 2. Merge/Update from Stock database collection
-    (stockItems || []).forEach((s, idx) => {
+    // Map items from stocks database collection
+    const stockData = (stockItems || []).map((s, idx) => {
         const code = s.itemCode || s.code || "";
-        const name = s.productName || s.product || "";
-        const batch = s.batch || "";
-        const key = (code || name).toString().toLowerCase();
+        const name = s.productName || s.product || "Unnamed Product";
+        const minStock = prodMinStockMap.get(code.toLowerCase()) || Number(s.minStock || 0);
 
-        const sQty = Number(s.qty ?? s.stock ?? 0);
-        const sMrp = Number(s.mrp || s.rate || 0);
+        return {
+            id: s.stockId || s._id || `stock_${idx}`,
+            code: code || "-",
+            product: name,
+            batch: s.batch || "-",
+            stock: Number(s.qty ?? s.stock ?? 0),
+            minStock: minStock,
+            mrp: Number(s.mrp || s.rate || 0),
+            expiry: s.expiryDate || s.expiry || "-"
+        };
+    });
 
-        if (key && aggregatedMap.has(key)) {
-            const existing = aggregatedMap.get(key);
-            if (existing.stock < sQty) {
-                existing.stock = sQty;
-            }
-            if (batch && batch !== "-") existing.batch = batch;
-            if (sMrp > 0) existing.mrp = sMrp;
-            if (s.expiryDate || s.expiry) existing.expiry = s.expiryDate || s.expiry;
-        } else if (key) {
-            aggregatedMap.set(key, {
-                id: s.stockId || s._id || `stock_${idx}`,
-                code: code || `STK${idx + 1}`,
-                product: name || "Unnamed Product",
-                batch: batch || "-",
-                stock: sQty,
-                minStock: Number(s.minStock || 0),
-                mrp: sMrp,
-                expiry: s.expiryDate || s.expiry || "-"
+    // Include any product from products collection not yet present in stocks collection
+    const stockCodeSet = new Set((stockItems || []).map(s => (s.itemCode || "").toLowerCase()).filter(Boolean));
+    (products || []).forEach((p, idx) => {
+        const code = (p.itemCode || "").toLowerCase();
+        if (code && !stockCodeSet.has(code)) {
+            stockData.push({
+                id: p._id || p.itemCode || `prod_${idx}`,
+                code: p.itemCode || "-",
+                product: p.productName || "Unnamed Product",
+                batch: p.batch || "-",
+                stock: Number(p.stock || 0),
+                minStock: Number(p.minStock || 0),
+                mrp: Number(p.mrp || 0),
+                expiry: p.expiry || "-"
             });
         }
     });
-
-    const stockData = Array.from(aggregatedMap.values());
 
     const filteredStock = stockData.filter((item) =>
         (item.product || "").toLowerCase().includes(search.toLowerCase()) ||

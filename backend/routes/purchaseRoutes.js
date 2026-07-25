@@ -75,7 +75,7 @@ router.post("/", async (req, res) => {
         if (item.hsn) setFields.hsnCode = item.hsn;
         if (item.gst) setFields.gstRate = Number(item.gst);
 
-        await Product.findOneAndUpdate(
+        const updatedProd = await Product.findOneAndUpdate(
           filter,
           {
             ...(qtyNum > 0 ? { $inc: { stock: qtyNum } } : {}),
@@ -83,6 +83,33 @@ router.post("/", async (req, res) => {
           },
           { new: true }
         );
+
+        // Update / Upsert in Stock collection
+        const itemCodeToUse = code || updatedProd?.itemCode;
+        const productNameToUse = name || updatedProd?.productName || "Unnamed Product";
+
+        if (itemCodeToUse) {
+          const stockFilter = item.batch
+            ? { itemCode: itemCodeToUse, batch: item.batch }
+            : { itemCode: itemCodeToUse };
+
+          await Stock.findOneAndUpdate(
+            stockFilter,
+            {
+              $inc: { qty: qtyNum },
+              $set: {
+                stockId: `STK_${itemCodeToUse}_${item.batch || "DEFAULT"}`,
+                itemCode: itemCodeToUse,
+                productName: productNameToUse,
+                batch: item.batch || "-",
+                mrp: Number(item.mrp || updatedProd?.mrp || 0),
+                rate: Number(item.mrp || updatedProd?.mrp || 0),
+                expiryDate: item.expiry || item.expiryDate || updatedProd?.expiry || "-"
+              }
+            },
+            { upsert: true, new: true }
+          );
+        }
       }
     }
 

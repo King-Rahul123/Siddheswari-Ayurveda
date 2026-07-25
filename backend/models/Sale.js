@@ -4,9 +4,12 @@ const saleItemSchema = new mongoose.Schema({
   itemCode: { type: String },
   productName: { type: String },
   batch: { type: String },
+  expiry: { type: String, default: "" },
   qty: { type: Number, default: 0 },
+  mrp: { type: Number, default: 0 },
   rate: { type: Number, default: 0 },
   discount: { type: Number, default: 0 },
+  gst: { type: Number, default: 0 },
   amount: { type: Number, default: 0 }
 });
 
