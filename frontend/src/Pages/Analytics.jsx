@@ -23,6 +23,7 @@ const colors = ["#2e7d32", "#4caf50", "#81c784"];
 
 export default function Analytics() {
     const [stats, setStats] = useState({
+        netPurchase: 0,
         revenue: 0,
         todaySales: 0,
         customers: 0,
@@ -59,10 +60,6 @@ export default function Analytics() {
         loadAnalytics();
     }, []);
 
-    // const average = salesData.reduce((sum, item) => sum + item.sales, 0) / (salesData.length || 1);
-
-    // const predictedNextMonth = Math.round(average * 1.08);
-
     return (
         <div className="dashboard">
             <Sidebar />
@@ -78,14 +75,20 @@ export default function Analytics() {
 
                     <div className="analytics-cards">
                         <div className="analytics-card">
+                            <i className="bi bi-cart-check-fill"></i>
+                            <h3>₹{Number(stats.netPurchase || 0).toLocaleString("en-IN")}</h3>
+                            <p>Net Purchase</p>
+                        </div>
+
+                        <div className="analytics-card">
                             <i className="bi bi-currency-rupee"></i>
-                            <h3>₹{stats.revenue.toLocaleString("en-IN")}</h3>
-                            <p>Total Revenue</p>
+                            <h3>₹{Number(stats.revenue || 0).toLocaleString("en-IN")}</h3>
+                            <p>Total Sale</p>
                         </div>
 
                         <div className="analytics-card">
                             <i className="bi bi-graph-up-arrow"></i>
-                            <h3>₹{stats.todaySales.toLocaleString("en-IN")}</h3>
+                            <h3>₹{Number(stats.todaySales || 0).toLocaleString("en-IN")}</h3>
                             <p>Today's Sale</p>
                         </div>
 
@@ -110,7 +113,7 @@ export default function Analytics() {
         
                     <div className="analytics-grid">
                         <div className="chart-card large">
-                            <h3>Monthly Sales</h3>
+                            <h3>Monthly Sales & Purchases</h3>
                             <ResponsiveContainer width="100%" height={300}>
                                 <AreaChart data={salesData}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -118,9 +121,18 @@ export default function Analytics() {
                                 <YAxis />
                                 <Tooltip />
                                 <Area
+                                    type="monotone"
+                                    name="Sales (₹)"
                                     dataKey="sales"
                                     stroke="#2e7d32"
                                     fill="#81c784"
+                                />
+                                <Area
+                                    type="monotone"
+                                    name="Purchases (₹)"
+                                    dataKey="purchases"
+                                    stroke="#0284c7"
+                                    fill="#7dd3fc"
                                 />
                                 </AreaChart>
                             </ResponsiveContainer>
@@ -209,11 +221,7 @@ export default function Analytics() {
                                                     ).toLocaleString("en-IN")}
                                                 </td>
                                                 <td>
-                                                    {sale.createdAt?.toDate
-                                                        ? sale.createdAt
-                                                            .toDate()
-                                                            .toLocaleDateString("en-IN")
-                                                        : "-"}
+                                                    {sale.dateFormatted || "-"}
                                                 </td>
                                             </tr>
                                         ))

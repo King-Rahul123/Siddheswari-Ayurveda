@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import "../CSS/Doctor.css";
 import "../CSS/Card.css"
-import { addDoctor, getNextDoctorCode } from "../services/DoctorService";
+import { addDoctor, getNextDoctorCode } from "../services/doctorService";
 
 export default function AddDoctor({ show, onClose }) {
     const [doctorForm, setDoctorForm] = useState({

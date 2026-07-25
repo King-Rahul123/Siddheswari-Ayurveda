@@ -5,9 +5,9 @@ import { lazy, Suspense } from "react";
 import Loader from "./Components/Loader";
 // import { useState } from "react";
 
-import Login from "./pages/Login";
+import Login from "./Pages/Login";
 
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./Pages/Dashboard";
 import Customer from "./Pages/Customer";
 import Sales from "./Pages/Sale";
 import Purchase from "./Pages/Purchase";

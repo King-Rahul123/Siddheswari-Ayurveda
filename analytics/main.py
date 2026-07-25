@@ -30,27 +30,54 @@ def get_analytics_overview():
     db = get_db()
     
     sales_collection = db["sales"]
+    purchases_collection = db["purchases"]
     customers_collection = db["customers"]
     products_collection = db["products"]
     
     sales = list(sales_collection.find())
+    purchases = list(purchases_collection.find())
     customers_count = customers_collection.count_documents({})
     products = list(products_collection.find())
     
     revenue = 0.0
+    net_purchase = 0.0
     today_sales = 0.0
     today_str = datetime.now().strftime("%Y-%m-%d")
-    today_date_str = datetime.now().strftime("%a %b %d %Y") # e.g. Thu Jul 23 2026
     
     monthly_sales = {}
+    monthly_purchases = {}
     payment_methods = {}
     product_sales_qty = {}
     
+    # Process Purchases
+    for p in purchases:
+        amt = float(p.get("grandTotal", p.get("netAmount", p.get("totalAmount", p.get("total", 0.0)))) or 0.0)
+        net_purchase += amt
+        
+        p_date = None
+        if "createdAt" in p and isinstance(p["createdAt"], datetime):
+            p_date = p["createdAt"]
+        elif "date" in p and p["date"]:
+            try:
+                p_date = datetime.strptime(str(p["date"])[:10], "%Y-%m-%d")
+            except Exception:
+                p_date = datetime.now()
+        elif "invoiceDate" in p and p["invoiceDate"]:
+            try:
+                p_date = datetime.strptime(str(p["invoiceDate"])[:10], "%Y-%m-%d")
+            except Exception:
+                p_date = datetime.now()
+        else:
+            p_date = datetime.now()
+            
+        month_key = p_date.strftime("%b")
+        monthly_purchases[month_key] = monthly_purchases.get(month_key, 0.0) + amt
+
+    # Process Sales
     for sale in sales:
-        amount = float(sale.get("grandTotal", sale.get("total", 0.0)) or 0.0)
+        amount = float(sale.get("grandTotal", sale.get("netAmount", sale.get("totalAmount", sale.get("total", 0.0)))) or 0.0)
         revenue += amount
         
-        # Determine sale date
         sale_date = None
         if "createdAt" in sale and isinstance(sale["createdAt"], datetime):
             sale_date = sale["createdAt"]
@@ -90,17 +117,25 @@ def get_analytics_overview():
         
         if stock_val == 0:
             out_of_stock_count += 1
-            low_stock_list.append({"productName": name, "name": name, "stock": stock_val})
+            low_stock_list.append({"productName": name, "name": name, "stock": int(stock_val)})
         elif stock_val <= 10:
             low_stock_count += 1
-            low_stock_list.append({"productName": name, "name": name, "stock": stock_val})
+            low_stock_list.append({"productName": name, "name": name, "stock": int(stock_val)})
         else:
             in_stock_count += 1
             
     low_stock_list.sort(key=lambda x: x["stock"])
     
     month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    sales_data = [{"month": m, "sales": monthly_sales[m]} for m in month_order if m in monthly_sales]
+    sales_data = [
+        {
+            "month": m,
+            "sales": monthly_sales.get(m, 0.0),
+            "purchases": monthly_purchases.get(m, 0.0)
+        }
+        for m in month_order
+        if m in monthly_sales or m in monthly_purchases
+    ]
     
     payment_data = [{"name": k, "value": v} for k, v in payment_methods.items()]
     
@@ -127,6 +162,7 @@ def get_analytics_overview():
         
     return {
         "stats": {
+            "netPurchase": net_purchase,
             "revenue": revenue,
             "todaySales": today_sales,
             "customers": customers_count,

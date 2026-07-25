@@ -1,9 +1,9 @@
 # Siddheswari Ayurveda Management System
 
 ## Overview
-Siddheswari Ayurveda Management System is a React-based clinic and business management application built with Vite and Firebase. It supports day-to-day operations such as customer management, sales, purchases, stock tracking, staff records, analytics, and appointment handling through a clean browser-based interface.
+Siddheswari Ayurveda Management System is a clinic and business management application built with React (Vite) and Node.js / Express with MongoDB. It supports day-to-day operations such as customer management, sales, purchases, stock tracking, staff records, analytics, and appointment handling through a clean browser-based interface.
 
-The project is organized as a frontend-first application with Firebase acting as the backend layer for authentication, Firestore data storage, file storage, and analytics.
+The project is organized with a React frontend and an Express/MongoDB backend service layer.
 
 ## Purpose
 The purpose of this system is to simplify administrative and operational workflows for an Ayurveda clinic or similar healthcare business. It reduces manual record keeping, centralizes business data, and provides quick access to invoices, reports, and operational dashboards.
@@ -12,12 +12,12 @@ The purpose of this system is to simplify administrative and operational workflo
 
 | Feature | Description |
 | --- | --- |
-| Login and session handling | Staff can sign in with a username and password stored in Firebase Firestore. |
+| Login and session handling | Staff can sign in with a username and password authenticated against the database. |
 | Dashboard | Provides a central landing area for navigating the application. |
 | Customer management | Create, update, delete, and view customer records. |
 | Sales module | Handle sales entries, invoice generation, editing, and print-ready invoices. |
 | Purchase module | Record purchases and create purchase entries. |
-| Stock reporting | View stock-related information and track product availability. |
+| Stock reporting | View stock-related information from the stocks database collection. |
 | Staff reports | Manage and review staff-related operational details. |
 | Analytics | Display business insights using chart-based reporting. |
 | Appointment management | Track appointments from a dedicated appointment flow. |
@@ -34,8 +34,8 @@ The purpose of this system is to simplify administrative and operational workflo
 | Notifications | React Toastify |
 | Charts and reporting | Recharts |
 | Excel/export utilities | ExcelJS, xlsx, File Saver |
-| Backend platform | Firebase |
-| Firebase services | Firestore, Authentication, Storage, Analytics |
+| Backend platform | Node.js, Express.js |
+| Database | MongoDB (Mongoose) |
 | Build tooling | ESLint, Vite plugin React, PostCSS, Tailwind CSS tooling |
 
 ## Project Structure
@@ -46,20 +46,20 @@ The purpose of this system is to simplify administrative and operational workflo
 | `frontend/` | Main Vite React application. |
 | `frontend/src/App.jsx` | Application routing and global layout. |
 | `frontend/src/main.jsx` | App bootstrap entry point. |
-| `frontend/src/firebase/firebase.js` | Firebase initialization and exported services. |
 | `frontend/src/services/` | Data access helpers for auth, customers, sales, purchases, stock, and other modules. |
 | `frontend/src/Pages/` | Page-level views such as Dashboard, Login, Customer, Purchase, Sale, Stock, Analytics, and Appointment. |
 | `frontend/src/Components/` | Reusable UI and feature components such as invoices, loaders, headers, sidebars, and purchase entry screens. |
 | `frontend/src/Popup/` | Modal and popup-based forms for adding and viewing records. |
 | `frontend/src/CSS/` | Screen-specific stylesheet files. |
+| `backend/` | Express backend server, database models, and API routes. |
 
 ## Current Architecture
-The current architecture is a single-page React application with route-based navigation and Firebase-backed data services.
+The current architecture is a full-stack Web application with route-based navigation and Express/MongoDB backend APIs.
 
 1. `main.jsx` mounts the React app and loads global Bootstrap and application styles.
 2. `App.jsx` defines application routes using React Router.
 3. Public and protected views are rendered as pages under `src/Pages` and feature components under `src/Components`.
-4. Firebase is initialized once in `src/firebase/firebase.js` and reused across service modules.
+4. API requests are directed to the backend endpoints (`/api/...`).
 5. Business actions such as login, customer updates, and staff management are implemented inside the service layer rather than directly in UI components.
 6. Heavier routes like analytics and purchase entry are lazy-loaded with `Suspense` to keep the initial load lighter.
 
@@ -121,33 +121,20 @@ npm run lint
 ```
 
 ## Backend Setup
-This project uses Firebase instead of a custom Express or Node backend.
-
-### Firebase Services Used
-- Firestore for structured application data
-- Authentication for Firebase identity services
-- Storage for file assets
-- Analytics for usage tracking
+This project uses an Express backend connected to MongoDB.
 
 ### Setup Steps
-1. Create or open a Firebase project.
-2. Enable the services required by the app: Firestore, Authentication, Storage, and Analytics if needed.
-3. Update the Firebase configuration in `frontend/src/firebase/firebase.js` with your project values.
-4. Ensure your Firestore collections and documents match the service layer expectations, especially for staff, customer, product, purchase, and sales data.
-5. Configure security rules so only authorized staff can access operational data.
-
-### Important Note
-The Firebase config is currently stored directly in the frontend source file. If you plan to deploy this publicly, move sensitive configuration values into environment variables or another safer deployment strategy.
+1. Ensure Node.js and MongoDB are installed and running.
+2. Configure `.env` in `backend/` with `PORT` and `MONGO_URI`.
+3. Start backend server: `cd backend && node server.js`.
 
 ## Useful Tips
-- Keep Firestore collection names consistent with the service files, because the app expects exact paths.
-- Use the root scripts when working from the repository root; they already forward to the frontend project.
-- Test login and record creation flows after changing Firebase rules or schema fields.
-- If route-based pages are slow, review the lazy-loaded screens in `App.jsx` and the components they import.
+- Keep database schemas consistent across routes and models.
+- Test login, stock tracking, purchase entries, and sales invoice validation flows.
 - Keep the print invoice layout and sales invoice flow aligned, since those screens are typically used together.
 
 ## Conclusion
-This application provides a practical operational layer for managing Ayurveda clinic workflows in one place. It combines a responsive React UI with Firebase-backed persistence, making it suitable for day-to-day staff use, billing, reporting, and appointment tracking.
+This application provides a practical operational layer for managing Ayurveda clinic workflows in one place. It combines a responsive React UI with Express and MongoDB persistence, making it suitable for day-to-day staff use, billing, reporting, and appointment tracking.
 
 ## Support Contact
 For support, contact your project administrator or internal IT team.
