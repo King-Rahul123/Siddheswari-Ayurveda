@@ -9,7 +9,9 @@ const stockSchema = new mongoose.Schema(
     qty: { type: Number, default: 0 },
     mrp: { type: Number, default: 0 },
     rate: { type: Number, default: 0 },
-    expiryDate: { type: String, default: "" }
+    expiryDate: { type: String, default: "" },
+    hsn: { type: String, default: "" },
+    gst: { type: Number, default: 0 }
   },
   { timestamps: true }
 );

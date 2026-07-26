@@ -39,24 +39,36 @@ router.post("/", async (req, res) => {
       itemCode = `PCM${nextId.toString().padStart(3, "0")}`;
     }
 
+    const batchArray = Array.isArray(productData.batch)
+      ? productData.batch
+      : (productData.batch ? [productData.batch.toString().trim()] : []);
+    const mrpArray = Array.isArray(productData.mrp)
+      ? productData.mrp.map(Number)
+      : (productData.mrp !== undefined && productData.mrp !== "" ? [Number(productData.mrp)] : []);
+
     const product = new Product({
       ...productData,
-      itemCode
+      itemCode,
+      batch: batchArray,
+      mrp: mrpArray
     });
 
     await product.save();
 
     // Ensure record exists in Stock collection
+    const firstBatch = batchArray[0] || "-";
+    const firstMrp = mrpArray[0] || 0;
+
     await Stock.findOneAndUpdate(
-      { itemCode: product.itemCode },
+      { itemCode: product.itemCode, batch: firstBatch },
       {
         $set: {
-          stockId: `STK_${product.itemCode}`,
+          stockId: `STK_${product.itemCode}_${firstBatch}`,
           itemCode: product.itemCode,
           productName: product.productName,
-          batch: product.batch || "-",
-          mrp: product.mrp || 0,
-          rate: product.mrp || 0,
+          batch: firstBatch,
+          mrp: firstMrp,
+          rate: firstMrp,
           expiryDate: product.expiry || "-"
         },
         $setOnInsert: {
