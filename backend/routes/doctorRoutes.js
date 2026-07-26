@@ -31,6 +31,7 @@ router.get("/", async (req, res) => {
 // Add Doctor
 router.post("/", async (req, res) => {
   try {
+    console.log(req.body);
     const doctorData = req.body;
     let doctorCode = doctorData.doctorCode;
     if (!doctorCode) {

@@ -57,6 +57,7 @@
     justify-content: space-between;
     margin-bottom: 18px;
     align-items: center;
+    gap: 15px;
 }
 
 .search-box {

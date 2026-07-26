@@ -13,8 +13,6 @@ export default function AddStaff({ show, onClose, onSave }) {
         role: "staff",
     });
 
-    if (!show) return null;
-
     const handleChange = (e) => {
         const { name, value } = e.target;
 
@@ -65,19 +63,38 @@ export default function AddStaff({ show, onClose, onSave }) {
             onClose();
             toast.success("Staff added successfully", { className: "ayurveda-toast" });
         } catch (err) {
-            toast.error(err.message || "Failed to add staff", { className: "ayurveda-toast error" });
+            toast.error(err.message || "Failed to add staff");
         }
     };
 
+    const resetForm = () => {
+        setFormData({
+            username: "",
+            name: "",
+            email: "",
+            phone: "",
+            password: "",
+            confirmPassword: "",
+            role: "staff",
+        });
+    };
+
+    const handleCancel = () => {
+        resetForm();
+        onClose();
+    }
+
+    if (!show) return null;
+
     return (
-        <div className="staff-popup-overlay">
-            <div className="popup-card">
+        <div className="staff-popup-overlay" onClick={handleCancel}>
+            <div className="popup-card"  onClick={(e) => e.stopPropagation()}>
                 <div className="popup-header">
                     <div className="flex items-center gap-2">
                         <div className="popup-icon"><i className="bi bi-person-plus-fill"></i></div>
                         <h3>Add New Staff</h3>
                     </div>
-                    <button type="button" className="close-btn" onClick={onClose}>
+                    <button type="button" className="close-btn" onClick={handleCancel}>
                         <i className="bi bi-x-lg"></i>
                     </button>
                 </div>
@@ -164,7 +181,7 @@ export default function AddStaff({ show, onClose, onSave }) {
                     </div>
 
                     <div className="popup-footer">
-                        <button type="button" className="cancel-btn" onClick={onClose}>Cancel</button>
+                        <button type="button" className="cancel-btn" onClick={handleCancel}>Cancel</button>
 
                         <button type="submit" className="save-btn">
                             <i className="bi bi-person-plus-fill"></i>

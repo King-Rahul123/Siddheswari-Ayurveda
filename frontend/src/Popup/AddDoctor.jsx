@@ -6,8 +6,8 @@ import { addDoctor, getNextDoctorCode } from "../services/doctorService";
 
 export default function AddDoctor({ show, onClose }) {
     const [doctorForm, setDoctorForm] = useState({
-        name: "",
-        photo: "",
+        doctorName: "",
+        // photo: "",
         age: "",
         gender: "",
         phone: "",
@@ -21,22 +21,22 @@ export default function AddDoctor({ show, onClose }) {
         });
     };
 
-    const handlePhotoChange = (e) => {
-        const file = e.target.files[0];
+    // const handlePhotoChange = (e) => {
+    //     const file = e.target.files[0];
 
-        if (!file) return;
+    //     if (!file) return;
 
-        const reader = new FileReader();
+    //     const reader = new FileReader();
 
-        reader.onloadend = () => {
-            setDoctorForm((prev) => ({
-                ...prev,
-                photo: reader.result,
-            }));
-        };
+    //     reader.onloadend = () => {
+    //         setDoctorForm((prev) => ({
+    //             ...prev,
+    //             photo: reader.result,
+    //         }));
+    //     };
 
-        reader.readAsDataURL(file);
-    };
+    //     reader.readAsDataURL(file);
+    // };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -50,7 +50,7 @@ export default function AddDoctor({ show, onClose }) {
         // Clear form and close popup immediately
         setDoctorForm({
             name: "",
-            photo: "",
+            // photo: "",
             age: "",
             gender: "",
             phone: "",
@@ -64,7 +64,7 @@ export default function AddDoctor({ show, onClose }) {
             await addDoctor(doctor);
 
             toast.success(
-            `🌿 ${doctor.name} has been registered successfully.`,
+            `🌿 ${doctor.doctorName} has been registered successfully.`,
             {
                 icon: false,
                 className: "ayurveda-toast",
@@ -82,8 +82,8 @@ export default function AddDoctor({ show, onClose }) {
 
     const resetForm = () => {
         setDoctorForm({
-            name: "",
-            photo: "",
+            doctorName: "",
+            // photo: "",
             age: "",
             gender: "",
             phone: "",
@@ -125,10 +125,10 @@ export default function AddDoctor({ show, onClose }) {
                         <div className="grid grid-cols md:grid-cols-2 gap-4">
                             <div className="form-group">
                                 <label>Full Name *</label>
-                                <input type="text" name="name" placeholder="Enter doctor name" value={doctorForm.name} onChange={handleChange} required />
+                                <input type="text" name="doctorName" placeholder="Enter doctor name" value={doctorForm.doctorName} onChange={handleChange} required />
                             </div>
 
-                            <div className="doctor-photo-section">
+                            {/* <div className="doctor-photo-section">
                                 <div className="doctor-photo-preview">
                                     {doctorForm.photo ? (
                                         <img src={doctorForm.photo} alt="Doctor" />
@@ -144,7 +144,7 @@ export default function AddDoctor({ show, onClose }) {
                                         <input type="file" accept="image/*" onChange={handlePhotoChange} hidden />
                                     </label>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
 
                         <div className="grid grid-cols md:grid-cols-4 gap-4">

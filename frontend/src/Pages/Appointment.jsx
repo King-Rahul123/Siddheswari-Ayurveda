@@ -4,6 +4,7 @@ import "../CSS/Appointment.css";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import TakeAppointment from "../Popup/TakeAppointment";
+import AddDoctor from "../Popup/AddDoctor";
 
 import { subscribePatients } from "../services/patientService";
 
@@ -16,6 +17,7 @@ export default function Appointment() {
     const [todayOnly, setTodayOnly] = useState(false);
 
     const [showAppointmentForm, setShowAppointmentForm] = useState(false);
+    const [showDoctorPopup, setShowDoctorPopup] = useState(false);
 
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [editMode, setEditMode] = useState(false);
@@ -26,13 +28,11 @@ export default function Appointment() {
     const exportToExcel = () => {
         console.log("Export Excel");
         setShowExportPopup(false);
-
     };
 
     const exportToCSV = () => {
         console.log("Export CSV");
         setShowExportPopup(false);
-
     };
 
     const filteredPatients = patients.filter((item) => {
@@ -100,13 +100,7 @@ export default function Appointment() {
                         </div>
 
                         <div className="flex gap-3">
-                            <button className="add-doctor-btn"
-                                onClick={() => {
-                                    setSelectedPatient(null);
-                                    setEditMode(false);
-                                    setShowAppointmentForm(true);
-                                }}
-                            >
+                            <button className="add-doctor-btn" onClick={() => setShowDoctorPopup(true)}>
                                 <i className="bi bi-plus-circle-fill"></i>
                                 Add Doctor
                             </button>
@@ -130,7 +124,7 @@ export default function Appointment() {
                             show={true}
                             patient={selectedPatient}
                             editMode={editMode}
-                            viewMode={!editMode}
+                            viewMode={selectedPatient !== null && !editMode}
                             onClose={() => {
                                 setShowAppointmentForm(false);
                                 setEditMode(false);
@@ -349,6 +343,12 @@ export default function Appointment() {
                         )}
                         </>
                     )}
+
+                    <AddDoctor
+                        show={showDoctorPopup}
+                        onClose={() => setShowDoctorPopup(false)}
+                        // onSave={handleAddDoctor}
+                    />
                 </main>
 
             </div>

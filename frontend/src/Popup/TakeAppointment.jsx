@@ -273,9 +273,9 @@ export default function AppointmentPopup({
                                     {doctors.map((doctor) => (
                                         <option
                                             key={doctor.doctorCode}
-                                            value={doctor.name}
+                                            value={doctor.doctorName}
                                         >
-                                            {doctor.name}
+                                            {doctor.doctorName}
                                         </option>
                                     ))}
                                 </select>
@@ -312,15 +312,18 @@ export default function AppointmentPopup({
 
                     {/* Footer */}
                     <div className="popup-footer">
-                        <button type="button" className="cancel-btn" onClick={handleCancel}>Cancel</button>
-                        <button type="button" className="view-btn" disabled={viewMode} className={viewMode ? "disabled" : ""} onClick={() => setEditMode(!editMode)}>
-                            {viewMode && "View Only"}
+                        <button type="button" className="cancel-btn" onClick={handleCancel}>
+                            Cancel
                         </button>
-                        {editMode && !viewMode && (
+
+                        {viewMode ? (
+                            <button type="button" className="view-btn" disabled>
+                                View Only
+                            </button>
+                        ) : (
                             <button type="submit" className="save-btn">
                                 <i className="bi bi-check-circle-fill"></i>
                                 {editMode ? "Update Appointment" : "Book Appointment"}
-                                {viewMode && " (View Only)"}
                             </button>
                         )}
                     </div>
