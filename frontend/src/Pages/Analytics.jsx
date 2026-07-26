@@ -14,6 +14,7 @@ import {
     Bar,
 } from "recharts";
 
+import { apiFetch } from "../api/apiClient";
 import { API_BASE_URL } from "../api/config";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
@@ -23,6 +24,10 @@ const colors = ["#2e7d32", "#4caf50", "#81c784"];
 
 export default function Analytics() {
     const [stats, setStats] = useState({
+        totalRevenue: 0,
+        totalOrders: 0,
+        totalCustomers: 0,
+        activeProducts: 0,
         netPurchase: 0,
         revenue: 0,
         todaySales: 0,
@@ -41,7 +46,7 @@ export default function Analytics() {
     
     const loadAnalytics = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/analytics/overview`);
+            const res = await apiFetch("/analytics/overview");
             if (res.ok) {
                 const data = await res.json();
                 if (data.stats) setStats(data.stats);

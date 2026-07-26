@@ -1,8 +1,8 @@
-import { API_BASE_URL } from "../api/config";
+import { apiFetch } from "../api/apiClient";
 
 // Generate Next Product Code
 export const getNextProductCode = async () => {
-  const res = await fetch(`${API_BASE_URL}/products/next-code`);
+  const res = await apiFetch("/products/next-code");
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Failed to generate product code");
   return data.code;
@@ -10,9 +10,8 @@ export const getNextProductCode = async () => {
 
 // Add Product
 export const addProduct = async (product) => {
-  const res = await fetch(`${API_BASE_URL}/products`, {
+  const res = await apiFetch("/products", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(product)
   });
   const data = await res.json();
@@ -26,7 +25,7 @@ export const subscribeProducts = (callback) => {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/products`);
+      const res = await apiFetch("/products");
       if (res.ok) {
         const products = await res.json();
         if (isMounted) {

@@ -290,7 +290,7 @@ export default function Dashboard() {
                   <button
                     className="btn-close"
                     onClick={() => setShowChangePassword(false)}
-                  ></button>
+                  >&times;</button>
                 </div>
                 <div className="modal-body">
                   <div className="mb-3">

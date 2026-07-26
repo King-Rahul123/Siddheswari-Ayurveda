@@ -1,8 +1,8 @@
-import { API_BASE_URL } from "../api/config";
+import { apiFetch } from "../api/apiClient";
 
 // Generate Stock ID
 export const getNextStockId = async () => {
-  const res = await fetch(`${API_BASE_URL}/stock/next-id`);
+  const res = await apiFetch("/stock/next-id");
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Failed to generate stock ID");
   return data.stockId;
@@ -10,9 +10,8 @@ export const getNextStockId = async () => {
 
 // Add Stock Batch
 export const addStock = async (stock) => {
-  const res = await fetch(`${API_BASE_URL}/stock`, {
+  const res = await apiFetch("/stock", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(stock)
   });
   const data = await res.json();
@@ -26,7 +25,7 @@ export const subscribeStock = (callback) => {
 
   const fetchStock = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/stock`);
+      const res = await apiFetch("/stock");
       if (res.ok) {
         const stockList = await res.json();
         if (isMounted) {

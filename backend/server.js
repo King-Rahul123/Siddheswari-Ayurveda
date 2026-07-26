@@ -4,6 +4,8 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const Staff = require("./models/Staff");
 
+const bcrypt = require("bcryptjs");
+
 dotenv.config();
 
 const app = express();
@@ -20,12 +22,13 @@ const seedAdmin = async () => {
   try {
     const adminCount = await Staff.countDocuments({ role: "admin" });
     if (adminCount === 0) {
+      const hashedPassword = await bcrypt.hash("admin", 10);
       const defaultAdmin = new Staff({
         username: "admin",
         name: "Administrator",
         email: "admin@siddheswari.com",
         phone: "9876543210",
-        password: "admin",
+        password: hashedPassword,
         role: "admin",
         salary: "50000",
         address: "Head Office"

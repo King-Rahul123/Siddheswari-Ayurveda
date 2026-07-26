@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const http = require("http");
+const authMiddleware = require("../middleware/authMiddleware");
+
+router.use(authMiddleware);
+
 
 // Proxy route to Python FastAPI service running on port 8000
 router.get("/overview", (req, res) => {

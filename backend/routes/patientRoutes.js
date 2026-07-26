@@ -2,6 +2,10 @@ const express = require("express");
 const router = express.Router();
 const Patient = require("../models/Patient");
 const { getNextSequence } = require("../models/Counter");
+const authMiddleware = require("../middleware/authMiddleware");
+
+router.use(authMiddleware);
+
 
 // Generate Next Patient Code
 router.get("/next-code", async (req, res) => {

@@ -2,6 +2,10 @@ const express = require("express");
 const router = express.Router();
 const Stock = require("../models/Stock");
 const { getNextSequence } = require("../models/Counter");
+const authMiddleware = require("../middleware/authMiddleware");
+
+router.use(authMiddleware);
+
 
 // Generate Next Stock ID
 router.get("/next-id", async (req, res) => {

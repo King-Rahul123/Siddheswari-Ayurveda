@@ -2,6 +2,10 @@ const express = require("express");
 const router = express.Router();
 const Company = require("../models/Company");
 const { getNextSequence } = require("../models/Counter");
+const authMiddleware = require("../middleware/authMiddleware");
+
+router.use(authMiddleware);
+
 
 // Generate Next Company Code
 router.get("/next-code", async (req, res) => {

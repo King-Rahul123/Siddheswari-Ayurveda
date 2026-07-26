@@ -28,6 +28,7 @@ const saleSchema = new mongoose.Schema(
     netAmount: { type: Number, default: 0 },
     totalQty: { type: Number, default: 0 },
     createdBy: { type: String, default: "" },
+    pdfPath: { type: String, default: "" },
     items: [saleItemSchema]
   },
   { timestamps: true }

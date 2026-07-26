@@ -578,6 +578,28 @@ body {
 /* ======================
    Buttons
 ====================== */
+.btn-close {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 15px;
+  right: 20px;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-close:hover {
+  color: #d32f2f;
+  transform: scale(1.15);
+}
 
 .btn-success {
     background: #2e7d32;

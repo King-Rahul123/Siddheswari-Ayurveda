@@ -1,8 +1,8 @@
-import { API_BASE_URL } from "../api/config";
+import { apiFetch } from "../api/apiClient";
 
 // Generate next Patient Code
 export const getNextPatientCode = async () => {
-  const res = await fetch(`${API_BASE_URL}/patients/next-code`);
+  const res = await apiFetch("/patients/next-code");
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Failed to generate patient code");
   return data.code;
@@ -10,9 +10,8 @@ export const getNextPatientCode = async () => {
 
 // Add Patient
 export const addPatient = async (patient) => {
-  const res = await fetch(`${API_BASE_URL}/patients`, {
+  const res = await apiFetch("/patients", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patient)
   });
   const data = await res.json();
@@ -26,7 +25,7 @@ export const subscribePatients = (callback) => {
 
   const fetchPatients = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/patients`);
+      const res = await apiFetch("/patients");
       if (res.ok) {
         const patients = await res.json();
         if (isMounted) {
@@ -48,9 +47,8 @@ export const subscribePatients = (callback) => {
 };
 
 export const updatePatient = async (patientCode, data) => {
-  const res = await fetch(`${API_BASE_URL}/patients/${encodeURIComponent(patientCode)}`, {
+  const res = await apiFetch(`/patients/${encodeURIComponent(patientCode)}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
   });
   const resData = await res.json();

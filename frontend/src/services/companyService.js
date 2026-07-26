@@ -1,8 +1,8 @@
-import { API_BASE_URL } from "../api/config";
+import { apiFetch } from "../api/apiClient";
 
 // Generate next companies Code
 export const getNextcompaniesCode = async () => {
-  const res = await fetch(`${API_BASE_URL}/companies/next-code`);
+  const res = await apiFetch("/companies/next-code");
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Failed to generate company code");
   return data.code;
@@ -10,9 +10,8 @@ export const getNextcompaniesCode = async () => {
 
 // Add companies
 export const addcompanies = async (companies) => {
-  const res = await fetch(`${API_BASE_URL}/companies`, {
+  const res = await apiFetch("/companies", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(companies)
   });
   const data = await res.json();
@@ -26,7 +25,7 @@ export const subscribecompanies = (callback) => {
 
   const fetchCompanies = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/companies`);
+      const res = await apiFetch("/companies");
       if (res.ok) {
         const companies = await res.json();
         if (isMounted) {

@@ -1,8 +1,8 @@
-import { API_BASE_URL } from "../api/config";
+import { apiFetch } from "../api/apiClient";
 
 // Show next bill number without incrementing
 export const getCurrentSaleId = async () => {
-  const res = await fetch(`${API_BASE_URL}/sales/current-id`);
+  const res = await apiFetch("/sales/current-id");
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Failed to fetch current sale ID");
   return data.saleId;
@@ -10,7 +10,7 @@ export const getCurrentSaleId = async () => {
 
 // Generate Next Sale ID
 export const getNextSaleId = async () => {
-  const res = await fetch(`${API_BASE_URL}/sales/next-id`);
+  const res = await apiFetch("/sales/next-id");
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Failed to generate sale ID");
   return data.saleId;
@@ -18,9 +18,8 @@ export const getNextSaleId = async () => {
 
 // Save Sale with Items
 export const addSale = async (saleData, items) => {
-  const res = await fetch(`${API_BASE_URL}/sales`, {
+  const res = await apiFetch("/sales", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ saleData, items })
   });
   const data = await res.json();
@@ -34,7 +33,7 @@ export const subscribeSales = (callback) => {
 
   const fetchSales = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/sales`);
+      const res = await apiFetch("/sales");
       if (res.ok) {
         const sales = await res.json();
         if (isMounted) {

@@ -18,6 +18,7 @@ import Stock from "./Pages/Stock";
 import StaffReport from "./Pages/StaffReport";
 import Analytics from "./Pages/Analytics";
 import Appointment from "./Pages/Appointment";
+import ProtectedRoute from "./Components/ProtectedRoute";
 
 const PurchaseEntry = lazy(() => import("./Components/PurchaseEntry"));
 // import EditPurchase from "./Components/EditPurchase";
@@ -54,9 +55,8 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-
-        {/* Dashboard */}
-        {/* <Route path="/dashboard" element={<DashboardLayout />}> */}
+        <Route element={<ProtectedRoute />}>
+          {/* Dashboard */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/customer" element={<Customer />} />
           <Route path="/dashboard/sales" element={<Sales />} />
@@ -66,13 +66,13 @@ export default function App() {
           <Route path="/dashboard/sales/edit/:billnumber" element={<EditSale />} />
           <Route path="/dashboard/purchase" element={<Purchase />} />
           <Route path="/dashboard/purchase-report" element={<Purchase />} />
-          {/* <Route path="/dashboard/purchase/edit/:billNumber" element={<EditPurchase />} /> */}
           <Route path="/dashboard/stock-report" element={<Stock />} />
           <Route path="/dashboard/purchase/purchase-entry" element={<Suspense fallback={<Loader />}><PurchaseEntry /></Suspense>} />
           <Route path="/dashboard/staff-report" element={<StaffReport />} />
           <Route path="/dashboard/analytics" element={<Suspense fallback={<Loader />}><Analytics /></Suspense>} />
           <Route path="/dashboard/appointments" element={<Suspense fallback={<Loader />}><Appointment /></Suspense>} />
-        </Routes>
+        </Route>
+      </Routes>
       <ToastContainer
         position="bottom-right"
         autoClose={3000}
