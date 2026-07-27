@@ -86,13 +86,29 @@ router.post("/", async (req, res) => {
     // Sync Product collection batch and mrp arrays
     if (code || name) {
       const prodFilter = code ? { itemCode: code } : { productName: new RegExp("^" + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "$", "i") };
-      const updateOps = { $inc: { stock: qtyNum } };
-      const addToSetFields = {};
-      if (batch) addToSetFields.batch = batch;
-      if (stockData.mrp && !isNaN(Number(stockData.mrp))) addToSetFields.mrp = Number(stockData.mrp);
-      if (Object.keys(addToSetFields).length > 0) updateOps.$addToSet = addToSetFields;
+      const targetProd = await Product.findOne(prodFilter);
+      if (targetProd) {
+        targetProd.stock = Number(targetProd.stock || 0) + qtyNum;
 
-      await Product.findOneAndUpdate(prodFilter, updateOps);
+        let batchList = Array.isArray(targetProd.batch)
+          ? [...targetProd.batch]
+          : (targetProd.batch ? [String(targetProd.batch)] : []);
+        if (batch && !batchList.includes(batch)) {
+          batchList.push(batch);
+        }
+        targetProd.batch = batchList;
+
+        const numMrp = Number(stockData.mrp);
+        let mrpList = Array.isArray(targetProd.mrp)
+          ? [...targetProd.mrp]
+          : (targetProd.mrp !== undefined && targetProd.mrp !== null && targetProd.mrp !== "" ? [Number(targetProd.mrp)] : []);
+        if (!isNaN(numMrp) && numMrp > 0 && !mrpList.includes(numMrp)) {
+          mrpList.push(numMrp);
+        }
+        targetProd.mrp = mrpList;
+
+        await targetProd.save();
+      }
     }
 
     res.status(201).json(savedStock);

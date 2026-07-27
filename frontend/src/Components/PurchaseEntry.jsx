@@ -45,6 +45,7 @@ export default function PurchaseEntry() {
     const productNameRef = useRef(null);
     const itemCodeRef = useRef(null);
     const hsnRef = useRef(null);
+    const mrpRef = useRef(null);
     const gstRef = useRef(null);
     const unitRef = useRef(null);
     const minStockRef = useRef(null);
@@ -690,6 +691,7 @@ export default function PurchaseEntry() {
                         productNameRef={productNameRef}
                         itemCodeRef={itemCodeRef}
                         hsnRef={hsnRef}
+                        mrpRef={mrpRef}
                         gstRef={gstRef}
                         unitRef={unitRef}
                         minStockRef={minStockRef}
@@ -722,7 +724,8 @@ export default function PurchaseEntry() {
                             }, 50);
                         }}
                         onSelect={(company) => {
-                            setCompanySearchText(company.companyName);
+                            if (!company) return;
+                            setCompanySearchText(company.companyName || "");
                             setShowCompanySearch(false);
 
                             setTimeout(() => {
@@ -742,6 +745,7 @@ export default function PurchaseEntry() {
                             }, 50);
                         }}
                         onSelect={(product) => {
+                            if (!product) return;
                             const mrpVal = Array.isArray(product.mrp)
                                 ? (product.mrp.length > 0 ? product.mrp[product.mrp.length - 1] : "")
                                 : (product.mrp || product.price || "");

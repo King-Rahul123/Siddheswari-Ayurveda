@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const fs = require("fs");
 const path = require("path");
+const mongoose = require("mongoose");
 const Sale = require("../models/Sale");
 const Product = require("../models/Product");
 const Stock = require("../models/Stock");
@@ -108,9 +109,15 @@ router.post("/", async (req, res) => {
       let availableStock = 0;
       let stockDoc = null;
 
-      if (item.stockId || item._id) {
-        stockDoc = await Stock.findOne({ $or: [{ stockId: item.stockId }, { _id: item.stockId || item._id }] });
+      const targetStockId = item.stockId || item._id;
+      if (targetStockId) {
+        const stockOrConditions = [{ stockId: targetStockId }];
+        if (mongoose.Types.ObjectId.isValid(targetStockId)) {
+          stockOrConditions.push({ _id: targetStockId });
+        }
+        stockDoc = await Stock.findOne({ $or: stockOrConditions });
       }
+
       if (!stockDoc && code) {
         if (item.batch) {
           stockDoc = await Stock.findOne({ itemCode: code, batch: item.batch });
@@ -178,17 +185,26 @@ router.post("/", async (req, res) => {
           );
         }
 
-        if (item.stockId) {
-          await Stock.findOneAndUpdate(
-            { stockId: item.stockId },
-            { $inc: { qty: -qtyNum } }
+        const targetStockId = item.stockId || item._id;
+        let updatedStock = null;
+        if (targetStockId) {
+          const stockFilter = mongoose.Types.ObjectId.isValid(targetStockId)
+            ? { $or: [{ stockId: targetStockId }, { _id: targetStockId }] }
+            : { stockId: targetStockId };
+
+          updatedStock = await Stock.findOneAndUpdate(
+            stockFilter,
+            { $inc: { qty: -qtyNum } },
+            { new: true }
           );
-        } else if (code && item.batch) {
+        }
+
+        if (!updatedStock && code && item.batch) {
           await Stock.findOneAndUpdate(
             { itemCode: code, batch: item.batch },
             { $inc: { qty: -qtyNum } }
           );
-        } else if (code) {
+        } else if (!updatedStock && code) {
           await Stock.findOneAndUpdate(
             { itemCode: code },
             { $inc: { qty: -qtyNum } }

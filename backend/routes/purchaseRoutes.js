@@ -64,17 +64,16 @@ router.post("/", async (req, res) => {
       const name = (item.productName || "").toString().trim();
       const qtyNum = Number(item.qty || 0);
 
-      let filter = null;
-      if (code !== "") {
-        filter = { itemCode: code };
-      } else if (name !== "") {
-        filter = { productName: new RegExp("^" + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "$", "i") };
-      }
-
       let updatedProd = null;
 
-      if (filter) {
-        updatedProd = await Product.findOne(filter);
+      // 1. Try finding product by itemCode first
+      if (code !== "") {
+        updatedProd = await Product.findOne({ itemCode: code });
+      }
+      // Fallback: search product by name if not found by itemCode
+      if (!updatedProd && name !== "") {
+        const nameRegex = new RegExp("^" + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "$", "i");
+        updatedProd = await Product.findOne({ productName: nameRegex });
       }
 
       const itemBatch = (item.batch || "").toString().trim();
@@ -84,27 +83,37 @@ router.post("/", async (req, res) => {
       const itemGst = item.gst !== undefined ? Number(item.gst) : 0;
 
       if (updatedProd) {
-        const updateOps = {
-          $inc: { stock: qtyNum }
-        };
-        const setFields = {};
-        if (itemExpiry) setFields.expiry = itemExpiry;
-        if (itemHsn) setFields.hsnCode = itemHsn;
-        if (itemGst) setFields.gstRate = itemGst;
-        if (Object.keys(setFields).length > 0) updateOps.$set = setFields;
+        updatedProd.stock = Number(updatedProd.stock || 0) + qtyNum;
 
-        const addToSetFields = {};
-        if (itemBatch) addToSetFields.batch = itemBatch;
-        if (itemMrp !== null && !isNaN(itemMrp)) addToSetFields.mrp = itemMrp;
-        if (Object.keys(addToSetFields).length > 0) updateOps.$addToSet = addToSetFields;
+        if (itemExpiry) updatedProd.expiry = itemExpiry;
+        if (itemHsn) updatedProd.hsnCode = itemHsn;
+        if (itemGst) updatedProd.gstRate = itemGst;
 
-        updatedProd = await Product.findOneAndUpdate(
-          { _id: updatedProd._id },
-          updateOps,
-          { new: true }
-        );
+        // Safely migrate/handle batch as array
+        let batchList = Array.isArray(updatedProd.batch)
+          ? [...updatedProd.batch]
+          : (updatedProd.batch ? [String(updatedProd.batch)] : []);
+        if (itemBatch && !batchList.includes(itemBatch)) {
+          batchList.push(itemBatch);
+        }
+        updatedProd.batch = batchList;
+
+        // Safely migrate/handle mrp as array
+        let mrpList = Array.isArray(updatedProd.mrp)
+          ? [...updatedProd.mrp]
+          : (updatedProd.mrp !== undefined && updatedProd.mrp !== null && updatedProd.mrp !== "" ? [Number(updatedProd.mrp)] : []);
+        if (itemMrp !== null && !isNaN(itemMrp) && !mrpList.includes(itemMrp)) {
+          mrpList.push(itemMrp);
+        }
+        updatedProd.mrp = mrpList;
+
+        await updatedProd.save();
       } else if (code || name) {
         let itemCodeToCreate = code;
+        if (itemCodeToCreate) {
+          const existingCode = await Product.findOne({ itemCode: itemCodeToCreate });
+          if (existingCode) itemCodeToCreate = null;
+        }
         if (!itemCodeToCreate) {
           const nextId = await getNextSequence("product");
           itemCodeToCreate = `PCM${nextId.toString().padStart(3, "0")}`;
@@ -123,51 +132,52 @@ router.post("/", async (req, res) => {
       }
 
       // Update / Upsert in Stock collection per product + batch
-      const itemCodeToUse = code || updatedProd?.itemCode;
-      const productNameToUse = name || updatedProd?.productName || "Unnamed Product";
-      const batchToUse = itemBatch || "-";
-
-      let stockFilter = null;
-      if (itemCodeToUse) {
-        stockFilter = { itemCode: itemCodeToUse, batch: batchToUse };
-      } else if (productNameToUse) {
-        const nameRegex = new RegExp("^" + productNameToUse.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "$", "i");
-        stockFilter = { productName: nameRegex, batch: batchToUse };
+      let itemCodeToUse = updatedProd?.itemCode || code;
+      if (!itemCodeToUse) {
+        const nextProdSeq = await getNextSequence("product");
+        itemCodeToUse = `PCM${nextProdSeq.toString().padStart(3, "0")}`;
       }
 
-      if (stockFilter) {
-        const existingStock = await Stock.findOne(stockFilter);
+      const productNameToUse = updatedProd?.productName || name || "Unnamed Product";
+      const batchToUse = itemBatch || "-";
 
-        if (existingStock) {
-          existingStock.qty = Number(existingStock.qty || 0) + qtyNum;
-          if (itemMrp !== null && !isNaN(itemMrp)) {
-            existingStock.mrp = itemMrp;
-            existingStock.rate = itemMrp;
-          }
-          if (itemExpiry) existingStock.expiryDate = itemExpiry;
-          if (itemHsn) existingStock.hsn = itemHsn;
-          if (itemGst) existingStock.gst = itemGst;
-          existingStock.productName = productNameToUse;
-          if (itemCodeToUse) existingStock.itemCode = itemCodeToUse;
-          await existingStock.save();
-        } else {
-          const nextStockIdSeq = await getNextSequence("stock");
-          const codePart = itemCodeToUse || "PCM";
-          const generatedStockId = `STK_${codePart}_${batchToUse.replace(/\s+/g, '_')}_${nextStockIdSeq}`;
-          const newStockDoc = new Stock({
-            stockId: generatedStockId,
-            itemCode: itemCodeToUse || "",
-            productName: productNameToUse,
-            batch: batchToUse,
-            qty: qtyNum,
-            mrp: itemMrp !== null && !isNaN(itemMrp) ? itemMrp : 0,
-            rate: itemMrp !== null && !isNaN(itemMrp) ? itemMrp : 0,
-            expiryDate: itemExpiry || "-",
-            hsn: itemHsn,
-            gst: itemGst
-          });
-          await newStockDoc.save();
+      let stockFilter = { itemCode: itemCodeToUse, batch: batchToUse };
+
+      let existingStock = await Stock.findOne(stockFilter);
+      if (!existingStock && productNameToUse) {
+        const nameRegex = new RegExp("^" + productNameToUse.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "$", "i");
+        existingStock = await Stock.findOne({ productName: nameRegex, batch: batchToUse });
+      }
+
+      if (existingStock) {
+        existingStock.qty = Number(existingStock.qty || 0) + qtyNum;
+        if (itemMrp !== null && !isNaN(itemMrp)) {
+          existingStock.mrp = itemMrp;
+          existingStock.rate = itemMrp;
         }
+        if (itemExpiry) existingStock.expiryDate = itemExpiry;
+        if (itemHsn) existingStock.hsn = itemHsn;
+        if (itemGst) existingStock.gst = itemGst;
+        existingStock.productName = productNameToUse;
+        existingStock.itemCode = itemCodeToUse;
+        await existingStock.save();
+      } else {
+        const nextStockIdSeq = await getNextSequence("stock");
+        const codePart = itemCodeToUse || "PCM";
+        const generatedStockId = `STK_${codePart}_${batchToUse.replace(/\s+/g, '_')}_${nextStockIdSeq}`;
+        const newStockDoc = new Stock({
+          stockId: generatedStockId,
+          itemCode: itemCodeToUse,
+          productName: productNameToUse,
+          batch: batchToUse,
+          qty: qtyNum,
+          mrp: itemMrp !== null && !isNaN(itemMrp) ? itemMrp : 0,
+          rate: itemMrp !== null && !isNaN(itemMrp) ? itemMrp : 0,
+          expiryDate: itemExpiry || "-",
+          hsn: itemHsn,
+          gst: itemGst
+        });
+        await newStockDoc.save();
       }
     }
 

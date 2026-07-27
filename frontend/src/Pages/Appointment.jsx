@@ -48,7 +48,7 @@ export default function Appointment() {
             (item.status || "Pending") === statusFilter;
 
         const matchesToday =
-            !todayOnly || item.appointDate === today;
+            !todayOnly || item.appointmentDate === today;
 
         return matchesSearch && matchesStatus && matchesToday;
     });
@@ -66,12 +66,12 @@ export default function Appointment() {
     const today = new Date().toISOString().split("T")[0];
 
     const todayCount = patients.filter(
-        a => a.appointDate === today
+        a => a.appointmentDate === today
     ).length;
 
     const upcomingCount = patients.filter(
         a =>
-            new Date(a.appointDate) > new Date(today) &&
+            new Date(a.appointmentDate) > new Date(today) &&
             (a.status || "Pending") !== "Completed" &&
             (a.status || "Pending") !== "Cancelled"
     ).length;
@@ -253,7 +253,7 @@ export default function Appointment() {
                                                     
                                                     <td>{appointment.patientCode}</td>
 
-                                                    <td>{appointment.appointDate}</td>
+                                                    <td>{appointment.appointmentDate}</td>
 
                                                     <td>{appointment.name}</td>
 

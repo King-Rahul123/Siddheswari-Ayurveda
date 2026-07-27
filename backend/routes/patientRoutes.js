@@ -4,8 +4,30 @@ const Patient = require("../models/Patient");
 const { getNextSequence } = require("../models/Counter");
 const authMiddleware = require("../middleware/authMiddleware");
 
-router.use(authMiddleware);
+// Add Patient / Public Appointment Request
+router.post("/", async (req, res) => {
+  try {
+    const patientData = req.body;
+    let patientCode = patientData.patientCode;
+    if (!patientCode) {
+      const nextId = await getNextSequence("patient");
+      patientCode = `P${nextId.toString().padStart(4, "0")}`;
+    }
 
+    const patient = new Patient({
+      ...patientData,
+      patientCode,
+      status: patientData.status || "Scheduled"
+    });
+
+    await patient.save();
+    res.status(201).json(patient);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.use(authMiddleware);
 
 // Generate Next Patient Code
 router.get("/next-code", async (req, res) => {
@@ -23,28 +45,6 @@ router.get("/", async (req, res) => {
   try {
     const patients = await Patient.find().sort({ createdAt: -1 });
     res.json(patients);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Add Patient
-router.post("/", async (req, res) => {
-  try {
-    const patientData = req.body;
-    let patientCode = patientData.patientCode;
-    if (!patientCode) {
-      const nextId = await getNextSequence("patient");
-      patientCode = `P${nextId.toString().padStart(4, "0")}`;
-    }
-
-    const patient = new Patient({
-      ...patientData,
-      patientCode
-    });
-
-    await patient.save();
-    res.status(201).json(patient);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

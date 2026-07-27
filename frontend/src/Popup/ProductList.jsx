@@ -108,10 +108,10 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
 
     const filteredItems = listToDisplay.filter((item) => {
         const text = search.toLowerCase();
-        const nameMatch = (item.productName || "").toLowerCase().includes(text);
-        const codeMatch = (item.itemCode || "").toLowerCase().includes(text);
-        const batchMatch = (item.batch || item.batchDisplay || "").toLowerCase().includes(text);
-        const mrpMatch = (item.mrp !== undefined ? String(item.mrp) : (item.mrpDisplay !== undefined ? String(item.mrpDisplay) : "")).includes(text);
+        const nameMatch = String(item.productName || "").toLowerCase().includes(text);
+        const codeMatch = String(item.itemCode || "").toLowerCase().includes(text);
+        const batchMatch = String(item.batch || item.batchDisplay || "").toLowerCase().includes(text);
+        const mrpMatch = String(item.mrp ?? item.mrpDisplay ?? "").toLowerCase().includes(text);
 
         return nameMatch || codeMatch || batchMatch || mrpMatch;
     });
@@ -134,6 +134,17 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
                 e.stopImmediatePropagation();
             }
             onClose();
+            return;
+        }
+
+        if (e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            const selectedItem = filteredItems[selectedIndex];
+            if (selectedItem) {
+                onSelect(selectedItem);
+                onClose();
+            }
             return;
         }
 

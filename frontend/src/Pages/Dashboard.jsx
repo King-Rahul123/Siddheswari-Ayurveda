@@ -41,7 +41,7 @@ export default function Dashboard() {
     const unsubscribePatients = subscribePatients((patients) => {
       // Sort by appointment date (latest first)
       const sorted = [...patients].sort(
-        (a, b) => new Date(b.appointDate) - new Date(a.appointDate)
+        (a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)
       );
 
       setAppointments(sorted);
@@ -208,9 +208,9 @@ export default function Dashboard() {
                     {appointments.length > 0 ? (
                       appointments.map((appointment, index) => (
                         <tr key={index} className="text-center">
-                          <td>{appointment.name}</td>
-                          <td>{appointment.appointDate}</td>
-                          <td>{appointment.problem}</td>
+                          <td>{appointment.patientName}</td>
+                          <td>{appointment.appointmentDate}</td>
+                          <td>{appointment.notes}</td>
                           <td>{appointment.doctor}</td>
                         </tr>
                       ))
