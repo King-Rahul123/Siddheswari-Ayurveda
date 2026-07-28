@@ -207,6 +207,7 @@ export default function SaleInvoice() {
 
       updated[rowIndex] = {
         ...updated[rowIndex],
+        stockId: product.stockId || product._id || "",
         itemCode: product.itemCode || "",
         productName: product.productName || "",
         batch: batch,
@@ -732,6 +733,7 @@ export default function SaleInvoice() {
 
         <ProductList
           show={showProductPopup}
+          mode="sale"
           onClose={() => {
             setShowProductPopup(false);
             setTimeout(() => {

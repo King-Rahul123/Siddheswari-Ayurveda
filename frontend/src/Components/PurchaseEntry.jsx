@@ -45,6 +45,7 @@ export default function PurchaseEntry() {
     const productNameRef = useRef(null);
     const itemCodeRef = useRef(null);
     const hsnRef = useRef(null);
+    const mrpRef = useRef(null);
     const gstRef = useRef(null);
     const unitRef = useRef(null);
     const minStockRef = useRef(null);
@@ -89,6 +90,17 @@ export default function PurchaseEntry() {
             temp[row] = {
                 ...temp[row],
                 [field]: value,
+            };
+            return temp;
+        });
+    };
+
+    const updateRow = (row, fieldsObj) => {
+        setRows((prev) => {
+            const temp = [...prev];
+            temp[row] = {
+                ...temp[row],
+                ...fieldsObj,
             };
             return temp;
         });
@@ -314,24 +326,6 @@ export default function PurchaseEntry() {
             };
 
             await addPurchase(purchase, items);
-
-            for (const item of items) {
-                const stockId = await getNextStockId();
-                await addStock({
-                    stockId,
-                    itemCode: item.itemCode,
-                    productName: item.productName,
-                    companyCode: purchase.companyCode,
-                    purchaseId: purchase.purchaseId,
-                    batch: item.batch,
-                    expiry: item.expiry,
-                    expiryDate: item.expiry,
-                    mrp: item.mrp,
-                    qty: Number(item.qty || 0),
-                    gst: item.gst,
-                    hsn: item.hsn,
-                });
-            }
 
             toast.success("Purchase Saved Successfully!");
             setShowConfirmModal(false);
@@ -697,6 +691,7 @@ export default function PurchaseEntry() {
                         productNameRef={productNameRef}
                         itemCodeRef={itemCodeRef}
                         hsnRef={hsnRef}
+                        mrpRef={mrpRef}
                         gstRef={gstRef}
                         unitRef={unitRef}
                         minStockRef={minStockRef}
@@ -729,7 +724,8 @@ export default function PurchaseEntry() {
                             }, 50);
                         }}
                         onSelect={(company) => {
-                            setCompanySearchText(company.companyName);
+                            if (!company) return;
+                            setCompanySearchText(company.companyName || "");
                             setShowCompanySearch(false);
 
                             setTimeout(() => {
@@ -740,6 +736,7 @@ export default function PurchaseEntry() {
 
                     <ProductList
                         show={showProductPopup}
+                        mode="purchase"
                         onClose={() => {
                             setShowProductPopup(false);
 
@@ -748,22 +745,30 @@ export default function PurchaseEntry() {
                             }, 50);
                         }}
                         onSelect={(product) => {
-                            updateCell(selectedRow, "productId", product.itemCode);
-                            updateCell(selectedRow, "productName", product.productName);
-                            updateCell(selectedRow, "gst", product.gst || product.gstRate || "");
-                            updateCell(selectedRow, "hsn", product.hsn || product.hsnCode || "");
-                            if (product.batch) {
-                                updateCell(selectedRow, "batch", product.batch);
-                            }
-                            if (product.expiry) {
-                                updateCell(selectedRow, "expiry", product.expiry);
-                            }
-                            if (product.mrp || product.price) {
-                                updateCell(selectedRow, "mrp", product.mrp || product.price);
-                            }
-                            if (product.discount) {
-                                updateCell(selectedRow, "discount", product.discount);
-                            }
+                            if (!product) return;
+                            const mrpVal = Array.isArray(product.mrp)
+                                ? (product.mrp.length > 0 ? product.mrp[product.mrp.length - 1] : "")
+                                : (product.mrp || product.price || "");
+                            const batchVal = Array.isArray(product.batch)
+                                ? (product.batch.length > 0 ? product.batch[product.batch.length - 1] : "")
+                                : (product.batch || "");
+
+                            const hsnVal = product.hsnCode || product.hsn || "";
+                            const gstVal = product.gstRate !== undefined && product.gstRate !== null && product.gstRate !== ""
+                                ? product.gstRate
+                                : (product.gst !== undefined ? product.gst : "");
+
+                            updateRow(selectedRow, {
+                                productId: product.itemCode || "",
+                                itemCode: product.itemCode || "",
+                                productName: product.productName || "",
+                                hsn: hsnVal,
+                                gst: gstVal,
+                                batch: batchVal,
+                                expiry: product.expiry || product.expiryDate || "",
+                                mrp: mrpVal,
+                                discount: product.discount || "",
+                            });
                             setShowProductPopup(false);
                             setTimeout(() => {
                                 tableRefs.current[selectedRow]?.[2]?.focus();

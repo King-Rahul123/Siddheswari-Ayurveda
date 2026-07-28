@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const fs = require("fs");
 const path = require("path");
+const mongoose = require("mongoose");
 const Sale = require("../models/Sale");
 const Product = require("../models/Product");
 const Stock = require("../models/Stock");
@@ -108,16 +109,27 @@ router.post("/", async (req, res) => {
       let availableStock = 0;
       let stockDoc = null;
 
-      if (code) {
-        if (item.batch && item.batch !== "-") {
+      const targetStockId = item.stockId || item._id;
+      if (targetStockId) {
+        const stockOrConditions = [{ stockId: targetStockId }];
+        if (mongoose.Types.ObjectId.isValid(targetStockId)) {
+          stockOrConditions.push({ _id: targetStockId });
+        }
+        stockDoc = await Stock.findOne({ $or: stockOrConditions });
+      }
+
+      if (!stockDoc && code) {
+        if (item.batch) {
           stockDoc = await Stock.findOne({ itemCode: code, batch: item.batch });
         }
         if (!stockDoc) {
           stockDoc = await Stock.findOne({ itemCode: code });
         }
-      } else if (name) {
+      } else if (!stockDoc && name) {
         const nameRegex = new RegExp("^" + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "$", "i");
-        stockDoc = await Stock.findOne({ productName: nameRegex });
+        stockDoc = item.batch
+          ? await Stock.findOne({ productName: nameRegex, batch: item.batch })
+          : await Stock.findOne({ productName: nameRegex });
       }
 
       if (stockDoc) {
@@ -133,7 +145,7 @@ router.post("/", async (req, res) => {
 
       if (qtyNum > availableStock) {
         return res.status(400).json({
-          message: `Insufficient stock for product "${name || code}". Available stock: ${availableStock}, Requested quantity: ${qtyNum}.`
+          message: `Insufficient stock for product "${name || code}" (Batch: ${item.batch || 'DEFAULT'}). Available stock: ${availableStock}, Requested quantity: ${qtyNum}.`
         });
       }
     }
@@ -165,18 +177,34 @@ router.post("/", async (req, res) => {
     for (const item of (items || [])) {
       const code = item.itemCode || item.productId;
       const qtyNum = Number(item.qty || 0);
-      if (code && qtyNum > 0) {
-        await Product.findOneAndUpdate(
-          { itemCode: code },
-          { $inc: { stock: -qtyNum } }
-        );
+      if (qtyNum > 0) {
+        if (code) {
+          await Product.findOneAndUpdate(
+            { itemCode: code },
+            { $inc: { stock: -qtyNum } }
+          );
+        }
 
-        if (item.batch && item.batch !== "-") {
+        const targetStockId = item.stockId || item._id;
+        let updatedStock = null;
+        if (targetStockId) {
+          const stockFilter = mongoose.Types.ObjectId.isValid(targetStockId)
+            ? { $or: [{ stockId: targetStockId }, { _id: targetStockId }] }
+            : { stockId: targetStockId };
+
+          updatedStock = await Stock.findOneAndUpdate(
+            stockFilter,
+            { $inc: { qty: -qtyNum } },
+            { new: true }
+          );
+        }
+
+        if (!updatedStock && code && item.batch) {
           await Stock.findOneAndUpdate(
             { itemCode: code, batch: item.batch },
             { $inc: { qty: -qtyNum } }
           );
-        } else {
+        } else if (!updatedStock && code) {
           await Stock.findOneAndUpdate(
             { itemCode: code },
             { $inc: { qty: -qtyNum } }

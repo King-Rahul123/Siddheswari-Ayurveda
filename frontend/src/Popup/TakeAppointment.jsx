@@ -14,14 +14,14 @@ export default function AppointmentPopup({
 }) {
     
     const emptyPatient = {
-        name: "",
+        patientName: "",
         phone: "",
         gender: "",
         age: "",
         address: "",
-        appointDate: "",
+        appointmentDate: "",
         doctor: "",
-        problem: "",
+        notes: "",
         status: "Pending",
     };
 
@@ -42,13 +42,13 @@ export default function AppointmentPopup({
     const inputRefs = useRef([]);
 
     const fields = [
-        "name",
+        "patientName",
         "age",
         "gender",
         "phone",
-        "appointDate",
+        "appointmentDate",
         "doctor",
-        "problem",
+        "notes",
     ];
 
     useEffect(() => {
@@ -78,9 +78,11 @@ export default function AppointmentPopup({
     };
 
     const handleChange = (e) => {
+        const { name, value } = e.target;
+
         setPatient({
             ...patient,
-            [e.target.name]: e.target.value,
+            [name]: value,
         });
     };
 
@@ -93,10 +95,10 @@ export default function AppointmentPopup({
             if (editMode) {
                 await updatePatient(patient.patientCode, patient);
                 toast.success(
-                    `🌿 ${patient.name} has been updated successfully.`,
+                    `🌿 ${patient.patientName} has been updated successfully.`,
                     {
                         icon: false,
-                        className: "ayurveda-toast",
+                        class: "ayurveda-toast",
                     }
                 );
             } else {
@@ -108,10 +110,10 @@ export default function AppointmentPopup({
 
                 await addPatient(patientData);
                 toast.success(
-                    `🌿 ${patientData.name} has been registered successfully.`,
+                    `🌿 ${patientData.patientName} has been registered successfully.`,
                     {
                         icon: false,
-                        className: "ayurveda-toast",
+                        class: "ayurveda-toast",
                     }
                 );
             }
@@ -126,14 +128,15 @@ export default function AppointmentPopup({
 
     const resetForm = () => {
         setPatient({
-            name: "",
+            patientName: "",
             phone: "",
             gender: "",
             age: "",
             address: "",
-            appointDate: "",
+            appointmentDate: "",
             doctor: "",
-            problem: "",
+            notes: "",
+            status: "Pending",
         });
     };
 
@@ -174,16 +177,16 @@ export default function AppointmentPopup({
 
                         <div className="popup-grid">
                             <div className="form-group">
-                                <label>Full Name *</label>
+                                <label>Full  *</label>
                                 <input
                                     ref={(el) => (inputRefs.current[0] = el)}
                                     type="text"
-                                    name="name"
+                                    name="patientName"
                                     placeholder="Enter full name"
-                                    value={patient.name}
+                                    value={patient.patientName}
                                     onChange={handleChange}
                                     readOnly={viewMode}
-                                    onKeyDown={(e) => handleEnter(e, "name")}
+                                    onKeyDown={(e) => handleEnter(e, "patientName")}
                                     required
                                 />
                             </div>
@@ -248,11 +251,11 @@ export default function AppointmentPopup({
                                 <input
                                     ref={(el) => (inputRefs.current[4] = el)}
                                     type="date"
-                                    name="appointDate"
-                                    value={patient.appointDate}
+                                    name="appointmentDate"
+                                    value={patient.appointmentDate}
                                     onChange={handleChange}
                                     readOnly={viewMode}
-                                    onKeyDown={(e) => handleEnter(e, "appointDate")}
+                                    onKeyDown={(e) => handleEnter(e, "appointmentDate")}
                                     required
                                 />
                             </div>
@@ -301,11 +304,11 @@ export default function AppointmentPopup({
                             <label>Problem / Symptoms</label>
                             <textarea
                                 ref={(el) => (inputRefs.current[6] = el)}
-                                name="problem"
-                                value={patient.problem}
+                                name="notes"
+                                value={patient.notes}
                                 onChange={handleChange}
                                 readOnly={viewMode}
-                                onKeyDown={(e) => handleEnter(e, "problem")}
+                                onKeyDown={(e) => handleEnter(e, "notes")}
                             />
                         </div>
                     </div>

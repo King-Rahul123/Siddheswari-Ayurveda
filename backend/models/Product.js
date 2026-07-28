@@ -4,9 +4,9 @@ const productSchema = new mongoose.Schema(
   {
     itemCode: { type: String, required: true, unique: true },
     productName: { type: String, required: true },
-    batch: { type: String, default: null },
+    batch: { type: [String], default: [] },
     expiry: { type: String, default: null },
-    mrp: { type: Number, default: 0 },
+    mrp: { type: [Number], default: [] },
     stock: { type: Number, default: 0 },
     hsnCode: { type: String, default: "" },
     gstRate: { type: Number, default: 0 },

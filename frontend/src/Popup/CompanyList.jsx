@@ -42,10 +42,10 @@ export default function CompanyList({
         const text = search.toLowerCase();
 
         return (
-            (company.companyName || "").toLowerCase().includes(text) ||
-            (company.companiesCode || "").toLowerCase().includes(text) ||
-            (company.mobile || "").toLowerCase().includes(text) ||
-            (company.email || "").toLowerCase().includes(text)
+            String(company.companyName || "").toLowerCase().includes(text) ||
+            String(company.companiesCode || "").toLowerCase().includes(text) ||
+            String(company.mobile || "").toLowerCase().includes(text) ||
+            String(company.email || "").toLowerCase().includes(text)
         );
     });
 
@@ -71,6 +71,17 @@ export default function CompanyList({
             return;
         }
 
+        if (e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            const selectedCompany = filteredCompanies[selectedIndex];
+            if (selectedCompany) {
+                onSelect(selectedCompany);
+                onClose();
+            }
+            return;
+        }
+
         switch (e.key) {
             case "ArrowDown":
                 e.preventDefault();
@@ -86,14 +97,6 @@ export default function CompanyList({
                 setSelectedIndex((prev) =>
                     Math.max(prev - 1, 0)
                 );
-                break;
-
-            case "Enter":
-                e.preventDefault();
-                if (filteredCompanies.length) {
-                    onSelect(filteredCompanies[selectedIndex]);
-                    onClose();
-                }
                 break;
 
             default:

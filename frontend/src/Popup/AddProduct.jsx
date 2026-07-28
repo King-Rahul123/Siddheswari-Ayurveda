@@ -10,6 +10,7 @@ export default function AddProduct({
     productNameRef,
     itemCodeRef,
     hsnRef,
+    mrpRef,
     gstRef,
     unitRef,
     minStockRef,
@@ -96,18 +97,20 @@ export default function AddProduct({
 									placeholder="HSN code"
 									value={newProduct.hsn || ""}
 									onChange={onChange}
-									onKeyDown={(event) => onFieldKeyDown(event, gstRef)}
+									onKeyDown={(event) => onFieldKeyDown(event, mrpRef)}
 								/>
 							</div>
 
 							<div className="form-group">
 								<label>MRP (₹)</label>
 								<input
+									ref={mrpRef}
 									name="mrp"
 									type="number"
 									placeholder="Enter MRP"
 									value={newProduct.mrp || ""}
 									onChange={onChange}
+									onKeyDown={(event) => onFieldKeyDown(event, gstRef)}
 								/>
 							</div>
 
@@ -118,7 +121,7 @@ export default function AddProduct({
 									name="gst"
 									value={newProduct.gst || ""}
 									onChange={onChange}
-									onKeyDown={(event) => onFieldKeyDown(event, unitRef)}
+									onKeyDown={(event) => onFieldKeyDown(event, minStockRef)}
 								>
 									<option value="">Select GST</option>
 									<option value="0">0%</option>

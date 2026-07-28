@@ -223,7 +223,13 @@ export default function StaffReport() {
                                                 <td>{staff.email}</td>
                                                 <td>{staff.phone}</td>
                                                 <td>
-                                                    {staff.createdAt?.toDate?.().toLocaleDateString("en-IN") || "-"}
+                                                    {staff.createdAt
+                                                        ? new Date(staff.createdAt).toLocaleDateString("en-IN", {
+                                                            day: "2-digit",
+                                                            month: "short",
+                                                            year: "numeric",
+                                                        })
+                                                        : "-"}
                                                 </td>
                                             </tr>
                                         ))

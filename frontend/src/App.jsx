@@ -6,6 +6,7 @@ import Loader from "./Components/Loader";
 // import { useState } from "react";
 
 import Login from "./Pages/Login";
+import Landing from "./Pages/Landing";
 
 import Dashboard from "./Pages/Dashboard";
 import Customer from "./Pages/Customer";
@@ -54,7 +55,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
         <Route element={<ProtectedRoute />}>
           {/* Dashboard */}
           <Route path="/dashboard" element={<Dashboard />} />
