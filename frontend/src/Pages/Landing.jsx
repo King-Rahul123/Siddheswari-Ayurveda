@@ -138,7 +138,8 @@ function Landing() {
       id: "nadi",
       title: "Nadi Pariksha (Pulse Diagnosis)",
       subtitle: "Ancient Ayurvedic Diagnostics",
-      icon: "bi-activity",
+      icon: 
+      "bi-activity",
       duration: "30 - 45 Mins",
       description: "Non-invasive, precise diagnosis of Vata, Pitta, and Kapha imbalances through radial pulse reading by our Chief Vaidya.",
       highlights: ["Root-cause discovery", "Personalized diet blueprint", "Early disease detection"]
@@ -363,14 +364,16 @@ function Landing() {
 
             <div className="doctor-info-container">
               <span className="doctor-kicker">Chief Ayurvedic Physician & Vaidya</span>
-              <h2 className="doctor-name">Kaviraj Dr. Siddheshwar Sen</h2>
+              <h2 className="doctor-name">Dr. Subham Maity</h2>
               <p className="doctor-qualifications">
-                <i className="bi bi-patch-check-fill gold-icon"></i> B.A.M.S. | M.D. (Ayurveda) | Panchakarma & Nadi Pariksha Specialist
+                <i className="bi bi-patch-check-fill gold-icon"></i> B.A.M.S. | M.D. (Ayurveda) | Specialist in Ksharasutra & Panchakarma 
               </p>
 
               <p className="doctor-bio">
-                Renowned for his compassionate healing touch and profound mastery over ancient <em>Nadi Pariksha</em> (pulse reading), Dr. Sen has devoted over two decades to curing chronic ailments at their root cause. Under his guidance, Siddheswari Ayurveda has become a sanctuary of holistic wellness for patients across West Bengal.
+                Dr. Shubham Maity, <strong>M.D. (Ayurveda)</strong>, is an experienced Ayurvedic physician specializing in <em>Ksharasutra</em> and <em>Panchakarma</em>. He offers holistic treatment for skin, digestive, gynecological, ENT, and lifestyle disorders, focusing on restoring health by treating the root cause through authentic Ayurvedic therapies.
               </p>
+
+
 
               {/* Doctor's Timetable Widget */}
               <div className="timetable-box" id="timetable">
@@ -382,18 +385,18 @@ function Landing() {
                 <div className="timetable-grid">
                   <div className="time-row">
                     <span className="day-name"><i className="bi bi-sun"></i> Morning Session</span>
-                    <span className="time-range">09:00 AM – 01:00 PM</span>
+                    <span className="time-range">09:00 AM – 11:30 AM</span>
                     <span className="day-badge">Mon to Sat</span>
                   </div>
-                  <div className="time-row">
+                  {/* <div className="time-row">
                     <span className="day-name"><i className="bi bi-moon-stars"></i> Evening Session</span>
                     <span className="time-range">05:00 PM – 08:30 PM</span>
                     <span className="day-badge">Mon to Sat</span>
-                  </div>
+                  </div> */}
                   <div className="time-row highlight-row">
-                    <span className="day-name"><i className="bi bi-heart"></i> Special Sunday Session</span>
-                    <span className="time-range">10:00 AM – 02:00 PM</span>
-                    <span className="day-badge gold-badge">Panchakarma & Nadi</span>
+                    <span className="day-name"><i className="bi bi-heart"></i>Every 2nd & 4th Tuesday Morning</span>
+                    {/* <span className="time-range">10:00 AM – 02:00 PM</span> */}
+                    <span className="day-badge gold-badge">Healthy Family 🌿</span>
                   </div>
                 </div>
 
