@@ -6,7 +6,6 @@ import '../CSS/Landing.css';
 
 function Landing() {
   const navigate = useNavigate();
-  const [activeCategory, setActiveCategory] = useState('All');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -18,13 +17,13 @@ function Landing() {
   const products = [
     {
       id: 1,
-      name: "Siddheswari Special Chyawanprash Elixir",
-      category: "Immunity",
-      price: "₹599",
+      name: "Agefyte Fresh Under Eye Cream",
+      category: "Skincare",
+      price: "₹184",
       rating: 4.9,
       reviews: 142,
-      image: "/images/chyawanprash.png",
-      tag: "Best Seller",
+      image: "/images/night_cream.jpg",
+      tag: "Bright Eyes",
       badge: "Pure & Organic",
       specifications: {
         weight: "500g Glass Jar",
@@ -37,14 +36,14 @@ function Landing() {
     },
     {
       id: 2,
-      name: "Kumkumadi Saffron Facial Oil",
+      name: "Neem Face Cleanser",
       category: "Skincare",
-      price: "₹899",
+      price: "₹190",
       rating: 5.0,
       reviews: 98,
-      image: "/images/kumkumadi.png",
-      tag: "Magical Radiance",
-      badge: "Pure Saffron",
+      image: "/images/Neem_FaceCleanser.png",
+      tag: "Clear Skin",
+      badge: "Pure Neem",
       specifications: {
         weight: "30ml Dropper Bottle",
         dosage: "3-4 drops gently massaged onto clean face at bedtime",
@@ -56,14 +55,14 @@ function Landing() {
     },
     {
       id: 3,
-      name: "Ashwagandha Gold Vitality Capsules",
+      name: "Vatsal Memory Syrup",
       category: "Memory",
-      price: "₹450",
+      price: "₹152",
       rating: 4.8,
       reviews: 185,
-      image: "/images/ashwagandha.png",
-      tag: "Stress Relief",
-      badge: "KSM-66 Extract",
+      image: "/images/vatsal.jpg",
+      tag: "Brain Booster",
+      badge: "Vatsal Memory Syrup",
       specifications: {
         weight: "60 Vegetarian Capsules",
         dosage: "1 capsule twice daily after meals with milk or water",
@@ -73,127 +72,31 @@ function Landing() {
         expiry: "24 months from MFD"
       }
     },
-    {
-      id: 4,
-      name: "Organic Triphala Digestive Churna",
-      category: "Digestion",
-      price: "₹320",
-      rating: 4.9,
-      reviews: 210,
-      image: "/images/triphala.png",
-      tag: "Detox Specialist",
-      badge: "Raw Herb Powder",
-      specifications: {
-        weight: "250g Airtight Eco Jar",
-        dosage: "1 teaspoon (3-5g) before sleep with lukewarm water",
-        keyIngredients: "Equal parts of organic Haritaki (Terminalia chebula), Bibhitaki (Terminalia bellirica), and Amla (Emblica officinalis)",
-        benefits: "Cleanses digestive tract, relieves chronic constipation, balances Tridoshas, promotes metabolic health.",
-        certification: "Organic Certified, Zero Preservatives",
-        expiry: "12 months from MFD"
-      }
-    },
-    {
-      id: 5,
-      name: "Brahmi & Shankhpushpi Brain Elixir",
-      category: "Memory",
-      price: "₹380",
-      rating: 4.7,
-      reviews: 86,
-      image: "/images/brahmi.png",
-      tag: "Mental Clarity",
-      badge: "Nootropic Tonic",
-      specifications: {
-        weight: "200ml Glass Bottle",
-        dosage: "10ml twice daily with water",
-        keyIngredients: "Brahmi (Bacopa monnieri), Shankhpushpi, Jatamansi, Vacha, Mulethi",
-        benefits: "Enhances cognitive focus, memory retention, reduces mental exhaustion, calms hyperactive minds.",
-        certification: "Classical Syrup Standard, 100% Herbal",
-        expiry: "24 months from MFD"
-      }
-    },
-    {
-      id: 6,
-      name: "Maha Bhringraj Herbal Hair Oil",
-      category: "Haircare",
-      price: "₹499",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/hairoil.png",
-      tag: "Hair Fall Control",
-      badge: "Kshirapak Process",
-      specifications: {
-        weight: "200ml Glass Bottle with Applicator",
-        dosage: "Gently massage into scalp 2-3 times a week, leave for 2 hours or overnight",
-        keyIngredients: "Bhringraj, Amla, Sesame Oil, Coconut Milk, Neem, Nagarmotha, Gunja",
-        benefits: "Prevents premature graying, stops hair fall, stimulates new hair growth, relieves stress & headache.",
-        certification: "Traditional Kshirapak Recipe, No Mineral Oils",
-        expiry: "24 months from MFD"
-      }
-    }
   ];
 
-  // Treatments dataset at Ghatal Clinic
-  const treatments = [
-    {
-      id: "nadi",
-      title: "Nadi Pariksha (Pulse Diagnosis)",
-      subtitle: "Ancient Ayurvedic Diagnostics",
-      icon: 
-      "bi-activity",
-      duration: "30 - 45 Mins",
-      description: "Non-invasive, precise diagnosis of Vata, Pitta, and Kapha imbalances through radial pulse reading by our Chief Vaidya.",
-      highlights: ["Root-cause discovery", "Personalized diet blueprint", "Early disease detection"]
-    },
-    {
-      id: "panchakarma",
-      title: "Panchakarma Detox Therapy",
-      subtitle: "Deep Cellular Purification",
-      icon: "bi-flower2",
-      duration: "7 to 21 Days Packages",
-      description: "Comprehensive 5-fold detoxification (Vamana, Virechana, Basti, Nasya, Raktamokshana) to purge accumulated toxins (Ama).",
-      highlights: ["Cellular renewal", "Immune rejuvenation", "Stress & toxin elimination"]
-    },
-    {
-      id: "kayachikitsa",
-      title: "Kayachikitsa & Chronic Care",
-      subtitle: "Internal Medicine Healing",
-      icon: "bi-heart-pulse-fill",
-      duration: "Customized Treatment Plan",
-      description: "Specialized remedies for Diabetes, Gastrointestinal disorders, Hypertension, Thyroid, and Chronic Fatigue.",
-      highlights: ["Zero side-effects", "Herbal formulations", "Metabolic balancing"]
-    },
-    {
-      id: "asthi",
-      title: "Asthi & Sandhi Chikitsa",
-      subtitle: "Joint & Spine Care",
-      icon: "bi-shield-plus",
-      duration: "Session Based",
-      description: "Therapeutic Kati Basti, Janu Basti, and herbal oils for Osteoarthritis, Rheumatoid Arthritis, Sciatica, and Spondylitis.",
-      highlights: ["Pain relief without surgery", "Joint lubrication", "Improved mobility"]
-    },
-    {
-      id: "twak",
-      title: "Twak Roga Chikitsa",
-      subtitle: "Skin & Psoriasis Management",
-      icon: "bi-sun-fill",
-      duration: "Targeted Care",
-      description: "Natural herbal remedies, Takradhara, and blood-purifying formulations for Psoriasis, Eczema, Acne, and Allergic Dermatitis.",
-      highlights: ["Blood purification", "Skin barrier restoration", "Natural radiance"]
-    },
-    {
-      id: "soundarya",
-      title: "Soundarya & Kesha Chikitsa",
-      subtitle: "Herbal Beauty & Hair Care",
-      icon: "bi-sparkles",
-      duration: "60 Mins per session",
-      description: "Traditional Mukha Lepam (herbal face packs), Shirodhara, and Kshiradhara for lustrous hair and youthful glowing skin.",
-      highlights: ["Chemical-free glow", "Hair follicle revival", "Mind relaxation"]
-    }
+  // Extracted treatments from doctor liflet.jpg
+  const treatmentsList = [
+    { id: "t1", title: "Gastric & Acidity", icon: "bi-lightning-charge" },
+    { id: "t2", title: "High Blood Pressure", icon: "bi-activity" },
+    { id: "t3", title: "Vascular Problems", icon: "bi-heart-pulse" },
+    { id: "t4", title: "Fatty Liver", icon: "bi-clipboard-pulse" },
+    { id: "t5", title: "Skin Problems", icon: "bi-stars" },
+    { id: "t6", title: "Kidney Stones", icon: "bi-droplet" },
+    { id: "t7", title: "Thyroid Problems", icon: "bi-person-badge" },
+    { id: "t8", title: "Migraine", icon: "bi-bandaid" },
+    { id: "t9", title: "PCOS / PCOD", icon: "bi-gender-female" },
+    { id: "t10", title: "Irregular Menstruation", icon: "bi-calendar-heart" },
+    { id: "t11", title: "Joint Pain", icon: "bi-universal-access" },
+    { id: "t12", title: "Heart Disease Risk", icon: "bi-heartbreak" },
+    { id: "t13", title: "Cholesterol Risk", icon: "bi-shield-check" },
+    { id: "t14", title: "Cold, Cough & Allergies", icon: "bi-thermometer-half" },
+    { id: "t15", title: "Immunity Boosting", icon: "bi-shield-plus" },
+    { id: "t16", title: "Insomnia & Stroke", icon: "bi-moon-stars" },
+    { id: "t17", title: "Low Sperm Count", icon: "bi-gender-male" },
   ];
 
-  const filteredProducts = activeCategory === 'All'
-    ? products
-    : products.filter(p => p.category === activeCategory);
+  // Limit products on the landing page to a curated selection
+  const displayedProducts = products.slice(0, 3);
 
   const handleBookConsultation = async (e) => {
     e.preventDefault();
@@ -373,8 +276,6 @@ function Landing() {
                 Dr. Shubham Maity, <strong>M.D. (Ayurveda)</strong>, is an experienced Ayurvedic physician specializing in <em>Ksharasutra</em> and <em>Panchakarma</em>. He offers holistic treatment for skin, digestive, gynecological, ENT, and lifestyle disorders, focusing on restoring health by treating the root cause through authentic Ayurvedic therapies.
               </p>
 
-
-
               {/* Doctor's Timetable Widget */}
               <div className="timetable-box" id="timetable">
                 <div className="timetable-header">
@@ -388,14 +289,8 @@ function Landing() {
                     <span className="time-range">09:00 AM – 11:30 AM</span>
                     <span className="day-badge">Mon to Sat</span>
                   </div>
-                  {/* <div className="time-row">
-                    <span className="day-name"><i className="bi bi-moon-stars"></i> Evening Session</span>
-                    <span className="time-range">05:00 PM – 08:30 PM</span>
-                    <span className="day-badge">Mon to Sat</span>
-                  </div> */}
                   <div className="time-row highlight-row">
                     <span className="day-name"><i className="bi bi-heart"></i>Every 2nd & 4th Tuesday Morning</span>
-                    {/* <span className="time-range">10:00 AM – 02:00 PM</span> */}
                     <span className="day-badge gold-badge">Healthy Family 🌿</span>
                   </div>
                 </div>
@@ -443,29 +338,18 @@ function Landing() {
         <div className="container">
           <div className="section-title-wrap text-center">
             <span className="section-kicker">Holistic Therapies at Ghatal Clinic</span>
-            <h2>Treatments Performed at Siddheswari Ayurveda</h2>
+            <h2>Treatments & Medical Services</h2>
             <p className="section-subtext">Restoring balance through natural, non-invasive Ayurvedic therapies tailored to your unique Prakriti.</p>
             <div className="gold-divider"></div>
           </div>
 
-          <div className="treatments-grid">
-            {treatments.map((item) => (
-              <div key={item.id} className="treatment-card">
-                <div className="treatment-header">
-                  <div className="treatment-icon">
-                    <i className={`bi ${item.icon}`}></i>
-                  </div>
-                  <span className="treatment-duration"><i className="bi bi-hourglass-split"></i> {item.duration}</span>
+          <div className="treatments-grid-small">
+            {treatmentsList.map((item) => (
+              <div key={item.id} className="treatment-card-small">
+                <div className="icon-box">
+                  <i className={`bi ${item.icon}`}></i>
                 </div>
-                <h3 className="treatment-title">{item.title}</h3>
-                <span className="treatment-subtitle">{item.subtitle}</span>
-                <p className="treatment-desc">{item.description}</p>
-                
-                <ul className="treatment-highlights">
-                  {item.highlights.map((h, idx) => (
-                    <li key={idx}><i className="bi bi-check2-circle"></i> {h}</li>
-                  ))}
-                </ul>
+                <h3>{item.title}</h3>
               </div>
             ))}
           </div>
@@ -482,22 +366,9 @@ function Landing() {
             <div className="gold-divider"></div>
           </div>
 
-          {/* Category Filter Tabs */}
-          <div className="category-tabs">
-            {['All', 'Immunity', 'Skincare', 'Digestion', 'Memory', 'Haircare'].map((cat) => (
-              <button
-                key={cat}
-                className={`tab-btn ${activeCategory === cat ? 'active' : ''}`}
-                onClick={() => setActiveCategory(cat)}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Product Grid */}
+          {/* Product Grid (Filtered to top 3) */}
           <div className="products-grid">
-            {filteredProducts.map((prod) => (
+            {displayedProducts.map((prod) => (
               <div key={prod.id} className="product-card-modern">
                 <div className="product-image-wrap">
                   <img src={prod.image} alt={prod.name} className="product-img" loading="lazy" />
@@ -530,6 +401,13 @@ function Landing() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* View More Button */}
+          <div className="view-more-container mt-4 text-center">
+            <button className="btn-gold-primary" onClick={() => navigate('/remedies')}>
+              View All Remedies <i className="bi bi-arrow-right"></i>
+            </button>
           </div>
         </div>
       </section>
