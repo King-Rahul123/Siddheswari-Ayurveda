@@ -40,6 +40,7 @@ def get_analytics_overview():
     products = list(products_collection.find())
     
     revenue = 0.0
+    total_purchase = 0.0
     net_purchase = 0.0
     today_sales = 0.0
     today_str = datetime.now().strftime("%Y-%m-%d")
@@ -52,7 +53,7 @@ def get_analytics_overview():
     # Process Purchases
     for p in purchases:
         amt = float(p.get("grandTotal", p.get("netAmount", p.get("totalAmount", p.get("total", 0.0)))) or 0.0)
-        net_purchase += amt
+        total_purchase += amt
         
         p_date = None
         if "createdAt" in p and isinstance(p["createdAt"], datetime):
@@ -72,6 +73,8 @@ def get_analytics_overview():
             
         month_key = p_date.strftime("%b")
         monthly_purchases[month_key] = monthly_purchases.get(month_key, 0.0) + amt
+
+    net_purchase = total_purchase * 0.5
 
     # Process Sales
     for sale in sales:
@@ -163,6 +166,7 @@ def get_analytics_overview():
     return {
         "stats": {
             "netPurchase": net_purchase,
+            "totalPurchase": total_purchase,
             "revenue": revenue,
             "todaySales": today_sales,
             "customers": customers_count,

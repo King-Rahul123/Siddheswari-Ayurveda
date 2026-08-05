@@ -2,6 +2,11 @@ const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
 
+const jimNightshadeFontPath = path.resolve(
+  __dirname,
+  "../../frontend/public/fonts/JimNightshade-Regular.ttf"
+);
+
 /**
  * Generates a PDF invoice and saves it to D:\Mongodb_Siddheswari\Invoices\<saleId>.pdf
  * @param {Object} saleData - Sale details (saleId, date, customerName, customerPhone, totalAmount, discountTotal, grandTotal, etc.)
@@ -33,8 +38,6 @@ const generateSalePDF = (saleData, items = []) => {
       const width = 535; // A4 width 595 - 60
       const height = 780;
 
-      // NO outer border stroke as requested
-
       // Background Watermark Image (logo.png)
       const watermarkPath = path.resolve(__dirname, "../../frontend/public/logo.png");
       if (fs.existsSync(watermarkPath)) {
@@ -49,92 +52,83 @@ const generateSalePDF = (saleData, items = []) => {
 
       let currentY = startY + 10;
 
-      // Top-Left Logo (deltas.png)
+      // Top-left brand lockup
       const deltasLogoPath = path.resolve(__dirname, "../../frontend/public/deltas.png");
       if (fs.existsSync(deltasLogoPath)) {
-        doc.image(deltasLogoPath, startX, currentY, { width: 150 });
+        doc.image(deltasLogoPath, startX, currentY + 2, { width: 82 });
+      } 
+
+      if (fs.existsSync(jimNightshadeFontPath)) {
+        doc.font(jimNightshadeFontPath);
       } else {
-        doc
-          .font("Helvetica-Bold")
-          .fontSize(18)
-          .fillColor("#14532d")
-          .text("DELTAS SIDDHESWARI AYURVEDA", startX, currentY);
+        doc.font("Times-Italic");
       }
 
-      // Top-Right Invoice No & Date
-      const invoiceNoStr = `Invoice No : ${saleData.saleId || "N/A"}`;
-      const dateStr = `Date : ${saleData.date || new Date().toISOString().split("T")[0]}`;
+      doc
+        .fontSize(28)
+        .fillColor("#042f4b")
+        .text("Siddheswari Ayurveda", startX + 140, currentY + 6, {
+          align: "center",
+          width: 265,
+        });
 
       doc
         .font("Helvetica-Bold")
-        .fontSize(10)
-        .fillColor("#0f172a")
-        .text(invoiceNoStr, startX + 330, currentY + 5, { align: "right", width: 205 });
-
-      doc
-        .font("Helvetica")
-        .fontSize(10)
+        .fontSize(9)
         .fillColor("#334155")
-        .text(dateStr, startX + 330, currentY + 20, { align: "right", width: 205 });
+        .text(`Invoice No : ${saleData.saleId || "N/A"}`, startX + 365, currentY + 8, {
+          align: "right",
+          width: 170,
+        });
 
-      currentY += 55;
-
-      // Horizontal Divider
-      doc
-        .moveTo(startX, currentY)
-        .lineTo(startX + width, currentY)
-        .stroke("#cbd5e1");
-
-      currentY += 8;
-
-      // Banner: TAX INVOICE / SALES INVOICE
       doc
         .font("Helvetica-Bold")
-        .fontSize(13)
+        .text(`Date : ${saleData.date || new Date().toISOString().split("T")[0]}`, startX + 365, currentY + 22, {
+          align: "right",
+          width: 170,
+        });
+
+      currentY += 62;
+
+      // 4. Banner: TAX INVOICE / SALES INVOICE
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(11)
         .fillColor("#0f172a")
         .text("TAX INVOICE / SALES INVOICE", startX, currentY, { align: "center", width: width });
 
-      currentY += 20;
+      currentY += 25;
 
-      // Horizontal Divider
-      doc
-        .moveTo(startX, currentY)
-        .lineTo(startX + width, currentY)
-        .stroke("#cbd5e1");
-
-      currentY += 10;
-
-      // Customer Details
+      // 5. Customer Details Box
       const custName = saleData.customerName || saleData.customer || "Walk-in Customer";
       const custMobile = saleData.customerPhone || saleData.mobile || saleData.phone || "N/A";
 
+      // Draw rounded rectangle for customer info
+      doc
+        .roundedRect(startX, currentY, width, 32, 6)
+        .lineWidth(1)
+        .stroke("#a7f3d0");
+
+      // Customer Details Inline
       doc
         .font("Helvetica-Bold")
         .fontSize(10)
         .fillColor("#1e293b")
-        .text("Customer Name : ", startX + 10, currentY, { continued: true })
+        .text("Customer Name : ", startX + 15, currentY + 11, { continued: true })
         .font("Helvetica")
         .text(custName);
 
       doc
         .font("Helvetica-Bold")
-        .fontSize(10)
-        .fillColor("#1e293b")
-        .text("Mobile              : ", startX + 10, currentY + 16, { continued: true })
+        .text("Mobile : ", startX + 300, currentY + 11, { continued: true })
         .font("Helvetica")
         .text(custMobile);
 
-      currentY += 36;
+      currentY += 50;
 
-      // Horizontal Divider
-      doc
-        .moveTo(startX, currentY)
-        .lineTo(startX + width, currentY)
-        .stroke("#94a3b8");
-
-      currentY += 4;
-
+      // ==========================================
       // Table Header Setup
+      // ==========================================
       const cols = [
         { name: "Sl", x: startX + 5, w: 25, align: "center" },
         { name: "Product", x: startX + 30, w: 160, align: "left" },
@@ -169,7 +163,9 @@ const generateSalePDF = (saleData, items = []) => {
 
       currentY += 6;
 
+      // ==========================================
       // Items Table Rows
+      // ==========================================
       let subTotal = 0;
       let totalDiscount = 0;
       let totalGst = 0;
@@ -223,7 +219,9 @@ const generateSalePDF = (saleData, items = []) => {
 
       currentY += 12;
 
-      // Summary Section (Subtotal, Discount, GST, Grand Total)
+      // ==========================================
+      // Summary Section
+      // ==========================================
       const calculatedSubTotal = saleData.totalAmount || subTotal;
       const calculatedDiscount = saleData.discountTotal || totalDiscount;
       const calculatedGst = saleData.gstTotal || totalGst;
