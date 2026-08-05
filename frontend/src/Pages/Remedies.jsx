@@ -17,50 +17,1095 @@ function Remedies() {
   const products = [
     {
       id: 1,
-      name: "Siddheswari Special Chyawanprash Elixir",
-      category: "Immunity",
-      price: "₹599",
+      name: "Nutrilong Slim Combi Pack",
+      category: "Weight Loss",
+      price: "",
       rating: 4.9,
-      reviews: 142,
-      image: "/images/chyawanprash.png",
-      tag: "Best Seller",
-      badge: "Pure & Organic",
+      reviews: 164,
+      image: "/images/Slim_Combi_Pack.png",
+      tag: "",
+      badge: "",
       specifications: {
-        weight: "500g Glass Jar",
-        dosage: "1-2 teaspoons twice daily with warm milk or water",
-        keyIngredients: "Fresh Organic Amla, Kashmiri Saffron, Wild Honey, Bramhi, Shankhpushpi, 48 Classical Ayurvedic Herbs",
-        benefits: "Boosts immune system, enhances memory and stamina, supports respiratory wellness, anti-aging properties.",
-        certification: "100% Ayurvedic Formulation, GMP & ISO Certified",
-        expiry: "24 months from MFD"
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
       }
     },
     {
       id: 2,
-      name: "Kumkumadi Saffron Facial Oil",
-      category: "Skincare",
-      price: "₹899",
-      rating: 5.0,
-      reviews: 98,
-      image: "/images/kumkumadi.png",
-      tag: "Magical Radiance",
-      badge: "Pure Saffron",
+      name: "Thermogenic Herbal Tea",
+      category: "Weight Loss",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Thermogenic_Herbal_Tea.png",
+      tag: "",
+      badge: "",
       specifications: {
-        weight: "30ml Dropper Bottle",
-        dosage: "3-4 drops gently massaged onto clean face at bedtime",
-        keyIngredients: "Pure Saffron (Kesar), Chandana (Sandalwood), Manjistha, Padma (Lotus), Goat Milk, Sesame Oil",
-        benefits: "Illuminates skin complexion, reduces hyperpigmentation, smooths fine lines, deep nighttime skin nourishment.",
-        certification: "Dermatologically Tested, 100% Chemical-Free",
-        expiry: "18 months from MFD"
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
       }
     },
     {
       id: 3,
-      name: "Ashwagandha Gold Vitality Capsules",
+      name: "Chlorophyll Detox",
+      category: "Weight Loss",
+      price: "₹499",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/ChlorophyllDetox.png",
+      tag: "",
+      badge: "Kshirapak Process",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 4,
+      name: "Nutrilong Super Active Meal Replacement",
+      category: "Weight Loss",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 5,
+      name: "Nutrilong Super Active Protein Powder",
+      category: "Weight Loss",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 6,
+      name: "Bio Essence Hair Oil",
+      category: "Haircare",
+      price: "₹899",
+      rating: 5.0,
+      reviews: 98,
+      image: "/images/BioEssence_HairOil.png",
+      tag: "Magical Radiance",
+      badge: "Pure Saffron",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 7,
+      name: "Bio Essence Hair Shampoo",
+      category: "Haircare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 8,
+      name: "Bio Essence Hair Conditioner",
+      category: "Haircare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 9,
+      name: "Nutrilong Hair Care",
+      category: "Haircare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/HairCare.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 10,
+      name: "Kesh Nikhar Anti Dandruff Hair Cleanser",
+      category: "Haircare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 11,
+      name: "Kesh Nikhar Anti Dandruff Hair Toner",
+      category: "Haircare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 12,
+      name: "Himnidra D-stress Oil",
+      category: "Haircare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 13,
+      name: "Leh Berry Face Cleanser",
+      category: "SkinCare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Lehberry_FaceCleanser.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 14,
+      name: "Neem face Cleanser",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Neem_FaceCleanser.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 15,
+      name: "Oil & Acne Control Face Wash",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Oli&Acne_FaceWash.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 16,
+      name: "Moisturising Lotion",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Moisturizing_Lotion.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 17,
+      name: "Turmeric Multipurpose Cream",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 18,
+      name: "Agefyte Gold Cleansing Milk",
+      category: "Beauty Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Gold_Cleansing_Milk.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 19,
+      name: "Agefyte Gold Cream",
+      category: "Beauty Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Gold_Cream.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 20,
+      name: "Agefyte Gold Youth Serum",
+      category: "Beauty Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 21,
+      name: "Agefyte Gold Revive Mist",
+      category: "Beauty Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 22,
+      name: "Agefyte Gold Powder Mask",
+      category: "Beauty Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 23,
+      name: "Agefyte Gold Peel Off Mask",
+      category: "Beauty Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 24,
+      name: "agefyte Gold Face Scrub",
+      category: "Beauty Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 25,
+      name: "Agefyte Gold Facial Kit",
+      category: "Beauty Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 26,
+      name: "Agefyte Sunscreen Butter",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 27,
+      name: "Agefyte Night Cream",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 28,
+      name: "Agefyte Fresh Under Eye Cream",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Fresh_Under_Eye_Cream.jpg",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 29,
+      name: "Agefyte Brightening Bio Serum",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 30,
+      name: "Agefyte Brightening Bio Toner",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 31,
+      name: "Agefyte Brightening Cleansing Foam",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 32,
+      name: "Agefyte Brightening Cream",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 33,
+      name: "Agefyte Brightening Kit",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 34,
+      name: "Agefyte Whitening Mask",
+      category: "Beauty Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 35,
+      name: "Agefyte Anti Acne Face Cream",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 36,
+      name: "Agefyte Spot Free Cream",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 37,
+      name: "Agefyte Anti Aging Cream",
+      category: "Skincare",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 38,
+      name: "Agefyte A Charcoal Mask",
+      category: "Beauty Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 39,
+      name: "DiaCare Ras",
+      category: "Diabetes",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 40,
+      name: "Diacare Tablet",
+      category: "Diabetes",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 41,
+      name: "Sanjeevani Joddaram Combi Pack",
+      category: "Joint Pain",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 42,
+      name: "Sanjeevani Joddaram Oil",
+      category: "Joint Pain",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 43,
+      name: "Sanjeevani Jodaram Tablet",
+      category: "Joint Pain",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 44,
+      name: "Sanjeevani Joddaram Cream",
+      category: "Joint Pain",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 45,
+      name: "Nutrilong Mega Men",
+      category: "Men's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 46,
+      name: "Knight Max Ras",
+      category: "Men's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 47,
+      name: "Royal Honey for Him",
+      category: "Men's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 48,
+      name: "Deltas Shilajit Gold",
+      category: "Men's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 49,
+      name: "Prostawon Capsule",
+      category: "Men's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 50,
+      name: "Nutrilong Ultra Women",
+      category: "Women's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 51,
+      name: "Nutrilong PCOS",
+      category: "Women's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 52,
+      name: "Gynocare Tablet",
+      category: "Women's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 53,
+      name: "Gynocare Syrup",
+      category: "Women's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 54,
+      name: "Deltas Shatavari Tablet",
+      category: "Women's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 55,
+      name: "Mamfresh Pain Period Shots",
+      category: "Women's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 56,
+      name: "Maamfresh Desire Gel",
+      category: "Women's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 57,
+      name: "Maamfresh Intimate Wash",
+      category: "Women's Health",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 38,
+      name: "Ashwagandha",
       category: "Memory",
       price: "₹450",
       rating: 4.8,
       reviews: 185,
-      image: "/images/ashwagandha.png",
+      image: "/images/Ashwagandha.png",
       tag: "Stress Relief",
       badge: "KSM-66 Extract",
       specifications: {
@@ -73,32 +1118,13 @@ function Remedies() {
       }
     },
     {
-      id: 4,
-      name: "Organic Triphala Digestive Churna",
-      category: "Digestion",
-      price: "₹320",
-      rating: 4.9,
-      reviews: 210,
-      image: "/images/triphala.png",
-      tag: "Detox Specialist",
-      badge: "Raw Herb Powder",
-      specifications: {
-        weight: "250g Airtight Eco Jar",
-        dosage: "1 teaspoon (3-5g) before sleep with lukewarm water",
-        keyIngredients: "Equal parts of organic Haritaki, Bibhitaki, and Amla",
-        benefits: "Cleanses digestive tract, relieves chronic constipation, balances Tridoshas, promotes metabolic health.",
-        certification: "Organic Certified, Zero Preservatives",
-        expiry: "12 months from MFD"
-      }
-    },
-    {
-      id: 5,
-      name: "Brahmi & Shankhpushpi Brain Elixir",
+      id: 39,
+      name: "Brahmi",
       category: "Memory",
       price: "₹380",
       rating: 4.7,
       reviews: 86,
-      image: "/images/brahmi.png",
+      image: "/images/Brahmi.png",
       tag: "Mental Clarity",
       badge: "Nootropic Tonic",
       specifications: {
@@ -111,13 +1137,165 @@ function Remedies() {
       }
     },
     {
-      id: 6,
-      name: "Maha Bhringraj Herbal Hair Oil",
-      category: "Haircare",
+      id: 40,
+      name: "Vatsal Memory Syrup",
+      category: "Memory",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Vatsal.jpg",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 41,
+      name: "Nutrilong Arjunaa Plus",
+      category: "Heart Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 42,
+      name: "Nutrilong CoQ Ten Plus",
+      category: "Heart Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 49,
+      name: "Nutrilong Top Calcium Syrup",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Calcium_Syrup.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 50,
+      name: "Nutrilong Multi VItamin Syrup",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/MultiVitamin_Syrup.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 51,
+      name: "Nutrilong Eye Max",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Eye_Max.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 52,
+      name: "Nayansukh Eye Drop",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 53,
+      name: "Brahma Rasayana",
+      category: "Immunity",
+      price: "₹599",
+      rating: 4.9,
+      reviews: 142,
+      image: "/images/Brahma_Rasayana.png",
+      tag: "Best Seller",
+      badge: "Pure & Organic",
+      specifications: {
+        weight: "500g Glass Jar",
+        dosage: "1-2 teaspoons twice daily with warm milk or water",
+        keyIngredients: "Fresh Organic Amla, Kashmiri Saffron, Wild Honey, Bramhi, Shankhpushpi, 48 Classical Ayurvedic Herbs",
+        benefits: "Boosts immune system, enhances memory and stamina, supports respiratory wellness, anti-aging properties.",
+        certification: "100% Ayurvedic Formulation, GMP & ISO Certified",
+        expiry: "24 months from MFD"
+      }
+    },
+    {
+      id: 54,
+      name: "Guduchi",
+      category: "",
       price: "₹499",
       rating: 4.9,
       reviews: 164,
-      image: "/images/hairoil.png",
+      image: "/images/Guduchi.png",
       tag: "Hair Fall Control",
       badge: "Kshirapak Process",
       specifications: {
@@ -128,7 +1306,924 @@ function Remedies() {
         certification: "Traditional Kshirapak Recipe, No Mineral Oils",
         expiry: "24 months from MFD"
       }
-    }
+    },
+    {
+      id: 55,
+      name: "Nutrilong Super Moringa",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 56,
+      name: "Nutrilong Super Omega",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 57,
+      name: "Pancha Tulasi Drops",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 58,
+      name: "Pancha Tulasi Lozenges",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/PanchaTulasi_Lozenges.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 59,
+      name: "Triphala",
+      category: "Digestion",
+      price: "₹320",
+      rating: 4.9,
+      reviews: 210,
+      image: "/images/Triphala.png",
+      tag: "Detox Specialist",
+      badge: "Raw Herb Powder",
+      specifications: {
+        weight: "250g Airtight Eco Jar",
+        dosage: "1 teaspoon (3-5g) before sleep with lukewarm water",
+        keyIngredients: "Equal parts of organic Haritaki, Bibhitaki, and Amla",
+        benefits: "Cleanses digestive tract, relieves chronic constipation, balances Tridoshas, promotes metabolic health.",
+        certification: "Organic Certified, Zero Preservatives",
+        expiry: "12 months from MFD"
+      }
+    },
+    {
+      id: 60,
+      name: "Superlax Powder",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Superlax_Powder.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 61,
+      name: "Antacid Tablet",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 62,
+      name: "Livcare Syrup",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 63,
+      name: "Livcare Tablet",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 64,
+      name: "Stonecare SF Syrup",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 65,
+      name: "Pilescare Cream",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 66,
+      name: "Pilescare Tablet",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 67,
+      name: "Psorino Cream",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 68,
+      name: "Psorino Tablet",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 82,
+      name: "Nutrilong Organic Berries",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Organic_Berries.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 83,
+      name: "Nutrilong Seabuck Fresh",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/SeaBuck_Fresh.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 84,
+      name: "Spiriluna Tablet",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 85,
+      name: "Wheatgrass Tablet",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 86,
+      name: "Active Amla Juice",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 87,
+      name: "Aloe Vera Fiber Juice",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 88,
+      name: "Alkalizing Drop",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 89,
+      name: "Alkalizing demo Kit",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 90,
+      name: "Kofcare Syrup",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+
+    {
+      id: 15,
+      name: "Nutrilong Astaaxanthin",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 17,
+      name: "Nutrilong Resveratrol Plus",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 20,
+      name: "Nutrilong Noni BonZym K2",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Noni_BonzymK2.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 23,
+      name: "Nutrilong Tri Ginseng",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 24,
+      name: "Nutrilong A2 Colostrum Advance",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 26,
+      name: "Nutrilong Curcumin Max",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/CurcuminMax.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 30,
+      name: "Nutrilong X-Plus Combi Pack",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    
+    {
+      id: 37,
+      name: "Leucowin Capsule",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 44,
+      name: "D Stress Capsule",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 67,
+      name: "Deltas Neem Tablet",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Neem.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    
+    
+    
+    {
+      id: 108,
+      name: "Skincare Ayurvedic Body Cleanser",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 109,
+      name: "Skincare Fairness Body cleanser",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 116,
+      name: "Nutrilong Stemcell",
+      category: "",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 93,
+      name: "Dentacure Herbal Tooth Cleanser",
+      category: "Dental Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/DentaCure_Toothpaste.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 94,
+      name: "Top Dantunn Red Toothpaste",
+      category: "Dental Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 95,
+      name: "Top Dantunn Green Toothpaste",
+      category: "Dental Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 97,
+      name: "Potentia Antiseptic Hand Wash",
+      category: "Home Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 98,
+      name: "Topkleen Powermop Floor Cleaner",
+      category: "Home Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 99,
+      name: "Topkleen Supermatic Detergent Powder",
+      category: "Home Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 100,
+      name: "Topkleen Ultrashine Dishwash Gel",
+      category: "Home Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 101,
+      name: "Topkleen Toilet Cleaner",
+      category: "Home Care",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 96,
+      name: "Topkaa Nature Fresh Chai",
+      category: "Food & Beverages",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 102,
+      name: "Topkaa Instant Coffee",
+      category: "Food & Beverages",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 103,
+      name: "Topflora Liquid",
+      category: "Agriculture & Veterinary",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 104,
+      name: "Topvet Powder",
+      category: "Agriculture & Veterinary",
+      price: "",
+      rating: 4.9,
+      reviews: 164,
+      image: "",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
   ];
 
   // Filter Tabs definition
