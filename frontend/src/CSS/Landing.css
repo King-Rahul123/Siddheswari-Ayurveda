@@ -1414,3 +1414,73 @@ body {
         flex-direction: column;
     }
 }
+
+/* --- View More Remedies Button Area --- */
+.view-more-container {
+    margin-top: 3.5rem;
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 2rem !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+/* --- New Treatments Small Grid (Based on leaflet) --- */
+.treatments-grid-small {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.treatment-card-small {
+    background: var(--bg-card-surface);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-card-light);
+}
+
+.treatment-card-small:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-gold);
+    box-shadow: var(--shadow-card-hover);
+    background: var(--bg-card-hover);
+}
+
+.treatment-card-small .icon-box {
+    width: 45px;
+    height: 45px;
+    min-width: 45px;
+    border-radius: 12px;
+    background: rgba(181, 137, 31, 0.1);
+    color: var(--accent-gold-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    border: 1px solid var(--border-gold);
+}
+
+.treatment-card-small h3 {
+    font-size: 1.05rem;
+    color: var(--text-heading);
+    margin: 0;
+    font-family: var(--font-sans-body);
+    font-weight: 700;
+}
+
+/* Ensure the small grid scales well on mobile */
+@media (max-width: 768px) {
+    .treatments-grid-small {
+        grid-template-columns: 1fr;
+    }
+}

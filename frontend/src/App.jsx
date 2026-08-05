@@ -20,6 +20,7 @@ import StaffReport from "./Pages/StaffReport";
 import Analytics from "./Pages/Analytics";
 import Appointment from "./Pages/Appointment";
 import ProtectedRoute from "./Components/ProtectedRoute";
+import Remedies from "./Pages/Remedies.jsx"
 
 const PurchaseEntry = lazy(() => import("./Components/PurchaseEntry"));
 // import EditPurchase from "./Components/EditPurchase";
@@ -56,6 +57,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/remedies" element={<Remedies />} />
         <Route path="/login" element={<Login />} />
         <Route element={<ProtectedRoute />}>
           {/* Dashboard */}
