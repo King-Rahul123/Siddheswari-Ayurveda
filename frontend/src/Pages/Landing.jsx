@@ -486,7 +486,7 @@ function Landing() {
                   <i className="bi bi-geo-alt-fill gold-icon"></i>
                   <div>
                     <strong>Clinic Address:</strong>
-                    <p>Ghatal Main Road (Near Central Bus Stand), Ghatal, Paschim Medinipur, PIN - 721212, West Bengal, India.</p>
+                    <p>Ghatal Main Road (Near Baro Haat Kali Mondir), Ghatal, Paschim Medinipur, PIN - 721212, West Bengal, India.</p>
                   </div>
                 </div>
 
@@ -494,7 +494,7 @@ function Landing() {
                   <i className="bi bi-telephone-fill gold-icon"></i>
                   <div>
                     <strong>Helpline & Appointment:</strong>
-                    <p>+91 98765 43210 / +91 91234 56789</p>
+                    <p>+91 8145322318 / +91 8016811197</p>
                   </div>
                 </div>
 
@@ -502,7 +502,7 @@ function Landing() {
                   <i className="bi bi-envelope-fill gold-icon"></i>
                   <div>
                     <strong>Email Enquiries:</strong>
-                    <p>care@siddheswariayurveda.com</p>
+                    <p>siddheswariayurveda@gmail.com</p>
                   </div>
                 </div>
               </div>
