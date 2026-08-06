@@ -329,6 +329,7 @@ export default function SaleInvoice() {
         saleId: generatedSaleId,
         customerCode: customer.customerCode,
         customerName: customer.customerName,
+        customerPhone: customer.phone,
         date: invoiceDate,
         totalQty,
         totalAmount: subTotal,
@@ -822,4 +823,4 @@ export default function SaleInvoice() {
       </div>
     </div>
   );
-}
+}

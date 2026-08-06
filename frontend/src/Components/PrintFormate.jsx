@@ -36,6 +36,9 @@ export default function PrintInvoice() {
         <div className="print-header-bar">
           <div className="header-brand">
             <img src="/deltas.png" alt="Deltas Logo" className="brand-logo-img" />
+            <div className="counter-brand-text">
+              <span>Siddheswari Ayurveda</span>
+            </div>
           </div>
 
           <div className="header-meta">

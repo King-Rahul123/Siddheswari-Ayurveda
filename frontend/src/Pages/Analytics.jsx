@@ -29,6 +29,7 @@ export default function Analytics() {
         totalCustomers: 0,
         activeProducts: 0,
         netPurchase: 0,
+        totalPurchase: 0,
         revenue: 0,
         todaySales: 0,
         customers: 0,
@@ -83,6 +84,12 @@ export default function Analytics() {
                             <i className="bi bi-cart-check-fill"></i>
                             <h3>₹{Number(stats.netPurchase || 0).toLocaleString("en-IN")}</h3>
                             <p>Net Purchase</p>
+                        </div>
+
+                        <div className="analytics-card">
+                            <i className="bi bi-cart-check-fill"></i>
+                            <h3>₹{Number(stats.totalPurchase || 0).toLocaleString("en-IN")}</h3>
+                            <p>Total Purchase</p>
                         </div>
 
                         <div className="analytics-card">

@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Jim+Nightshade&display=swap");
+
 .print-page-wrapper {
   display: flex;
   justify-content: center;
@@ -59,10 +61,30 @@
   padding-bottom: 18px;
 }
 
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .brand-logo-img {
-  height: 52px;
+  height: 42px;
   width: auto;
   object-fit: contain;
+}
+
+.counter-brand-text {
+  display: flex;
+  align-items: center;
+}
+
+.counter-brand-text span {
+  font-family: "Jim Nightshade", cursive;
+  font-size: 50px;
+  margin-left: 20px;
+  line-height: 1;
+  color: #0f172a;
+  white-space: nowrap;
 }
 
 .header-meta {
@@ -236,6 +258,11 @@ background:#fafdfb;
     user-select: none;
 
     z-index: 0;
+  }
+
+  .counter-brand-text span {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
 }
