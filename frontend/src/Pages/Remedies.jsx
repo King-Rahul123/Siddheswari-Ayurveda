@@ -2275,12 +2275,9 @@ function Remedies() {
         {/* Single continuous grid for all filtered products */}
         <div className="catalog-wrapper animate-in" key={activeCategory} style={{ animationDelay: '0.1s' }}>
           {filteredProducts.length > 0 ? (
-            <div className="products-grid">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
               {filteredProducts.map((prod) => (
-                <div 
-                  key={prod.id} 
-                  className="product-card-modern"
-                >
+                <div key={prod.id} className="product-card-modern">
                   <div className="product-image-wrap">
                     <img src={prod.image} alt={prod.name} className="product-img" loading="lazy" />
                     <span className="product-tag">{prod.tag}</span>
