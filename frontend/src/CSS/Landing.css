@@ -179,6 +179,7 @@ body {
 .gold-shimmer-text {
     background: linear-gradient(135deg, var(--clr-emerald-deep) 0%, var(--clr-emerald-medium) 40%, var(--accent-gold-primary) 80%, var(--accent-gold-deep) 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
