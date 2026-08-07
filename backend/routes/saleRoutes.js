@@ -55,7 +55,7 @@ router.get("/pdf/:saleId", async (req, res) => {
     }
 
     const safeSaleId = (saleId || "INVOICE").replace(/[/\\?%*:|"<>]/g, "_");
-    
+
     let filePath = sale?.pdfPath;
 
     if (!filePath || !fs.existsSync(filePath)) {

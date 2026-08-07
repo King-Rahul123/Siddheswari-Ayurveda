@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const saleItemSchema = new mongoose.Schema({
   itemCode: { type: String },
   productName: { type: String },
+  hsn: { type: String },
   batch: { type: String },
   expiry: { type: String, default: "" },
   qty: { type: Number, default: 0 },
@@ -18,6 +19,7 @@ const saleSchema = new mongoose.Schema(
     saleId: { type: String, required: true, unique: true },
     customerCode: { type: String, default: "" },
     customerName: { type: String, default: "" },
+    customerPhone: { type: String, default: "" },
     doctor: { type: String, default: "" },
     date: { type: String, default: "" },
     paymentMethod: { type: String, default: "Cash" },

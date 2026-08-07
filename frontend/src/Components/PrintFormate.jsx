@@ -4,18 +4,21 @@ import "../CSS/PrintFormate.css";
 
 export default function PrintInvoice() {
   const { state } = useLocation();
-
   const {
     billNumber,
     invoiceDate,
     customerName,
+    phone,
     mobile,
+    customerPhone,
     items = [],
     subTotal = 0,
     discount = 0,
     gstAmount = 0,
     netAmount = 0,
   } = state || {};
+
+  const displayPhone = phone || customerPhone || mobile || "N/A";
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -59,7 +62,7 @@ export default function PrintInvoice() {
         {/* Customer Information */}
         <div className="customer-info-box">
           <p><strong>Customer Name :</strong> {customerName || "Walk-in Customer"}</p>
-          <p><strong>Mobile :</strong> {mobile || "N/A"}</p>
+          <p><strong>Mobile :</strong> {displayPhone}</p>
         </div>
 
         <div className="divider-line" />
@@ -70,11 +73,11 @@ export default function PrintInvoice() {
             <tr>
               <th style={{ width: "35px" }}>Sl</th>
               <th>Product</th>
+              <th style={{ width: "65px", textAlign: "center" }}>HSN</th>
               <th style={{ width: "75px" }}>Batch</th>
               <th style={{ width: "65px" }}>Exp</th>
               <th style={{ width: "45px" }}>Qty</th>
               <th style={{ width: "70px", textAlign: "right" }}>Rate</th>
-              <th style={{ width: "55px", textAlign: "right" }}>Disc</th>
               <th style={{ width: "55px", textAlign: "right" }}>GST</th>
               <th style={{ width: "85px", textAlign: "right" }}>Amount</th>
             </tr>
@@ -95,11 +98,11 @@ export default function PrintInvoice() {
                 <tr key={index}>
                   <td style={{ textAlign: "center" }}>{index + 1}</td>
                   <td>{item.productName || item.product || "Product"}</td>
+                  <td style={{ textAlign: "center" }}>{item.hsn || item.hsnNo || item.hsnCode || "-"}</td>
                   <td style={{ textAlign: "center" }}>{item.batch || "-"}</td>
                   <td style={{ textAlign: "center" }}>{item.expiry || "-"}</td>
                   <td style={{ textAlign: "center" }}>{qty}</td>
                   <td style={{ textAlign: "right" }}>₹{rate.toFixed(2)}</td>
-                  <td style={{ textAlign: "right" }}>{disc}%</td>
                   <td style={{ textAlign: "right" }}>{gst}%</td>
                   <td style={{ textAlign: "right" }}>₹{amount.toFixed(2)}</td>
                 </tr>

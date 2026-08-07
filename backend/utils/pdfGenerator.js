@@ -42,7 +42,7 @@ const generateSalePDF = (saleData, items = []) => {
       const watermarkPath = path.resolve(__dirname, "../../frontend/public/logo.png");
       if (fs.existsSync(watermarkPath)) {
         doc.save();
-        doc.opacity(0.08); // Light transparent watermark
+        doc.opacity(0.18); // Light transparent watermark
         const wmWidth = 320;
         const wmX = (595 - wmWidth) / 2;
         const wmY = (842 - wmWidth) / 2;
@@ -56,7 +56,7 @@ const generateSalePDF = (saleData, items = []) => {
       const deltasLogoPath = path.resolve(__dirname, "../../frontend/public/deltas.png");
       if (fs.existsSync(deltasLogoPath)) {
         doc.image(deltasLogoPath, startX, currentY + 2, { width: 82 });
-      } 
+      }
 
       if (fs.existsSync(jimNightshadeFontPath)) {
         doc.font(jimNightshadeFontPath);
@@ -131,14 +131,14 @@ const generateSalePDF = (saleData, items = []) => {
       // ==========================================
       const cols = [
         { name: "Sl", x: startX + 5, w: 25, align: "center" },
-        { name: "Product", x: startX + 30, w: 160, align: "left" },
-        { name: "Batch", x: startX + 190, w: 60, align: "center" },
-        { name: "Exp", x: startX + 250, w: 50, align: "center" },
-        { name: "Qty", x: startX + 300, w: 35, align: "center" },
-        { name: "Rate", x: startX + 335, w: 50, align: "right" },
-        { name: "Disc%", x: startX + 385, w: 45, align: "right" },
-        { name: "GST%", x: startX + 430, w: 45, align: "right" },
-        { name: "Amount", x: startX + 475, w: 55, align: "right" }
+        { name: "Product", x: startX + 30, w: 150, align: "left" },
+        { name: "HSN", x: startX + 180, w: 55, align: "center" },
+        { name: "Batch", x: startX + 235, w: 65, align: "center" },
+        { name: "Exp", x: startX + 300, w: 55, align: "center" },
+        { name: "Qty", x: startX + 355, w: 40, align: "center" },
+        { name: "Rate", x: startX + 395, w: 50, align: "right" },
+        { name: "GST", x: startX + 445, w: 40, align: "right" },
+        { name: "Amount", x: startX + 485, w: 45, align: "right" }
       ];
 
       // Table Header Background
@@ -195,11 +195,11 @@ const generateSalePDF = (saleData, items = []) => {
 
         doc.text(String(index + 1), cols[0].x, currentY, { width: cols[0].w, align: cols[0].align });
         doc.text(item.productName || "Product", cols[1].x, currentY, { width: cols[1].w, align: cols[1].align });
-        doc.text(item.batch || "-", cols[2].x, currentY, { width: cols[2].w, align: cols[2].align });
-        doc.text(item.expiry || "-", cols[3].x, currentY, { width: cols[3].w, align: cols[3].align });
-        doc.text(String(qty), cols[4].x, currentY, { width: cols[4].w, align: cols[4].align });
-        doc.text(`Rs. ${rate.toFixed(2)}`, cols[5].x, currentY, { width: cols[5].w, align: cols[5].align });
-        doc.text(`${discPercent}%`, cols[6].x, currentY, { width: cols[6].w, align: cols[6].align });
+        doc.text(item.hsn || "-", cols[2].x, currentY, { width: cols[2].w, align: cols[2].align });
+        doc.text(item.batch || "-", cols[3].x, currentY, { width: cols[3].w, align: cols[3].align });
+        doc.text(item.expiry || "-", cols[4].x, currentY, { width: cols[4].w, align: cols[4].align });
+        doc.text(String(qty), cols[5].x, currentY, { width: cols[5].w, align: cols[5].align });
+        doc.text(`Rs. ${rate.toFixed(2)}`, cols[6].x, currentY, { width: cols[6].w, align: cols[6].align });
         doc.text(`${gstPercent}%`, cols[7].x, currentY, { width: cols[7].w, align: cols[7].align });
         doc.text(`Rs. ${lineAmount.toFixed(2)}`, cols[8].x, currentY, { width: cols[8].w, align: cols[8].align });
 
