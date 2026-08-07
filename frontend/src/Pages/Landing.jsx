@@ -60,7 +60,7 @@ function Landing() {
       price: "₹152",
       rating: 4.8,
       reviews: 185,
-      image: "/images/vatsal.jpg",
+      image: "/images/Vatsal.jpg",
       tag: "Brain Booster",
       badge: "Vatsal Memory Syrup",
       specifications: {
@@ -138,8 +138,8 @@ function Landing() {
         <div className="nav-brand" onClick={() => navigate('/')}>
           <img src="/logo2.png" alt="Siddheswari Ayurveda Logo" className="brand-logo-img" />
           <div className="brand-text-container">
-            <span className="brand-title">Siddheswari</span>
-            <span className="brand-subtitle">AYURVEDA</span>
+            <span className="brand-title text-base sm:text-xl lg:text-2xl">Siddheswari</span>
+            <span className="brand-subtitle text-[10px] sm:text-xs">AYURVEDA</span>
           </div>
         </div>
 
@@ -150,10 +150,13 @@ function Landing() {
           <a href="#treatments" onClick={() => setMobileMenuOpen(false)}>Treatments</a>
           <a href="#shop" onClick={() => setMobileMenuOpen(false)}>Remedies</a>
           <a href="#location" onClick={() => setMobileMenuOpen(false)}>Ghatal Clinic</a>
+          <button className="gold-portal-btn block md:hidden" onClick={() => navigate('/login')}>
+            <i className="bi bi-person-circle"></i> Log In
+          </button>
         </div>
 
         <div className="nav-actions">
-          <button className="gold-portal-btn" onClick={() => navigate('/login')}>
+          <button className="gold-portal-btn hidden md:block" onClick={() => navigate('/login')}>
             <i className="bi bi-person-circle"></i> Log In
           </button>
           <button 
@@ -252,20 +255,20 @@ function Landing() {
       {/* Doctor & Timetable Section */}
       <section className="doctor-section" id="doctor">
         <div className="container">
-          <div className="doctor-wrapper glass-card-large">
-            <div className="doctor-image-container">
+          <div className="glass-card-large grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 p-5 sm:p-6 md:p-8 lg:p-12 items-center">
+            <div className="relative overflow-hidden rounded-2xl border-2 border-yellow-600 shadow-xl">
               <img 
                 src="/images/doctor.png" 
-                alt="Kaviraj Dr. Siddheshwar Sen - Chief Ayurvedic Physician" 
+                alt="Dr. Subham Maity - Chief Ayurvedic Physician" 
                 className="doctor-portrait-img"
               />
-              <div className="doctor-experience-badge">
-                <span className="exp-years">25+</span>
-                <span className="exp-text">Years Clinical Experience</span>
+              <div className="absolute bottom-3 left-2 right-2 md:bottom-10 md:left-7 md:right-7 bg-white/95 backdrop-blur-md rounded-xl shadow-lg px-3 py-2 flex items-center gap-3">
+                <span className="exp-years text-sm md:text-4xl">25+</span>
+                <span className="exp-text text-xs md:text-lg">Years Clinical Experience</span>
               </div>
             </div>
 
-            <div className="doctor-info-container">
+            <div className="w-full">
               <span className="doctor-kicker">Chief Ayurvedic Physician & Vaidya</span>
               <h2 className="doctor-name">Dr. Subham Maity</h2>
               <p className="doctor-qualifications">
@@ -284,14 +287,22 @@ function Landing() {
                 </div>
 
                 <div className="timetable-grid">
-                  <div className="time-row">
-                    <span className="day-name"><i className="bi bi-sun"></i> Morning Session</span>
-                    <span className="time-range">09:00 AM – 11:30 AM</span>
-                    <span className="day-badge">Mon to Sat</span>
-                  </div>
+                  {/* <div className="time-row grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <span className="day-name text-sm md:text-normal"><i className="bi bi-sun hidden md:block"></i> Afternoon Session</span>
+                      <span className="time-range text-sm md:text-normal">04:00 PM – 06:30 PM</span>
+                    </div>
+                    <span className="day-badge text-sm md:text-normal">Mon to Sat</span>
+                  </div> */}
                   <div className="time-row highlight-row">
-                    <span className="day-name"><i className="bi bi-heart"></i>Every 2nd & 4th Tuesday Morning</span>
-                    <span className="day-badge gold-badge">Healthy Family 🌿</span>
+                      <div className="flex items-center gap-2">
+                        <i className="bi bi-heart"></i>
+                        <span>
+                          <p className="day-name text-sm md:text-normal">Every 2nd & 4th Monday</p>
+                          <p className="time-range text-sm md:text-normal">04:00 PM – 06:30 PM</p>
+                        </span>
+                      </div>
+                    <span className="day-badge gold-badge text-sm md:text-normal">Healthy Family 🌿</span>
                   </div>
                 </div>
 
@@ -301,24 +312,42 @@ function Landing() {
                   </div>
                 ) : (
                   <form className="quick-booking-form" onSubmit={handleBookConsultation}>
-                    <input 
-                      type="text" 
-                      placeholder="Your Name" 
-                      required 
-                      className="booking-input" 
-                      value={bookingForm.patientName}
-                      onChange={(e) => setBookingForm({ ...bookingForm, patientName: e.target.value })}
-                    />
-                    <input 
-                      type="tel" 
-                      placeholder="Phone Number" 
-                      required 
-                      className="booking-input" 
-                      value={bookingForm.phone}
-                      onChange={(e) => setBookingForm({ ...bookingForm, phone: e.target.value })}
-                    />
+                    <div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input 
+                          type="text" 
+                          placeholder="Your Name" 
+                          required 
+                          className="booking-input" 
+                          value={bookingForm.patientName}
+                          onChange={(e) => setBookingForm({ ...bookingForm, patientName: e.target.value })}
+                        />
+                        <input 
+                          type="tel" 
+                          placeholder="Phone Number" 
+                          required 
+                          className="booking-input" 
+                          value={bookingForm.phone}
+                          onChange={(e) => setBookingForm({ ...bookingForm, phone: e.target.value })}
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Problem / Notes"
+                        required={false}
+                        className="booking-input mt-3"
+                        value={bookingForm.notes || ''}
+                        onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                      />
+                    </div>
                     <button type="submit" className="btn-gold-primary btn-sm" disabled={isSubmitting}>
-                      <i className="bi bi-calendar2-plus"></i> {isSubmitting ? 'Submitting...' : 'Request Appointment'}
+                      <i className="bi bi-calendar2-plus"></i>
+                      {isSubmitting ? ( "Submitting..." ) : (
+                        <>
+                          <span className="hidden md:inline">Request </span>
+                          Appointment
+                        </>
+                      )}
                     </button>
                   </form>
                 )}
@@ -343,7 +372,7 @@ function Landing() {
             <div className="gold-divider"></div>
           </div>
 
-          <div className="treatments-grid-small">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             {treatmentsList.map((item) => (
               <div key={item.id} className="treatment-card-small">
                 <div className="icon-box">
@@ -367,7 +396,7 @@ function Landing() {
           </div>
 
           {/* Product Grid (Filtered to top 3) */}
-          <div className="products-grid">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             {displayedProducts.map((prod) => (
               <div key={prod.id} className="product-card-modern">
                 <div className="product-image-wrap">
@@ -475,10 +504,10 @@ function Landing() {
       {/* Location & Contact Section */}
       <section className="location-section" id="location">
         <div className="container">
-          <div className="location-card glass-card-large">
+          <div className="location-card glass-card-large grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 p-5 sm:p-6 lg:p-10 items-center">
             <div className="location-info">
               <span className="section-kicker">Visit Our Authentic Clinic</span>
-              <h2>Siddheswari Ayurveda Clinic & Pharmacy</h2>
+              <h2 className='text-black'>Siddheswari Ayurveda Clinic & Pharmacy</h2>
               <p className="clinic-location-subtitle">Serving patients with natural care in Paschim Medinipur</p>
 
               <div className="contact-details">
@@ -508,7 +537,7 @@ function Landing() {
               </div>
             </div>
 
-            <div className="location-badge-box">
+            <div className="location-badge-box flex justify-center lg:justify-end">
               <div className="purity-seal">
                 <i className="bi bi-shield-lock-fill"></i>
                 <span>Ghatal's Premier Center for Pure Ayurvedic Healthcare</span>

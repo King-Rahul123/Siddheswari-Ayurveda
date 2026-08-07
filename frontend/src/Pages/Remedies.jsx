@@ -79,7 +79,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Super_Active_Meal_Replacement.png",
       tag: "",
       badge: "",
       specifications: {
@@ -98,7 +98,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Super_Active_Protein_Powder.png",
       tag: "",
       badge: "",
       specifications: {
@@ -122,9 +122,9 @@ function Remedies() {
       badge: "Pure Saffron",
       specifications: {
         weight: "",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
+        dosage: "Take the required amount of oil. Gently massage this oil to scalp and hairs.",
+        keyIngredients: "Bhringa OSLE Panchang Neeli OSLE Leal, Brahmi DSLE Panchang ,Karani CSLE seed, Beheda OSLE Fruit, Harad OSLE Fruit, Amla OSLE Fruit, Indrayan OSLE seed, Chhoti elaychi seed, Jatamanshi OSLE Rhizome, Neem OSLE seed, Henna OSLE Leaf, Yashtirmadhi OSLE Root, Chandthi OSLE seed, Vacha OSLE Rhizome, Dhatura OSLE Seeds, Kesut OSLE Leaves, Akkarkara DSLE Root, Grit Kumari OSLE Leaves Japakusum OSLE Flower, Lemon oil Fruit peel, Vitamin E, Tea tree oil Leaves",
+        benefits: "Fights dandruff Provides relief from itching and flaking Moisturize both hair and scalp Leaves hair soft and healthy looking",
         certification: "",
         expiry: ""
       }
@@ -136,7 +136,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/BioEssence_HairShampoo.png",
       tag: "",
       badge: "",
       specifications: {
@@ -155,7 +155,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/BioEssence_HairConditioner.png",
       tag: "",
       badge: "",
       specifications: {
@@ -228,10 +228,10 @@ function Remedies() {
       id: 12,
       name: "Himnidra D-stress Oil",
       category: "Haircare",
-      price: "",
+      price: "₹220",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Himnidra_dStress_Oil.png",
       tag: "",
       badge: "",
       specifications: {
@@ -247,7 +247,7 @@ function Remedies() {
       id: 13,
       name: "Leh Berry Face Cleanser",
       category: "SkinCare",
-      price: "",
+      price: "₹212",
       rating: 4.9,
       reviews: 164,
       image: "/images/Lehberry_FaceCleanser.png",
@@ -266,7 +266,7 @@ function Remedies() {
       id: 14,
       name: "Neem face Cleanser",
       category: "Skincare",
-      price: "",
+      price: "₹190",
       rating: 4.9,
       reviews: 164,
       image: "/images/Neem_FaceCleanser.png",
@@ -285,7 +285,7 @@ function Remedies() {
       id: 15,
       name: "Oil & Acne Control Face Wash",
       category: "Skincare",
-      price: "",
+      price: "₹249",
       rating: 4.9,
       reviews: 164,
       image: "/images/Oli&Acne_FaceWash.png",
@@ -304,7 +304,7 @@ function Remedies() {
       id: 16,
       name: "Moisturising Lotion",
       category: "Skincare",
-      price: "",
+      price: "₹130",
       rating: 4.9,
       reviews: 164,
       image: "/images/Moisturizing_Lotion.png",
@@ -326,15 +326,15 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Turmeric_Multipurpose_Cream.png",
       tag: "",
       badge: "",
       specifications: {
-        weight: "",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
+        weight: "50 g",
+        dosage: "Apply a small amount to the affected area and gently massage until absorbed.",
+        keyIngredients: "Daru Haldi Root/Bark liquid extract, Haldi Rhizome liquid extract,Tulasi leaves liquid extract, Mulethi root liquid extract, Kesar stigma liquid extract, Jatyadi tailam permitted base materials.",
+        benefits: "Provides natural moisturizing and soothing properties for the skin. Helps to reduce inflammation and redness. Can be used for minor cuts, burns, and skin irritations.",
+        certification: "WHO GMP Certified, ISO 9001:2015 Certified, Ayush Approved",
         expiry: ""
       }
     },
@@ -383,7 +383,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Gold_Youth_Serum.png",
       tag: "",
       badge: "",
       specifications: {
@@ -402,7 +402,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Gold_Revive_Mist.png",
       tag: "",
       badge: "",
       specifications: {
@@ -421,7 +421,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Gold_Powder_Mask.png",
       tag: "",
       badge: "",
       specifications: {
@@ -440,7 +440,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Gold_Peel_Off_Mask.png",
       tag: "",
       badge: "",
       specifications: {
@@ -459,7 +459,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Gold_Face_Scrub.png",
       tag: "",
       badge: "",
       specifications: {
@@ -478,7 +478,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Gold_Facial_Kit.png",
       tag: "",
       badge: "",
       specifications: {
@@ -497,7 +497,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Sunscreen_Butter.png",
       tag: "",
       badge: "",
       specifications: {
@@ -516,7 +516,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Night_Cream.png",
       tag: "",
       badge: "",
       specifications: {
@@ -554,7 +554,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Brightening_Bio_Serum.png",
       tag: "",
       badge: "",
       specifications: {
@@ -573,7 +573,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Brightening_Bio_Toner.png",
       tag: "",
       badge: "",
       specifications: {
@@ -592,7 +592,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Brightening_Cleansing_Foam.png",
       tag: "",
       badge: "",
       specifications: {
@@ -611,7 +611,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Brightening_Cream.png",
       tag: "",
       badge: "",
       specifications: {
@@ -630,7 +630,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Brightening_Kit.png",
       tag: "",
       badge: "",
       specifications: {
@@ -649,7 +649,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Whitening_Mask.png",
       tag: "",
       badge: "",
       specifications: {
@@ -687,7 +687,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Spot_Free_Cream.png",
       tag: "",
       badge: "",
       specifications: {
@@ -725,7 +725,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/A_Charcoal_Mask.png",
       tag: "",
       badge: "",
       specifications: {
@@ -915,7 +915,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Shilajit_Gold.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1010,7 +1010,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Gynocare_Syrup.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1314,7 +1314,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Super_Moringa.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1349,10 +1349,10 @@ function Remedies() {
       id: 57,
       name: "Pancha Tulasi Drops",
       category: "",
-      price: "",
+      price: "₹275",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Pancha_Tulasi_Drop.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1943,10 +1943,10 @@ function Remedies() {
       id: 108,
       name: "Skincare Ayurvedic Body Cleanser",
       category: "",
-      price: "",
+      price: "₹240",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Ayurvedic_Body_Cleanser.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1962,10 +1962,10 @@ function Remedies() {
       id: 109,
       name: "Skincare Fairness Body cleanser",
       category: "",
-      price: "",
+      price: "₹240",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Fairness_Body_Cleanser.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1981,7 +1981,7 @@ function Remedies() {
       id: 116,
       name: "Nutrilong Stemcell",
       category: "",
-      price: "",
+      price: "₹9000",
       rating: 4.9,
       reviews: 164,
       image: "",
@@ -2000,14 +2000,14 @@ function Remedies() {
       id: 93,
       name: "Dentacure Herbal Tooth Cleanser",
       category: "Dental Care",
-      price: "",
+      price: "₹96",
       rating: 4.9,
       reviews: 164,
       image: "/images/DentaCure_Toothpaste.png",
       tag: "",
       badge: "",
       specifications: {
-        weight: "",
+        weight: "100g",
         dosage: "",
         keyIngredients: "",
         benefits: "",
@@ -2019,14 +2019,14 @@ function Remedies() {
       id: 94,
       name: "Top Dantunn Red Toothpaste",
       category: "Dental Care",
-      price: "",
+      price: "₹135",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Dantunn_RedToothpaste.png",
       tag: "",
       badge: "",
       specifications: {
-        weight: "",
+        weight: "100g",
         dosage: "",
         keyIngredients: "",
         benefits: "",
@@ -2038,14 +2038,14 @@ function Remedies() {
       id: 95,
       name: "Top Dantunn Green Toothpaste",
       category: "Dental Care",
-      price: "",
+      price: "₹120",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Dantunn_GreenToothpaste.png",
       tag: "",
       badge: "",
       specifications: {
-        weight: "",
+        weight: "100g",
         dosage: "",
         keyIngredients: "",
         benefits: "",
@@ -2060,7 +2060,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Antiseptic_handwash.png",
       tag: "",
       badge: "",
       specifications: {
@@ -2079,11 +2079,11 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Floor_Cleaner.png",
       tag: "",
       badge: "",
       specifications: {
-        weight: "",
+        weight: "500 ml",
         dosage: "",
         keyIngredients: "",
         benefits: "",
@@ -2098,11 +2098,11 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Detergent_Powder.png",
       tag: "",
       badge: "",
       specifications: {
-        weight: "",
+        weight: "500 g",
         dosage: "",
         keyIngredients: "",
         benefits: "",
@@ -2117,7 +2117,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Dishwash_Gel.png",
       tag: "",
       badge: "",
       specifications: {
@@ -2133,10 +2133,10 @@ function Remedies() {
       id: 101,
       name: "Topkleen Toilet Cleaner",
       category: "Home Care",
-      price: "",
+      price: "₹255",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Toilet_Cleaner.png",
       tag: "",
       badge: "",
       specifications: {
@@ -2152,14 +2152,14 @@ function Remedies() {
       id: 96,
       name: "Topkaa Nature Fresh Chai",
       category: "Food & Beverages",
-      price: "",
+      price: "₹160",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Fresh_Chai.png",
       tag: "",
       badge: "",
       specifications: {
-        weight: "",
+        weight: "250 g",
         dosage: "",
         keyIngredients: "",
         benefits: "",
@@ -2174,7 +2174,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Coffee.png",
       tag: "",
       badge: "",
       specifications: {
@@ -2190,14 +2190,14 @@ function Remedies() {
       id: 103,
       name: "Topflora Liquid",
       category: "Agriculture & Veterinary",
-      price: "",
+      price: "₹1199",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Topflora_Liquid.png",
       tag: "",
       badge: "",
       specifications: {
-        weight: "",
+        weight: "1 liter",
         dosage: "",
         keyIngredients: "",
         benefits: "",
@@ -2209,14 +2209,14 @@ function Remedies() {
       id: 104,
       name: "Topvet Powder",
       category: "Agriculture & Veterinary",
-      price: "",
+      price: "₹612",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Topvet_Powder.png",
       tag: "",
       badge: "",
       specifications: {
-        weight: "",
+        weight: "1kg",
         dosage: "",
         keyIngredients: "",
         benefits: "",
@@ -2275,12 +2275,9 @@ function Remedies() {
         {/* Single continuous grid for all filtered products */}
         <div className="catalog-wrapper animate-in" key={activeCategory} style={{ animationDelay: '0.1s' }}>
           {filteredProducts.length > 0 ? (
-            <div className="products-grid">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
               {filteredProducts.map((prod) => (
-                <div 
-                  key={prod.id} 
-                  className="product-card-modern"
-                >
+                <div key={prod.id} className="product-card-modern">
                   <div className="product-image-wrap">
                     <img src={prod.image} alt={prod.name} className="product-img" loading="lazy" />
                     <span className="product-tag">{prod.tag}</span>
