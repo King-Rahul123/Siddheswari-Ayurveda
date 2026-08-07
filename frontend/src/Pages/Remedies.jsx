@@ -744,7 +744,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Diacare_Ras.png",
       tag: "",
       badge: "",
       specifications: {
@@ -763,7 +763,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Diacare_Tablet.png",
       tag: "",
       badge: "",
       specifications: {
@@ -782,7 +782,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Joddaram_Combo.png",
       tag: "",
       badge: "",
       specifications: {
@@ -801,7 +801,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Joddaram_Oil.png",
       tag: "",
       badge: "",
       specifications: {
@@ -815,12 +815,12 @@ function Remedies() {
     },
     {
       id: 43,
-      name: "Sanjeevani Jodaram Tablet",
+      name: "Sanjeevani Joddaram Tablet",
       category: "Joint Pain",
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Joddaram_Tablet.png",
       tag: "",
       badge: "",
       specifications: {
@@ -839,7 +839,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Joddaram_Cream.png",
       tag: "",
       badge: "",
       specifications: {
@@ -858,7 +858,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Mega_Men.png",
       tag: "",
       badge: "",
       specifications: {
@@ -877,7 +877,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/KnightMax_Ras.png",
       tag: "",
       badge: "",
       specifications: {
@@ -896,7 +896,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Royal_Honey_For_Him.png",
       tag: "",
       badge: "",
       specifications: {
@@ -934,7 +934,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Prostawon.png",
       tag: "",
       badge: "",
       specifications: {
@@ -953,7 +953,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Ultra_Women.png",
       tag: "",
       badge: "",
       specifications: {
@@ -972,7 +972,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/PCOS.png",
       tag: "",
       badge: "",
       specifications: {
@@ -991,7 +991,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Gynocare_Table.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1029,7 +1029,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Shatavari.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1043,12 +1043,12 @@ function Remedies() {
     },
     {
       id: 55,
-      name: "Mamfresh Pain Period Shots",
+      name: "Maamfresh Pain Period Shots",
       category: "Women's Health",
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Maamfresh_Pain_Period_Shots.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1162,7 +1162,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Arjunaa_Plus.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1181,7 +1181,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/CoQ_Ten_Plus.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1257,7 +1257,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Nayansukh_Eye_Drop.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1333,7 +1333,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Super_Omega.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1428,7 +1428,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Antacid.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1447,7 +1447,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Livcare_Syrup.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1466,7 +1466,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Livcare_Tablet.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1480,12 +1480,12 @@ function Remedies() {
     },
     {
       id: 64,
-      name: "Stonecare SF Syrup",
+      name: "Stonecare-SF Syrup",
       category: "",
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Stonecare-SF_Syrup.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1504,7 +1504,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Pilescare_Cream.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1523,7 +1523,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/PilesCare_Tablet.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1542,7 +1542,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Psorino_Cream.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1561,7 +1561,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Psorino_Tablet.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1618,7 +1618,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Spiriluna_Tablet.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1637,7 +1637,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Wheatgrass_Tablet.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1651,12 +1651,12 @@ function Remedies() {
     },
     {
       id: 86,
-      name: "Active Amla Juice",
+      name: "Active Aamla Juice",
       category: "",
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Aamla_Juice.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1675,7 +1675,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Aloevera_Juice.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1694,7 +1694,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Alkalizing_Drop.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1713,7 +1713,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Alkalizing_Demo_Kit.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1732,7 +1732,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Kofcare_Syrup.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1752,7 +1752,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Astaaxanthin.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1771,7 +1771,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Resveratrol_Plus.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1809,7 +1809,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Tri_Ginseng.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1828,7 +1828,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/A2_Colostrum_Advance.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1886,7 +1886,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Leucowin.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1905,7 +1905,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/D-Stress_Capsule.png",
       tag: "",
       badge: "",
       specifications: {
