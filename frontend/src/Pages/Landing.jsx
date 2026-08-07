@@ -22,7 +22,7 @@ function Landing() {
       price: "₹184",
       rating: 4.9,
       reviews: 142,
-      image: "/images/night_cream.jpg",
+      image: "/images/Fresh_Under_Eye_Cream.jpg",
       tag: "Bright Eyes",
       badge: "Pure & Organic",
       specifications: {

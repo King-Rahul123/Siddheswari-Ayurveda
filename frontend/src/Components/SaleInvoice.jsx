@@ -43,6 +43,7 @@ export default function SaleInvoice() {
     {
       itemCode: "",
       productName: "",
+      hsn: "",
       batch: "",
       expiry: "",
       qty: "",
@@ -110,6 +111,7 @@ export default function SaleInvoice() {
       {
         itemCode: "",
         productName: "",
+        hsn: "",
         batch: "",
         expiry: "",
         qty: "",
@@ -129,6 +131,7 @@ export default function SaleInvoice() {
         {
           itemCode: "",
           productName: "",
+          hsn: "",
           batch: "",
           expiry: "",
           qty: "",
@@ -210,6 +213,7 @@ export default function SaleInvoice() {
         stockId: product.stockId || product._id || "",
         itemCode: product.itemCode || "",
         productName: product.productName || "",
+        hsn: product.hsn || product.hsnCode || "",
         batch: batch,
         expiry: expiry,
         qty: newQty,
@@ -356,6 +360,7 @@ export default function SaleInvoice() {
         {
           itemCode: "",
           productName: "",
+          hsn: "",
           batch: "",
           expiry: "",
           qty: "",
@@ -407,7 +412,9 @@ export default function SaleInvoice() {
         billNumber: currentBillNo,
         invoiceDate,
         customerName: customer.customerName,
+        phone: customer.phone,
         mobile: customer.phone,
+        customerPhone: customer.phone,
         items: validItems,
         subTotal,
         discount: totalItemDiscount,
@@ -519,7 +526,6 @@ export default function SaleInvoice() {
                 onChange={(e) =>
                   setCustomer({ ...customer, phone: e.target.value })
                 }
-                readOnly
               />
             </div>
 
@@ -528,6 +534,7 @@ export default function SaleInvoice() {
                 <tr>
                   <th>Sl No.</th>
                   <th>Product</th>
+                  <th>HSN</th>
                   <th>Batch</th>
                   <th>Qty</th>
                   <th>MRP</th>
@@ -559,6 +566,25 @@ export default function SaleInvoice() {
                         }}
                         onChange={(e) =>
                           updateItem(index, "productName", e.target.value)
+                        }
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        name="hsn"
+                        type="text"
+                        placeholder="HSN"
+                        value={item.hsn}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            const rows = invoiceRef.current?.querySelectorAll("tbody tr");
+                            rows?.[index]?.querySelector("input[name='batch']")?.focus();
+                          }
+                        }}
+                        onChange={(e) =>
+                          updateItem(index, "hsn", e.target.value)
                         }
                       />
                     </td>
