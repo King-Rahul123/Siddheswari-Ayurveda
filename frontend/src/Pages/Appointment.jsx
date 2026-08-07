@@ -255,7 +255,7 @@ export default function Appointment() {
 
                                                     <td>{appointment.appointmentDate}</td>
 
-                                                    <td>{appointment.name}</td>
+                                                    <td>{appointment.patientName}</td>
 
                                                     <td>{appointment.doctor}</td>
 

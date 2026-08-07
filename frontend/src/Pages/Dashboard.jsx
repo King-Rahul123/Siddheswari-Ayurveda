@@ -191,7 +191,12 @@ export default function Dashboard() {
           <section className="dashboard-grid">
             {/* Appointments */}
             <div className="card">
-              <h5>Appointments</h5>
+              <div className="flex justify-between mb-2">
+                <h5>Appointments</h5>
+                <button className="btn btn-outline-success px-3 py-1" onClick={() => navigate("/dashboard/appointments")}>
+                  <i className="bi bi-arrow-right"></i>
+                </button>
+              </div>
 
               <div className="table-responsive">
                 <table className="dashboard-table">
