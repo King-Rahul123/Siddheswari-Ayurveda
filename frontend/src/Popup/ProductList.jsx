@@ -57,61 +57,42 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
         if (nameKey) prodDetailsMap.set(nameKey, details);
     });
 
-    // Format list based on mode
-    let listToDisplay = [];
+    // BOTH Purchase and Sale now use the detailed Stocks list
+    const listToDisplay = (stocks || []).map((s) => {
+        const codeKey = (s.itemCode || s.code || "").toLowerCase();
+        const nameKey = (s.productName || s.product || "").toLowerCase();
+        const matchedProd = prodDetailsMap.get(codeKey) || prodDetailsMap.get(nameKey) || {};
 
-    if (mode === "sale") {
-        // Show stocks database records for sales, enriched with GST and details from products database
-        listToDisplay = (stocks || []).map((s) => {
-            const codeKey = (s.itemCode || s.code || "").toLowerCase();
-            const nameKey = (s.productName || s.product || "").toLowerCase();
-            const matchedProd = prodDetailsMap.get(codeKey) || prodDetailsMap.get(nameKey) || {};
+        const gstVal = matchedProd.gst !== undefined && matchedProd.gst !== 0
+            ? Number(matchedProd.gst)
+            : Number(s.gst ?? s.gstRate ?? 0);
 
-            const gstVal = matchedProd.gst !== undefined && matchedProd.gst !== 0
-                ? Number(matchedProd.gst)
-                : Number(s.gst ?? s.gstRate ?? 0);
+        const hsnVal = s.hsn || s.hsnCode || matchedProd.hsn || "";
+        const discVal = Number(s.discount || matchedProd.discount || 0);
 
-            const hsnVal = s.hsn || s.hsnCode || matchedProd.hsn || "";
-            const discVal = Number(s.discount || matchedProd.discount || 0);
-
-            return {
-                ...s,
-                stockId: s.stockId || s._id,
-                itemCode: s.itemCode || s.code || "",
-                productName: s.productName || s.product || "Unnamed Product",
-                batch: s.batch || "-",
-                mrp: Number(s.mrp || s.rate || 0),
-                rate: Number(s.rate || s.mrp || 0),
-                expiry: s.expiryDate || s.expiry || "-",
-                stock: Number(s.qty ?? s.stock ?? 0),
-                gst: gstVal,
-                gstRate: gstVal,
-                hsn: hsnVal,
-                discount: discVal
-            };
-        });
-    } else {
-        // Show products collection for purchase entry
-        listToDisplay = (products || []).map((p) => {
-            const batchDisplay = Array.isArray(p.batch) ? p.batch.join(", ") : (p.batch || "-");
-            const mrpDisplay = Array.isArray(p.mrp) ? p.mrp.join(", ") : (p.mrp || 0);
-            return {
-                ...p,
-                itemCode: p.itemCode || p.code || "",
-                productName: p.productName || "Unnamed Product",
-                batchDisplay,
-                mrpDisplay,
-                stock: Number(p.stock || 0)
-            };
-        });
-    }
+        return {
+            ...s,
+            stockId: s.stockId || s._id,
+            itemCode: s.itemCode || s.code || "",
+            productName: s.productName || s.product || "Unnamed Product",
+            batch: s.batch || "-",
+            mrp: Number(s.mrp || s.rate || 0),
+            rate: Number(s.rate || s.mrp || 0),
+            expiry: s.expiryDate || s.expiry || "-",
+            stock: Number(s.qty ?? s.stock ?? 0),
+            gst: gstVal,
+            gstRate: gstVal,
+            hsn: hsnVal,
+            discount: discVal
+        };
+    });
 
     const filteredItems = listToDisplay.filter((item) => {
         const text = search.toLowerCase();
         const nameMatch = String(item.productName || "").toLowerCase().includes(text);
         const codeMatch = String(item.itemCode || "").toLowerCase().includes(text);
-        const batchMatch = String(item.batch || item.batchDisplay || "").toLowerCase().includes(text);
-        const mrpMatch = String(item.mrp ?? item.mrpDisplay ?? "").toLowerCase().includes(text);
+        const batchMatch = String(item.batch || "").toLowerCase().includes(text);
+        const mrpMatch = String(item.mrp ?? "").toLowerCase().includes(text);
 
         return nameMatch || codeMatch || batchMatch || mrpMatch;
     });
@@ -180,9 +161,9 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
 
     return (
         <div className="popup-overlay">
-            <div className="customer-popup" style={{ maxWidth: mode === "sale" ? "750px" : "650px" }}>
+            <div className="customer-popup" style={{ maxWidth: "750px" }}>
                 <div className="popup-header">
-                    <h4>{mode === "sale" ? "Select Product Stock" : "Select Product"}</h4>
+                    <h4>Select Product Stock</h4>
                     <button
                         className="btn-close"
                         onClick={onClose}
@@ -193,7 +174,7 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
                     <input
                         ref={searchRef}
                         className="form-control mb-3"
-                        placeholder={mode === "sale" ? "Search Stock by Name, Code, Batch, MRP..." : "Search Product..."}
+                        placeholder="Search Stock by Name, Code, Batch, MRP..."
                         value={search}
                         onChange={(e) => {
                             setSearch(e.target.value);
@@ -205,33 +186,21 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
                     <div className="table-responsive customer-table-wrapper">
                         <table className="table table-hover table-bordered">
                             <thead className="table-success sticky-top">
-                                {mode === "sale" ? (
-                                    <tr>
-                                        <th style={{ width: 110 }}>Item Code</th>
-                                        <th>Product Name</th>
-                                        <th style={{ width: 90 }}>Batch</th>
-                                        <th style={{ width: 80 }} className="text-end">MRP</th>
-                                        <th style={{ width: 90 }} className="text-center">Expiry</th>
-                                        <th style={{ width: 80 }} className="text-center">Stock</th>
-                                    </tr>
-                                ) : (
-                                    <tr>
-                                        <th style={{ width: 120 }}>Item Code</th>
-                                        <th>Product Name</th>
-                                        <th>Batch(es)</th>
-                                        <th style={{ width: 90 }} className="text-center">Stock</th>
-                                    </tr>
-                                )}
+                                <tr>
+                                    <th style={{ width: 110 }}>Item Code</th>
+                                    <th>Product Name</th>
+                                    <th style={{ width: 90 }}>Batch</th>
+                                    <th style={{ width: 80 }} className="text-end">MRP</th>
+                                    <th style={{ width: 90 }} className="text-center">Expiry</th>
+                                    <th style={{ width: 80 }} className="text-center">Stock</th>
+                                </tr>
                             </thead>
 
                             <tbody>
                                 {filteredItems.length === 0 ? (
                                     <tr>
-                                        <td
-                                            colSpan={mode === "sale" ? 6 : 4}
-                                            className="text-center py-4"
-                                        >
-                                            No {mode === "sale" ? "Stock" : "Product"} Record Found
+                                        <td colSpan={6} className="text-center py-4">
+                                            No Stock Record Found
                                         </td>
                                     </tr>
                                 ) : (
@@ -252,23 +221,12 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
                                         >
                                             <td>{item.itemCode}</td>
                                             <td>{item.productName}</td>
-                                            {mode === "sale" ? (
-                                                <>
-                                                    <td>{item.batch}</td>
-                                                    <td className="text-end">₹{Number(item.mrp || 0).toFixed(2)}</td>
-                                                    <td className="text-center">{item.expiry}</td>
-                                                    <td className={`text-center font-bold ${Number(item.stock || 0) <= 0 ? 'text-red-600' : 'text-emerald-700'}`}>
-                                                        {item.stock}
-                                                    </td>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <td>{item.batchDisplay}</td>
-                                                    <td className={`text-center font-bold ${Number(item.stock || 0) <= 0 ? 'text-red-600' : 'text-emerald-700'}`}>
-                                                        {item.stock}
-                                                    </td>
-                                                </>
-                                            )}
+                                            <td>{item.batch}</td>
+                                            <td className="text-end">₹{Number(item.mrp || 0).toFixed(2)}</td>
+                                            <td className="text-center">{item.expiry}</td>
+                                            <td className={`text-center font-bold ${Number(item.stock || 0) <= 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+                                                {item.stock}
+                                            </td>
                                         </tr>
                                     ))
                                 )}
