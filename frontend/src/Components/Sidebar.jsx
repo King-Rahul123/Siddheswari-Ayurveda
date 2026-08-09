@@ -73,7 +73,7 @@ export default function Sidebar() {
             <div className="menu-item">
               <div>
                 <i className="bi bi-cash-stack"></i>
-                <span>Sale & Purchase</span>
+                <span>Transaction</span>
               </div>
               <i className={`bi ${ saleOpen ? "bi-chevron-up" : "bi-chevron-down" }`}></i>
             </div>
@@ -89,6 +89,11 @@ export default function Sidebar() {
               <li className={ window.location.pathname === "/dashboard/purchase" ? "active" : "" } onClick={() => navigate("/dashboard/purchase")} >
                 <i className="bi bi-cart-check"></i>
                 Purchase invoice
+              </li>
+
+              <li className={ window.location.pathname === "/dashboard/outstanding" ? "active" : "" } onClick={() => navigate("/dashboard/outstanding")} >
+                <i className="bi bi-cash-stack"></i>
+                Outstanding
               </li>
             </ul>
           )}
@@ -115,16 +120,6 @@ export default function Sidebar() {
               <li className={ window.location.pathname === "/dashboard/stock-report" ? "active" : "" } onClick={() => navigate("/dashboard/stock-report")} >
                 <i className="bi bi-box-seam"></i>
                 Stock Report
-              </li>
-
-              <li className={ window.location.pathname === "/dashboard/sale-report" ? "active" : "" } onClick={() => navigate("/dashboard/sale-report")} >
-                <i className="bi bi-file-earmark-bar-graph-fill"></i>
-                Sale Report
-              </li>
-
-              <li className={ window.location.pathname === "/dashboard/purchase-report" ? "active" : "" } onClick={() => navigate("/dashboard/purchase-report")} >
-                <i className="bi bi-file-earmark-bar-graph-fill"></i>
-                Purchase Report
               </li>
 
               {loggedInUser?.role?.toLowerCase() === "admin" && (

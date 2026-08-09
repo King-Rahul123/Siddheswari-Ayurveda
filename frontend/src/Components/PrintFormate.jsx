@@ -1,8 +1,9 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import "../CSS/PrintFormate.css";
 
 export default function PrintInvoice() {
+  const navigate = useNavigate();
   const { state } = useLocation();
   const {
     billNumber,
@@ -29,6 +30,28 @@ export default function PrintInvoice() {
 
   return (
     <div className="print-page-wrapper">
+      {/* Floating Action Bar for Screen View */}
+      <div className="print-actions-bar no-print">
+        <div className="left-actions">
+          <button
+            type="button"
+            className="print-action-btn back"
+            onClick={() => navigate(-1)}
+          >
+            <i className="bi bi-arrow-left"></i> Back to Sale Invoice Page
+          </button>
+        </div>
+        <div className="right-actions">
+          <button
+            type="button"
+            className="print-action-btn primary"
+            onClick={() => window.print()}
+          >
+            <i className="bi bi-printer-fill"></i> Print / Save PDF
+          </button>
+        </div>
+      </div>
+
       <div className="print-card">
         {/* Background Light Logo Watermark */}
         <div className="watermark-overlay">

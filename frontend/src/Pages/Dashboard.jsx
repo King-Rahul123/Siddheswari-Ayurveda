@@ -11,6 +11,7 @@ import AddCustomer from "../Popup/AddCustomer";
 import { changePassword, addStaff } from "../services/authService";
 import { subscribeCustomers } from "../services/customerService";
 import { subscribePatients } from "../services/patientService";
+import { apiFetch } from "../api/apiClient";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function Dashboard() {
   const [showCustomerPopup, setShowCustomerPopup] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [customerCount, setCustomerCount] = useState(0);
+  const [analyticsStats, setAnalyticsStats] = useState(null);
 
   const [showChangePassword, setShowChangePassword] = useState(false);
 
@@ -34,6 +36,19 @@ export default function Dashboard() {
   );
 
   useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const res = await apiFetch("/analytics/overview");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.stats) setAnalyticsStats(data.stats);
+        }
+      } catch (err) {
+        console.error("Error loading analytics:", err);
+      }
+    };
+    fetchAnalytics();
+
     const unsubscribeCustomers = subscribeCustomers((customers) => {
       setCustomerCount(customers.length);
     });
@@ -87,25 +102,25 @@ export default function Dashboard() {
   const stats = [
     {
       title: "Total Customers",
-      value: customerCount,
+      value: analyticsStats?.customers ?? customerCount,
       icon: "bi-people-fill",
       route: "/dashboard/customer",
     },
     {
       title: "Appointments",
-      value: "0",
+      value: appointments.length || analyticsStats?.appointments || 0,
       icon: "bi-calendar-check-fill",
       route: "/dashboard/appointments",
     },
     {
       title: "Stock Amount",
-      value: "₹0",
+      value: `₹${Number(analyticsStats?.stockAmount || 0).toLocaleString("en-IN")}`,
       icon: "bi-box-seam-fill",
       route: "/dashboard/stock-report",
     },
     {
       title: "Performance",
-      value: "0%",
+      value: `${analyticsStats?.performance ?? 0}%`,
       icon: "bi-graph-up-arrow",
       route: "/dashboard/analytics",
     },

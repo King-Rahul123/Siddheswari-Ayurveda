@@ -288,3 +288,22 @@
         width: 100%;
     }
 }
+
+/* Custom Sleek Scrollbar */
+.invoice-card::-webkit-scrollbar,
+.dashboard-content::-webkit-scrollbar,
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.invoice-card::-webkit-scrollbar-thumb,
+.dashboard-content::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
