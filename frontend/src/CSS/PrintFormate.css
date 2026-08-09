@@ -1,51 +1,112 @@
 @import url("https://fonts.googleapis.com/css2?family=Jim+Nightshade&display=swap");
 
+/* Screen Action Bar */
+.print-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 210mm;
+  max-width: 100%;
+  margin: 0 auto 16px auto;
+  padding: 12px 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.print-actions-bar .left-actions,
+.print-actions-bar .right-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.print-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.print-action-btn.back {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.print-action-btn.back:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.print-action-btn.primary {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.print-action-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+}
+
 .print-page-wrapper {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 30px;
-  background-color: #f8fafc;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+  background-color: #f1f5f9;
   min-height: 100vh;
+  box-sizing: border-box;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #0f172a;
 }
 
-.print-card{
-  width:210mm;
-  min-height:297mm;
-  padding:12mm 14mm;
-  margin:auto;
-  background:#fff;
-  box-sizing:border-box;
-  position:relative;
+.print-card {
+  width: 210mm;
+  max-width: 100%;
+  min-height: auto;
+  padding: 12mm 14mm;
+  margin: 0 auto;
+  background: #ffffff;
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
 
-@page{
-    size:A4;
-    margin:10mm;
+@page {
+  size: A4;
+  margin: 10mm;
 }
 
 /* Background Watermark Image */
 .watermark-overlay {
   position: absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  opacity:.2;
-  z-index:0;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .watermark-img {
-  width: 460px;
+  width: 420px;
   height: auto;
   object-fit: contain;
-  opacity: 0.55;
+  opacity: 0.30;
 }
+
 .print-card > *:not(.watermark-overlay) {
-    position: relative;
-    z-index: 2;
+  position: relative;
+  z-index: 2;
 }
 
 .print-card > * {
@@ -58,7 +119,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding-bottom: 18px;
+  padding-bottom: 12px;
 }
 
 .header-brand {
@@ -80,8 +141,8 @@
 
 .counter-brand-text span {
   font-family: "Jim Nightshade", cursive;
-  font-size: 50px;
-  margin-left: 20px;
+  font-size: 48px;
+  margin-left: 16px;
   line-height: 1;
   color: #0f172a;
   white-space: nowrap;
@@ -90,24 +151,24 @@
 .header-meta {
   text-align: right;
   font-size: 13px;
-  line-height: 1.7;
+  line-height: 1.6;
   color: #334155;
 }
 
 .header-meta p {
-  margin: 3px 0;
+  margin: 2px 0;
 }
 
 .divider-line {
   height: 1px;
-  background-color: #cbd5e1;
-  margin: 12px 0;
+  background-color: #e2e8f0;
+  margin: 10px 0;
 }
 
 /* Title Banner */
 .invoice-title-banner {
   text-align: center;
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 .invoice-title-banner h3 {
@@ -125,10 +186,10 @@
   gap: 6px;
   font-size: 13.5px;
   color: #1e293b;
-  padding:12px;
-  border:1px solid #d7e2d7;
-  border-radius:10px;
-background:#fafdfb;
+  padding: 10px 14px;
+  border: 1px solid #d7e2d7;
+  border-radius: 8px;
+  background: #fafdfb;
 }
 
 .customer-info-box p {
@@ -162,14 +223,14 @@ background:#fafdfb;
 .invoice-summary-block {
   display: flex;
   justify-content: flex-end;
-  margin: 12px 0;
+  margin: 10px 0;
 }
 
 .summary-col {
-  width: 260px;
+  width: 250px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   font-size: 13.5px;
 }
 
@@ -180,7 +241,7 @@ background:#fafdfb;
 }
 
 .grand-total-row {
-  margin-top: 6px;
+  margin-top: 4px;
   padding-top: 6px;
   border-top: 2px solid #0f172a;
   font-size: 15px;
@@ -192,13 +253,13 @@ background:#fafdfb;
 .signature-area {
   display: flex;
   justify-content: flex-end;
-  margin-top: 40px;
-  margin-bottom: 10px;
+  margin-top: 80px;
+  margin-bottom: 8px;
 }
 
 .seller-signature-box {
   text-align: center;
-  width: 200px;
+  width: 180px;
 }
 
 .sig-line {
@@ -216,7 +277,8 @@ background:#fafdfb;
 /* Tagline Footer */
 .print-footer-tagline {
   text-align: center;
-  padding: 8px 0 2px 0;
+  padding: 15px 0 2px 0;
+  margin-top: auto;
 }
 
 .print-footer-tagline span {
@@ -226,37 +288,59 @@ background:#fafdfb;
   color: #16a34a;
 }
 
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 @media print {
-  body {
+  body, html {
     background: #ffffff !important;
-    margin: 0;
-    padding: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .no-print {
+    display: none !important;
   }
 
   .print-page-wrapper {
-    padding: 0;
-    background: transparent;
+    padding: 0 !important;
+    background: transparent !important;
+    min-height: auto !important;
+    display: block !important;
   }
 
   .print-card {
-    border: none;
-    box-shadow: none;
-    max-width: 100%;
-    width: 100%;
-    padding: 18px;
+    border: none !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    min-height: 270mm !important;
+    padding: 10mm !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    display: flex;
+    flex-direction: column;
   }
 
   .watermark-overlay {
     position: absolute;
     inset: 0;
-
     display: flex;
     justify-content: center;
     align-items: center;
-
     pointer-events: none;
     user-select: none;
-
     z-index: 0;
   }
 
@@ -264,5 +348,18 @@ background:#fafdfb;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+  .print-footer-tagline {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: white;
+    padding-bottom: 2px;
+  }
 
+  /* Add padding to the body so the table doesn't overlap the fixed footer */
+  body {
+    padding-bottom: 10px !important;
+  }
 }

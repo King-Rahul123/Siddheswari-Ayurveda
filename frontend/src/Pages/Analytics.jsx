@@ -34,6 +34,9 @@ export default function Analytics() {
         todaySales: 0,
         customers: 0,
         products: 0,
+        stockAmount: 0,
+        performance: 0,
+        appointments: 0,
         lowStock: 0,
         inStock: 0,
         outOfStock: 0,
@@ -87,7 +90,7 @@ export default function Analytics() {
                         </div>
 
                         <div className="analytics-card">
-                            <i className="bi bi-cart-check-fill"></i>
+                            <i className="bi bi-cart-plus-fill"></i>
                             <h3>₹{Number(stats.totalPurchase || 0).toLocaleString("en-IN")}</h3>
                             <p>Total Purchase</p>
                         </div>
@@ -99,9 +102,21 @@ export default function Analytics() {
                         </div>
 
                         <div className="analytics-card">
-                            <i className="bi bi-graph-up-arrow"></i>
+                            <i className="bi bi-cash-stack"></i>
                             <h3>₹{Number(stats.todaySales || 0).toLocaleString("en-IN")}</h3>
                             <p>Today's Sale</p>
+                        </div>
+
+                        <div className="analytics-card">
+                            <i className="bi bi-bank"></i>
+                            <h3>₹{Number(stats.stockAmount || 0).toLocaleString("en-IN")}</h3>
+                            <p>Stock Amount</p>
+                        </div>
+
+                        <div className="analytics-card">
+                            <i className="bi bi-graph-up-arrow"></i>
+                            <h3>{stats.performance}%</h3>
+                            <p>Performance</p>
                         </div>
 
                         <div className="analytics-card">
@@ -114,6 +129,12 @@ export default function Analytics() {
                             <i className="bi bi-people"></i>
                             <h3>{stats.customers}</h3>
                             <p>Customers</p>
+                        </div>
+
+                        <div className="analytics-card">
+                            <i className="bi bi-calendar-check"></i>
+                            <h3>{stats.appointments}</h3>
+                            <p>Appointments</p>
                         </div>
 
                         <div className="analytics-card">
