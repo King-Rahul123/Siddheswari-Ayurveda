@@ -2,10 +2,14 @@ const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
 
-const jimNightshadeFontPath = path.resolve(
-  __dirname,
-  "../../frontend/public/fonts/JimNightshade-Regular.ttf"
-);
+// ==========================================
+// 1. DEFINE FONT PATHS
+// ==========================================
+const jimNightshadeFontPath = path.resolve(__dirname, "../../frontend/public/fonts/JimNightshade-Regular.ttf");
+
+// YOU MUST DOWNLOAD THESE FONTS AND PLACE THEM IN THIS DIRECTORY
+const robotoRegularPath = path.resolve(__dirname, "../../frontend/public/fonts/Roboto-Regular.ttf");
+const robotoBoldPath = path.resolve(__dirname, "../../frontend/public/fonts/Roboto-Bold.ttf");
 
 /**
  * Generates a PDF invoice and saves it to D:\Mongodb_Siddheswari\Invoices\<saleId>.pdf
@@ -13,6 +17,7 @@ const jimNightshadeFontPath = path.resolve(
  * @param {Array} items - Array of sale items (productName, batch, expiry, qty, rate, discount, gst, amount)
  * @returns {Promise<string>} - Resolves with the absolute path of the generated PDF file
  */
+
 const generateSalePDF = (saleData, items = []) => {
   return new Promise((resolve, reject) => {
     try {
@@ -21,17 +26,20 @@ const generateSalePDF = (saleData, items = []) => {
         fs.mkdirSync(outputDir, { recursive: true });
       }
 
-      // Safe filename string (sanitize saleId)
       const safeSaleId = (saleData.saleId || "INVOICE").replace(/[/\\?%*:|"<>]/g, "_");
       const filePath = path.join(outputDir, `${safeSaleId}.pdf`);
 
-      const doc = new PDFDocument({
-        size: "A4",
-        margin: 30
-      });
-
+      const doc = new PDFDocument({ size: "A4", margin: 30 });
       const writeStream = fs.createWriteStream(filePath);
       doc.pipe(writeStream);
+
+      // ==========================================
+      // 2. SET UP FONT FALLBACKS
+      // ==========================================
+      // If the Roboto fonts are not found, it falls back to Helvetica, 
+      // but Helvetica WILL NOT print the ₹ symbol correctly.
+      const fontRegular = fs.existsSync(robotoRegularPath) ? robotoRegularPath : "Helvetica";
+      const fontBold = fs.existsSync(robotoBoldPath) ? robotoBoldPath : "Helvetica-Bold";
 
       const startX = 30;
       const startY = 30;
@@ -72,8 +80,11 @@ const generateSalePDF = (saleData, items = []) => {
           width: 265,
         });
 
+      // ==========================================
+      // 3. USE CUSTOM FONTS FOR ALL TEXT
+      // ==========================================
       doc
-        .font("Helvetica-Bold")
+        .font(fontBold)
         .fontSize(9)
         .fillColor("#334155")
         .text(`Invoice No : ${saleData.saleId || "N/A"}`, startX + 365, currentY + 8, {
@@ -82,7 +93,7 @@ const generateSalePDF = (saleData, items = []) => {
         });
 
       doc
-        .font("Helvetica-Bold")
+        .font(fontBold)
         .text(`Date : ${saleData.date || new Date().toISOString().split("T")[0]}`, startX + 365, currentY + 22, {
           align: "right",
           width: 170,
@@ -90,45 +101,41 @@ const generateSalePDF = (saleData, items = []) => {
 
       currentY += 62;
 
-      // 4. Banner: TAX INVOICE / SALES INVOICE
+      // Banner
       doc
-        .font("Helvetica-Bold")
+        .font(fontBold)
         .fontSize(11)
         .fillColor("#0f172a")
         .text("TAX INVOICE / SALES INVOICE", startX, currentY, { align: "center", width: width });
 
       currentY += 25;
 
-      // 5. Customer Details Box
+      // Customer Details Box
       const custName = saleData.customerName || saleData.customer || "Walk-in Customer";
       const custMobile = saleData.customerPhone || saleData.mobile || saleData.phone || "N/A";
 
-      // Draw rounded rectangle for customer info
       doc
         .roundedRect(startX, currentY, width, 32, 6)
         .lineWidth(1)
         .stroke("#a7f3d0");
 
-      // Customer Details Inline
       doc
-        .font("Helvetica-Bold")
+        .font(fontBold)
         .fontSize(10)
         .fillColor("#1e293b")
         .text("Customer Name : ", startX + 15, currentY + 11, { continued: true })
-        .font("Helvetica")
+        .font(fontRegular)
         .text(custName);
 
       doc
-        .font("Helvetica-Bold")
+        .font(fontBold)
         .text("Mobile : ", startX + 300, currentY + 11, { continued: true })
-        .font("Helvetica")
+        .font(fontRegular)
         .text(custMobile);
 
       currentY += 50;
 
-      // ==========================================
       // Table Header Setup
-      // ==========================================
       const cols = [
         { name: "Sl", x: startX + 5, w: 25, align: "center" },
         { name: "Product", x: startX + 30, w: 150, align: "left" },
@@ -141,14 +148,13 @@ const generateSalePDF = (saleData, items = []) => {
         { name: "Amount", x: startX + 485, w: 45, align: "right" }
       ];
 
-      // Table Header Background
       doc
         .rect(startX, currentY, width, 20)
         .fill("#f1f5f9");
 
       cols.forEach((col) => {
         doc
-          .font("Helvetica-Bold")
+          .font(fontBold)
           .fontSize(9)
           .fillColor("#0f172a")
           .text(col.name, col.x, currentY + 5, { width: col.w, align: col.align });
@@ -163,9 +169,7 @@ const generateSalePDF = (saleData, items = []) => {
 
       currentY += 6;
 
-      // ==========================================
       // Items Table Rows
-      // ==========================================
       let subTotal = 0;
       let totalDiscount = 0;
       let totalGst = 0;
@@ -189,7 +193,7 @@ const generateSalePDF = (saleData, items = []) => {
         totalGst += gstAmt;
 
         doc
-          .font("Helvetica")
+          .font(fontRegular)
           .fontSize(9)
           .fillColor("#334155");
 
@@ -206,12 +210,10 @@ const generateSalePDF = (saleData, items = []) => {
         currentY += 18;
       });
 
-      // Minimum height padding for table body
       if (currentY < startY + 460) {
         currentY = startY + 460;
       }
 
-      // Horizontal Divider after table
       doc
         .moveTo(startX, currentY)
         .lineTo(startX + width, currentY)
@@ -219,14 +221,11 @@ const generateSalePDF = (saleData, items = []) => {
 
       currentY += 12;
 
-      // ==========================================
       // Summary Section
-      // ==========================================
       const calculatedSubTotal = saleData.totalAmount || subTotal;
       const calculatedDiscount = saleData.discountTotal || totalDiscount;
       const calculatedGst = saleData.gstTotal || totalGst;
       
-      // Calculate Raw Total, Rounded Total & Rounding Difference
       const rawGrandTotal = saleData.grandTotal || (calculatedSubTotal - calculatedDiscount + calculatedGst);
       const roundedGrandTotal = saleData.netAmount !== undefined ? Math.round(saleData.netAmount) : Math.round(rawGrandTotal); 
       const roundOffAmount = saleData.roundOff !== undefined ? saleData.roundOff : Number((roundedGrandTotal - rawGrandTotal).toFixed(2));
@@ -236,7 +235,7 @@ const generateSalePDF = (saleData, items = []) => {
       const summaryW = 90;
 
       doc
-        .font("Helvetica")
+        .font(fontRegular)
         .fontSize(10)
         .fillColor("#475569")
         .text("Subtotal", summaryXLabel, currentY, { width: 110, align: "left" })
@@ -258,33 +257,30 @@ const generateSalePDF = (saleData, items = []) => {
         .text(`₹ ${Number(rawGrandTotal).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
 
       currentY += 16;
-      // Round Off Row (Placed UNDER Grand Total)
       const roundOffSign = roundOffAmount > 0.001 ? "+" : ""; 
       doc
-        .font("Helvetica")
+        .font(fontRegular)
         .fontSize(10)
         .fillColor("#475569")
         .text("Round Off", summaryXLabel, currentY, { width: 110, align: "left" })
         .text(`${roundOffSign}${Number(roundOffAmount).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
 
-      currentY += 22; // Space down before Net Amount Box
+      currentY += 22; 
 
-      // Net Amount Box (Final Rounded Payable Amount)
       doc
         .rect(summaryXLabel - 10, currentY - 4, 230, 22)
         .fill("#f8fafc")
         .stroke("#cbd5e1");
 
       doc
-        .font("Helvetica-Bold")
+        .font(fontBold)
         .fontSize(11)
         .fillColor("#14532d")
         .text("Net Amount", summaryXLabel, currentY, { width: 110, align: "left" })
         .text(`₹ ${Number(roundedGrandTotal).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
 
-      currentY += 25; // Space before the divider line
+      currentY += 25; 
 
-      // Divider before signature
       doc
         .moveTo(startX, currentY)
         .lineTo(startX + width, currentY)
@@ -292,16 +288,14 @@ const generateSalePDF = (saleData, items = []) => {
 
       currentY += 45;
 
-      // Seller Signature Section
       doc
-        .font("Helvetica")
+        .font(fontRegular)
         .fontSize(10)
         .fillColor("#334155")
         .text("_________________________", startX + 350, currentY, { align: "center", width: 170 })
-        .font("Helvetica-Bold")
+        .font(fontBold)
         .text("Seller Signature", startX + 350, currentY + 15, { align: "center", width: 170 });
 
-      // Footer Line & Tagline
       const footerY = startY + height - 25;
       doc
         .moveTo(startX, footerY - 10)
@@ -309,7 +303,7 @@ const generateSalePDF = (saleData, items = []) => {
         .stroke("#cbd5e1");
 
       doc
-        .font("Helvetica-Bold")
+        .font(fontBold)
         .fontSize(10)
         .fillColor("#16a34a")
         .text("PURE  •  NATURAL  •  TRUSTED", startX, footerY, { align: "center", width: width });
