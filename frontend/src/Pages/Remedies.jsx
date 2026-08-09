@@ -193,7 +193,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Keshnikhar_Hair_Cleanser.png",
       tag: "",
       badge: "",
       specifications: {
@@ -212,7 +212,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Keshnikhar_Hair_Toner.png",
       tag: "",
       badge: "",
       specifications: {
@@ -668,7 +668,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Anti_Acne_face_Cream.png",
       tag: "",
       badge: "",
       specifications: {
@@ -706,7 +706,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Anti_Aging_Cream.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1067,7 +1067,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Maamfresh_Desire_Gel.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1086,7 +1086,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Maamfresh_Intimate_Wash.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1866,7 +1866,7 @@ function Remedies() {
       price: "",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/X-Plus_Combi_Pack.png",
       tag: "",
       badge: "",
       specifications: {
@@ -1984,7 +1984,7 @@ function Remedies() {
       price: "₹9000",
       rating: 4.9,
       reviews: 164,
-      image: "",
+      image: "/images/Stemcell.png",
       tag: "",
       badge: "",
       specifications: {
