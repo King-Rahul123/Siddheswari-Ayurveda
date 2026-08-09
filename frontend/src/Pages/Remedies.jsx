@@ -18,12 +18,12 @@ function Remedies() {
     {
       id: 1,
       name: "Nutrilong Slim Combi Pack",
-      category: "Weight Loss",
+      category: "Dietary",
       price: "₹3285",
       rating: 4.9,
       reviews: 164,
       image: "/images/Slim_Combi_Pack.png",
-      tag: "",
+      tag: "Weight Management",
       badge: "",
       specifications: {
         weight: "",
@@ -37,12 +37,12 @@ function Remedies() {
     {
       id: 2,
       name: "Thermogenic Herbal Tea",
-      category: "Weight Loss",
+      category: "Dietary",
       price: "₹729",
       rating: 4.9,
       reviews: 164,
       image: "/images/Thermogenic_Herbal_Tea.png",
-      tag: "",
+      tag: "Diet Tea",
       badge: "",
       specifications: {
         weight: "",
@@ -56,12 +56,12 @@ function Remedies() {
     {
       id: 3,
       name: "Chlorophyll Detox",
-      category: "Weight Loss",
+      category: ["Dietary", "Others"],
       price: "₹1485",
       rating: 4.9,
       reviews: 164,
       image: "/images/ChlorophyllDetox.png",
-      tag: "",
+      tag: "Daily Detox",
       badge: "Kshirapak Process",
       specifications: {
         weight: "",
@@ -75,12 +75,12 @@ function Remedies() {
     {
       id: 4,
       name: "Nutrilong Super Active Meal Replacement",
-      category: "Weight Loss",
+      category: "Dietary",
       price: "₹2652",
       rating: 4.9,
       reviews: 164,
       image: "/images/Super_Active_Meal_Replacement.png",
-      tag: "",
+      tag: "Meal Replacement",
       badge: "",
       specifications: {
         weight: "",
@@ -94,12 +94,12 @@ function Remedies() {
     {
       id: 5,
       name: "Nutrilong Super Active Protein Powder",
-      category: "Weight Loss",
+      category: "Dietary",
       price: "₹1428",
       rating: 4.9,
       reviews: 164,
       image: "/images/Super_Active_Protein_Powder.png",
-      tag: "",
+      tag: "Protein Nutrition",
       badge: "",
       specifications: {
         weight: "",
@@ -113,12 +113,12 @@ function Remedies() {
     {
       id: 6,
       name: "Bio Essence Hair Oil",
-      category: "Haircare",
+      category: ["Haircare", "FMCG"],
       price: "₹372",
       rating: 5.0,
       reviews: 98,
       image: "/images/BioEssence_HairOil.png",
-      tag: "Magical Radiance",
+      tag: "Hair Care",
       badge: "Pure Saffron",
       specifications: {
         weight: "",
@@ -132,12 +132,12 @@ function Remedies() {
     {
       id: 7,
       name: "Bio Essence Hair Shampoo",
-      category: "Haircare",
+      category: ["Haircare", "FMCG"],
       price: "₹312",
       rating: 4.9,
       reviews: 164,
       image: "/images/BioEssence_HairShampoo.png",
-      tag: "",
+      tag: "Hair Care",
       badge: "",
       specifications: {
         weight: "",
@@ -151,12 +151,12 @@ function Remedies() {
     {
       id: 8,
       name: "Bio Essence Hair Conditioner",
-      category: "Haircare",
+      category: ["Haircare", "FMCG"],
       price: "₹450",
       rating: 4.9,
       reviews: 164,
       image: "/images/BioEssence_HairConditioner.png",
-      tag: "",
+      tag: "Hair Care",
       badge: "",
       specifications: {
         weight: "",
@@ -175,7 +175,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/HairCare.png",
-      tag: "",
+      tag: "Hair Wellness",
       badge: "",
       specifications: {
         weight: "",
@@ -194,7 +194,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Keshnikhar_Hair_Cleanser.png",
-      tag: "",
+      tag: "Anti Dandruff",
       badge: "",
       specifications: {
         weight: "",
@@ -213,7 +213,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Keshnikhar_Hair_Toner.png",
-      tag: "",
+      tag: "Anti Dandruff",
       badge: "",
       specifications: {
         weight: "",
@@ -232,7 +232,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Himnidra_dStress_Oil.png",
-      tag: "",
+      tag: "Stress Relief",
       badge: "",
       specifications: {
         weight: "",
@@ -246,12 +246,12 @@ function Remedies() {
     {
       id: 13,
       name: "Leh Berry Face Cleanser",
-      category: "SkinCare",
+      category: ["SkinCare", "FMCG"],
       price: "₹212",
       rating: 4.9,
       reviews: 164,
       image: "/images/Lehberry_FaceCleanser.png",
-      tag: "",
+      tag: "Face Care",
       badge: "",
       specifications: {
         weight: "",
@@ -270,7 +270,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Neem_FaceCleanser.png",
-      tag: "",
+      tag: "Neem Care",
       badge: "",
       specifications: {
         weight: "",
@@ -289,7 +289,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Oli&Acne_FaceWash.png",
-      tag: "",
+      tag: "Oil Control",
       badge: "",
       specifications: {
         weight: "",
@@ -308,7 +308,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Moisturizing_Lotion.png",
-      tag: "",
+      tag: "Daily Moisture",
       badge: "",
       specifications: {
         weight: "",
@@ -327,7 +327,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Turmeric_Multipurpose_Cream.png",
-      tag: "",
+      tag: "Ayurvedic Skincare",
       badge: "",
       specifications: {
         weight: "50 g",
@@ -346,7 +346,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Gold_Cleansing_Milk.png",
-      tag: "",
+      tag: "Premium Skincare",
       badge: "",
       specifications: {
         weight: "",
@@ -365,7 +365,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Gold_Cream.png",
-      tag: "",
+      tag: "Premium Skincare",
       badge: "",
       specifications: {
         weight: "",
@@ -384,7 +384,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Gold_Youth_Serum.png",
-      tag: "",
+      tag: "Youth Care",
       badge: "",
       specifications: {
         weight: "",
@@ -403,7 +403,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Gold_Revive_Mist.png",
-      tag: "",
+      tag: "Skin Refresh",
       badge: "",
       specifications: {
         weight: "",
@@ -422,7 +422,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Gold_Powder_Mask.png",
-      tag: "",
+      tag: "Face Mask",
       badge: "",
       specifications: {
         weight: "",
@@ -441,7 +441,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Gold_Peel_Off_Mask.png",
-      tag: "",
+      tag: "Peel Off Mask",
       badge: "",
       specifications: {
         weight: "",
@@ -460,7 +460,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Gold_Face_Scrub.png",
-      tag: "",
+      tag: "Face Exfoliation",
       badge: "",
       specifications: {
         weight: "",
@@ -479,7 +479,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Gold_Facial_Kit.png",
-      tag: "",
+      tag: "Premium Facial Kit",
       badge: "",
       specifications: {
         weight: "",
@@ -498,7 +498,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Sunscreen_Butter.png",
-      tag: "",
+      tag: "Sunscreen",
       badge: "",
       specifications: {
         weight: "",
@@ -517,7 +517,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Night_Cream.png",
-      tag: "",
+      tag: "Night Cream",
       badge: "",
       specifications: {
         weight: "",
@@ -536,7 +536,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Fresh_Under_Eye_Cream.jpg",
-      tag: "",
+      tag: "Eye Care",
       badge: "",
       specifications: {
         weight: "",
@@ -555,7 +555,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Brightening_Bio_Serum.png",
-      tag: "",
+      tag: "Brightening Care",
       badge: "",
       specifications: {
         weight: "",
@@ -574,7 +574,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Brightening_Bio_Toner.png",
-      tag: "",
+      tag: "Brightening Care",
       badge: "",
       specifications: {
         weight: "",
@@ -593,7 +593,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Brightening_Cleansing_Foam.png",
-      tag: "",
+      tag: "Face Cleanser",
       badge: "",
       specifications: {
         weight: "",
@@ -612,7 +612,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Brightening_Cream.png",
-      tag: "",
+      tag: "Brightening Care",
       badge: "",
       specifications: {
         weight: "",
@@ -631,7 +631,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Brightening_Kit.png",
-      tag: "",
+      tag: "Skincare Kit",
       badge: "",
       specifications: {
         weight: "",
@@ -650,7 +650,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Whitening_Mask.png",
-      tag: "",
+      tag: "Face Mask",
       badge: "",
       specifications: {
         weight: "",
@@ -669,7 +669,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Anti_Acne_face_Cream.png",
-      tag: "",
+      tag: "Acne Care",
       badge: "",
       specifications: {
         weight: "",
@@ -688,7 +688,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Spot_Free_Cream.png",
-      tag: "",
+      tag: "Spot Care",
       badge: "",
       specifications: {
         weight: "",
@@ -707,7 +707,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Anti_Aging_Cream.png",
-      tag: "",
+      tag: "Anti-Aging Care",
       badge: "",
       specifications: {
         weight: "",
@@ -726,7 +726,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/A_Charcoal_Mask.png",
-      tag: "",
+      tag: "Charcoal Mask",
       badge: "",
       specifications: {
         weight: "",
@@ -745,7 +745,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Diacare_Ras.png",
-      tag: "",
+      tag: "Diabetes",
       badge: "",
       specifications: {
         weight: "",
@@ -764,7 +764,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Diacare_Tablet.png",
-      tag: "",
+      tag: "Diabetes",
       badge: "",
       specifications: {
         weight: "",
@@ -783,7 +783,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Joddaram_Combo.png",
-      tag: "",
+      tag: "Joint Pain",
       badge: "",
       specifications: {
         weight: "",
@@ -802,7 +802,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Joddaram_Oil.png",
-      tag: "",
+      tag: "Joint Pain",
       badge: "",
       specifications: {
         weight: "",
@@ -821,7 +821,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Joddaram_Tablet.png",
-      tag: "",
+      tag: "Joint Pain",
       badge: "",
       specifications: {
         weight: "",
@@ -840,7 +840,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Joddaram_Cream.png",
-      tag: "",
+      tag: "Joint Pain",
       badge: "",
       specifications: {
         weight: "",
@@ -949,7 +949,7 @@ function Remedies() {
     {
       id: 50,
       name: "Nutrilong X-Plus Combi Pack",
-      category: "",
+      category: "Men's Health",
       price: "",
       rating: 4.9,
       reviews: 164,
@@ -973,7 +973,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Ultra_Women.png",
-      tag: "",
+      tag: "Women's Wellness",
       badge: "",
       specifications: {
         weight: "",
@@ -992,7 +992,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/PCOS.png",
-      tag: "",
+      tag: "Women's Wellness",
       badge: "",
       specifications: {
         weight: "",
@@ -1011,7 +1011,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Gynocare_Table.png",
-      tag: "",
+      tag: "Women's Care",
       badge: "",
       specifications: {
         weight: "",
@@ -1030,7 +1030,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Gynocare_Syrup.png",
-      tag: "",
+      tag: "Women's Care",
       badge: "",
       specifications: {
         weight: "",
@@ -1049,7 +1049,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Shatavari.png",
-      tag: "",
+      tag: "Women's Wellness",
       badge: "",
       specifications: {
         weight: "",
@@ -1068,7 +1068,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Maamfresh_Pain_Period_Shots.png",
-      tag: "",
+      tag: "Period Pain",
       badge: "",
       specifications: {
         weight: "",
@@ -1087,7 +1087,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Maamfresh_Desire_Gel.png",
-      tag: "",
+      tag: "Women's Care",
       badge: "",
       specifications: {
         weight: "",
@@ -1106,7 +1106,7 @@ function Remedies() {
       rating: 4.9,
       reviews: 164,
       image: "/images/Maamfresh_Intimate_Wash.png",
-      tag: "",
+      tag: "Intimate Wash",
       badge: "",
       specifications: {
         weight: "",
@@ -1117,9 +1117,27 @@ function Remedies() {
         expiry: ""
       }
     },
-
     {
-      id: 38,
+      id: 59,
+      name: "Leucowin Capsule",
+      category: "Women's Health",
+      price: "₹750",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Leucowin.png",
+      tag: "Women's Wellness",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 60,
       name: "Ashwagandha",
       category: "Memory",
       price: "₹351",
@@ -1138,7 +1156,7 @@ function Remedies() {
       }
     },
     {
-      id: 39,
+      id: 61,
       name: "Brahmi",
       category: "Memory",
       price: "₹297",
@@ -1157,14 +1175,14 @@ function Remedies() {
       }
     },
     {
-      id: 40,
+      id: 62,
       name: "Vatsal Memory Syrup",
       category: "Memory",
       price: "₹152",
       rating: 4.9,
       reviews: 164,
       image: "/images/Vatsal.jpg",
-      tag: "",
+      tag: "Brain Booster",
       badge: "",
       specifications: {
         weight: "",
@@ -1176,7 +1194,7 @@ function Remedies() {
       }
     },
     {
-      id: 41,
+      id: 63,
       name: "Nutrilong Arjunaa Plus",
       category: "Heart Care",
       price: "₹441",
@@ -1195,7 +1213,7 @@ function Remedies() {
       }
     },
     {
-      id: 42,
+      id: 64,
       name: "Nutrilong CoQ Ten Plus",
       category: "Heart Care",
       price: "₹1782",
@@ -1214,7 +1232,7 @@ function Remedies() {
       }
     },
     {
-      id: 49,
+      id: 65,
       name: "Nutrilong Top Calcium Syrup",
       category: "",
       price: "₹162",
@@ -1233,7 +1251,7 @@ function Remedies() {
       }
     },
     {
-      id: 50,
+      id: 66,
       name: "Nutrilong Multi VItamin Syrup",
       category: "",
       price: "₹243",
@@ -1252,14 +1270,14 @@ function Remedies() {
       }
     },
     {
-      id: 51,
+      id: 67,
       name: "Nutrilong Eye Max",
-      category: "",
+      category: "Eye Care",
       price: "₹798",
       rating: 4.9,
       reviews: 164,
       image: "/images/Eye_Max.png",
-      tag: "",
+      tag: "Eye Supplement",
       badge: "",
       specifications: {
         weight: "",
@@ -1271,14 +1289,14 @@ function Remedies() {
       }
     },
     {
-      id: 52,
+      id: 68,
       name: "Nayansukh Eye Drop",
-      category: "",
+      category: "Eye Care",
       price: "₹108",
       rating: 4.9,
       reviews: 164,
       image: "/images/Nayansukh_Eye_Drop.png",
-      tag: "",
+      tag: "Eye Care",
       badge: "",
       specifications: {
         weight: "",
@@ -1290,7 +1308,7 @@ function Remedies() {
       }
     },
     {
-      id: 53,
+      id: 69,
       name: "Brahma Rasayana",
       category: "Immunity",
       price: "₹828",
@@ -1309,7 +1327,7 @@ function Remedies() {
       }
     },
     {
-      id: 54,
+      id: 70,
       name: "Guduchi",
       category: "",
       price: "₹279",
@@ -1328,7 +1346,7 @@ function Remedies() {
       }
     },
     {
-      id: 55,
+      id: 71,
       name: "Nutrilong Super Moringa",
       category: "",
       price: "₹2154",
@@ -1347,7 +1365,7 @@ function Remedies() {
       }
     },
     {
-      id: 56,
+      id: 72,
       name: "Nutrilong Super Omega",
       category: "",
       price: "₹2154",
@@ -1366,14 +1384,14 @@ function Remedies() {
       }
     },
     {
-      id: 57,
+      id: 73,
       name: "Pancha Tulasi Drops",
-      category: "",
+      category: "Immunity",
       price: "₹275",
       rating: 4.9,
       reviews: 164,
       image: "/images/Pancha_Tulasi_Drop.png",
-      tag: "",
+      tag: "Immunity Booster",
       badge: "",
       specifications: {
         weight: "",
@@ -1385,14 +1403,14 @@ function Remedies() {
       }
     },
     {
-      id: 58,
+      id: 74,
       name: "Pancha Tulasi Lozenges",
-      category: "",
+      category: "Others",
       price: "₹360",
       rating: 4.9,
       reviews: 164,
       image: "/images/PanchaTulasi_Lozenges.png",
-      tag: "",
+      tag: "Immunity Booster",
       badge: "",
       specifications: {
         weight: "",
@@ -1404,7 +1422,7 @@ function Remedies() {
       }
     },
     {
-      id: 59,
+      id: 75,
       name: "Triphala",
       category: "Digestion",
       price: "₹275",
@@ -1423,9 +1441,9 @@ function Remedies() {
       }
     },
     {
-      id: 60,
+      id: 76,
       name: "Superlax Powder",
-      category: "",
+      category: "Others",
       price: "₹171",
       rating: 4.9,
       reviews: 164,
@@ -1442,9 +1460,9 @@ function Remedies() {
       }
     },
     {
-      id: 61,
+      id: 77,
       name: "Antacid Tablet",
-      category: "",
+      category: ["Digestion", "Others"],
       price: "₹399",
       rating: 4.9,
       reviews: 164,
@@ -1461,7 +1479,7 @@ function Remedies() {
       }
     },
     {
-      id: 62,
+      id: 78,
       name: "Livcare Syrup",
       category: "",
       price: "₹181",
@@ -1480,7 +1498,7 @@ function Remedies() {
       }
     },
     {
-      id: 63,
+      id: 79,
       name: "Livcare Tablet",
       category: "",
       price: "₹399",
@@ -1499,7 +1517,7 @@ function Remedies() {
       }
     },
     {
-      id: 64,
+      id: 80,
       name: "Stonecare-SF Syrup",
       category: "",
       price: "₹279",
@@ -1518,7 +1536,7 @@ function Remedies() {
       }
     },
     {
-      id: 65,
+      id: 81,
       name: "Pilescare Cream",
       category: "",
       price: "₹216",
@@ -1537,7 +1555,7 @@ function Remedies() {
       }
     },
     {
-      id: 66,
+      id: 82,
       name: "Pilescare Tablet",
       category: "",
       price: "₹399",
@@ -1556,7 +1574,7 @@ function Remedies() {
       }
     },
     {
-      id: 67,
+      id: 83,
       name: "Psorino Cream",
       category: "",
       price: "₹399",
@@ -1575,7 +1593,7 @@ function Remedies() {
       }
     },
     {
-      id: 68,
+      id: 84,
       name: "Psorino Tablet",
       category: "",
       price: "₹399",
@@ -1594,9 +1612,9 @@ function Remedies() {
       }
     },
     {
-      id: 82,
-      name: "Nutrilong Organic Berries 5g X 30 Sachets",
-      category: "",
+      id: 85,
+      name: "Nutrilong Organic Berries 5g × 30 Sachets",
+      category: ["Supplement", "Others"],
       price: "₹2070",
       rating: 4.9,
       reviews: 164,
@@ -1613,9 +1631,9 @@ function Remedies() {
       }
     },
     {
-      id: 83,
-      name: "Nutrilong Seabuck Fresh 5g X 30 Sachets",
-      category: "",
+      id: 86,
+      name: "Nutrilong Seabuck Fresh 5g × 30 Sachets",
+      category: ["Supplement", "Others"],
       price: "₹2277",
       rating: 4.9,
       reviews: 164,
@@ -1632,7 +1650,7 @@ function Remedies() {
       }
     },
     {
-      id: 84,
+      id: 87,
       name: "Spiriluna Tablet",
       category: "",
       price: "₹399",
@@ -1651,7 +1669,7 @@ function Remedies() {
       }
     },
     {
-      id: 85,
+      id: 88,
       name: "Wheatgrass Tablet",
       category: "",
       price: "₹414",
@@ -1670,7 +1688,7 @@ function Remedies() {
       }
     },
     {
-      id: 86,
+      id: 89,
       name: "Active Aamla Juice",
       category: "",
       price: "₹396",
@@ -1689,14 +1707,14 @@ function Remedies() {
       }
     },
     {
-      id: 87,
+      id: 90,
       name: "Aloe Vera Fiber Juice",
-      category: "",
+      category: ["Digestion", "Others"],
       price: "₹468",
       rating: 4.9,
       reviews: 164,
       image: "/images/Aloevera_Juice.png",
-      tag: "",
+      tag: "Digestion",
       badge: "",
       specifications: {
         weight: "",
@@ -1708,14 +1726,14 @@ function Remedies() {
       }
     },
     {
-      id: 88,
+      id: 91,
       name: "Alkalizing Drop",
-      category: "",
+      category: "Others",
       price: "₹1242",
       rating: 4.9,
       reviews: 164,
       image: "/images/Alkalizing_Drop.png",
-      tag: "",
+      tag: "Daily Wellness",
       badge: "",
       specifications: {
         weight: "",
@@ -1727,14 +1745,14 @@ function Remedies() {
       }
     },
     {
-      id: 89,
+      id: 92,
       name: "Alkalizing demo Kit",
-      category: "",
+      category: "Others",
       price: "₹1242",
       rating: 4.9,
       reviews: 164,
       image: "/images/Alkalizing_Demo_Kit.png",
-      tag: "",
+      tag: "Demo Kit",
       badge: "",
       specifications: {
         weight: "",
@@ -1746,7 +1764,7 @@ function Remedies() {
       }
     },
     {
-      id: 90,
+      id: 93,
       name: "Kofcare Syrup",
       category: "",
       price: "₹123",
@@ -1764,9 +1782,8 @@ function Remedies() {
         expiry: ""
       }
     },
-
     {
-      id: 15,
+      id: 94,
       name: "Nutrilong Astaaxanthin",
       category: "",
       price: "₹1782",
@@ -1785,7 +1802,7 @@ function Remedies() {
       }
     },
     {
-      id: 17,
+      id: 95,
       name: "Nutrilong Resveratrol Plus",
       category: "",
       price: "₹2070",
@@ -1804,7 +1821,7 @@ function Remedies() {
       }
     },
     {
-      id: 20,
+      id: 96,
       name: "Nutrilong Noni BonZym K2",
       category: "",
       price: "₹792",
@@ -1823,7 +1840,7 @@ function Remedies() {
       }
     },
     {
-      id: 23,
+      id: 97,
       name: "Nutrilong Tri Ginseng",
       category: "",
       price: "₹2070",
@@ -1842,7 +1859,7 @@ function Remedies() {
       }
     },
     {
-      id: 24,
+      id: 98,
       name: "Nutrilong A2 Colostrum Advance",
       category: "",
       price: "₹1116",
@@ -1861,7 +1878,7 @@ function Remedies() {
       }
     },
     {
-      id: 26,
+      id: 99,
       name: "Nutrilong Curcumin Max",
       category: "",
       price: "₹567",
@@ -1879,29 +1896,8 @@ function Remedies() {
         expiry: ""
       }
     },
-    
-    
     {
-      id: 37,
-      name: "Leucowin Capsule",
-      category: "",
-      price: "₹750",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/Leucowin.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 44,
+      id: 100,
       name: "D Stress Capsule",
       category: "",
       price: "₹399",
@@ -1920,7 +1916,7 @@ function Remedies() {
       }
     },
     {
-      id: 67,
+      id: 101,
       name: "Deltas Neem Tablet",
       category: "",
       price: "₹279",
@@ -1942,242 +1938,14 @@ function Remedies() {
     
     
     {
-      id: 108,
+      id: 102,
       name: "Skincare Ayurvedic Body Cleanser",
-      category: "",
+      category: "FMCG",
       price: "₹240",
       rating: 4.9,
       reviews: 164,
       image: "/images/Ayurvedic_Body_Cleanser.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 109,
-      name: "Skincare Fairness Body cleanser",
-      category: "",
-      price: "₹240",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/Fairness_Body_Cleanser.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 116,
-      name: "Nutrilong Stemcell",
-      category: "",
-      price: "₹9000",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/Stemcell.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 93,
-      name: "Dentacure Herbal Tooth Cleanser",
-      category: "Dental Care",
-      price: "₹96",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/DentaCure_Toothpaste.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "100g",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 94,
-      name: "Top Dantunn Red Toothpaste",
-      category: "Dental Care",
-      price: "₹135",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/Dantunn_RedToothpaste.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "100g",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 95,
-      name: "Top Dantunn Green Toothpaste",
-      category: "Dental Care",
-      price: "₹120",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/Dantunn_GreenToothpaste.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "100g",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 97,
-      name: "Potentia Antiseptic Hand Wash",
-      category: "Home Care",
-      price: "₹123",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/Antiseptic_handwash.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 98,
-      name: "Topkleen Powermop Floor Cleaner",
-      category: "Home Care",
-      price: "₹150",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/Floor_Cleaner.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "500 ml",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 99,
-      name: "Topkleen Supermatic Detergent Powder",
-      category: "Home Care",
-      price: "₹149",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/Detergent_Powder.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "500 g",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 100,
-      name: "Topkleen Ultrashine Dishwash Gel",
-      category: "Home Care",
-      price: "₹175",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/Dishwash_Gel.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 101,
-      name: "Topkleen Toilet Cleaner",
-      category: "Home Care",
-      price: "₹255",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/Toilet_Cleaner.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 96,
-      name: "Topkaa Nature Fresh Chai",
-      category: "Food & Beverages",
-      price: "₹160",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/Fresh_Chai.png",
-      tag: "",
-      badge: "",
-      specifications: {
-        weight: "250 g",
-        dosage: "",
-        keyIngredients: "",
-        benefits: "",
-        certification: "",
-        expiry: ""
-      }
-    },
-    {
-      id: 102,
-      name: "Topkaa Instant Coffee",
-      category: "Food & Beverages",
-      price: "₹213",
-      rating: 4.9,
-      reviews: 164,
-      image: "/images/Coffee.png",
-      tag: "",
+      tag: "Ayurvedic Soap",
       badge: "",
       specifications: {
         weight: "",
@@ -2190,13 +1958,241 @@ function Remedies() {
     },
     {
       id: 103,
+      name: "Skincare Fairness Body cleanser",
+      category: "FMCG",
+      price: "₹240",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Fairness_Body_Cleanser.png",
+      tag: "Fairness Soap",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 104,
+      name: "Nutrilong Stemcell",
+      category: "Others",
+      price: "₹9000",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Stemcell.png",
+      tag: "Premium Wellness",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 105,
+      name: "Dentacure Herbal Tooth Cleanser",
+      category: "FMCG",
+      price: "₹96",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/DentaCure_Toothpaste.png",
+      tag: "Dental Care",
+      badge: "",
+      specifications: {
+        weight: "100g",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "WHO GMP Certified",
+        expiry: ""
+      }
+    },
+    {
+      id: 106,
+      name: "Top Dantunn Red Toothpaste",
+      category: "FMCG",
+      price: "₹135",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Dantunn_RedToothpaste.png",
+      tag: "Dental Care",
+      badge: "",
+      specifications: {
+        weight: "100g",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "WHO GMP Certified",
+        expiry: ""
+      }
+    },
+    {
+      id: 107,
+      name: "Top Dantunn Green Toothpaste",
+      category: "FMCG",
+      price: "₹120",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Dantunn_GreenToothpaste.png",
+      tag: "Dental Care",
+      badge: "",
+      specifications: {
+        weight: "100g",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "WHO GMP Certified",
+        expiry: ""
+      }
+    },
+    {
+      id: 108,
+      name: "Potentia Antiseptic Hand Wash",
+      category: "FMCG",
+      price: "₹123",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Antiseptic_handwash.png",
+      tag: "Home Care",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 109,
+      name: "Topkleen Powermop Floor Cleaner",
+      category: "FMCG",
+      price: "₹150",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Floor_Cleaner.png",
+      tag: "Home Care",
+      badge: "",
+      specifications: {
+        weight: "500 ml",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 110,
+      name: "Topkleen Supermatic Detergent Powder",
+      category: "FMCG",
+      price: "₹149",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Detergent_Powder.png",
+      tag: "Home Care",
+      badge: "",
+      specifications: {
+        weight: "500 g",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 111,
+      name: "Topkleen Ultrashine Dishwash Gel",
+      category: "FMCG",
+      price: "₹175",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Dishwash_Gel.png",
+      tag: "Home Care",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 112,
+      name: "Topkleen Toilet Cleaner",
+      category: "FMCG",
+      price: "₹255",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Toilet_Cleaner.png",
+      tag: "Home Care",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 113,
+      name: "Topkaa Nature Fresh Chai",
+      category: "FMCG",
+      price: "₹160",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Fresh_Chai.png",
+      tag: "CPremium Tea",
+      badge: "",
+      specifications: {
+        weight: "250 g",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 114,
+      name: "Topkaa Instant Coffee",
+      category: "FMCG",
+      price: "₹213",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Coffee.png",
+      tag: "Instant Coffee",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 115,
       name: "Topflora Liquid",
       category: "Agriculture & Veterinary",
       price: "₹1199",
       rating: 4.9,
       reviews: 164,
       image: "/images/Topflora_Liquid.png",
-      tag: "",
+      tag: "Agricultural",
       badge: "",
       specifications: {
         weight: "1 liter",
@@ -2208,14 +2204,14 @@ function Remedies() {
       }
     },
     {
-      id: 104,
+      id: 116,
       name: "Topvet Powder",
       category: "Agriculture & Veterinary",
       price: "₹612",
       rating: 4.9,
       reviews: 164,
       image: "/images/Topvet_Powder.png",
-      tag: "",
+      tag: "Veterinary",
       badge: "",
       specifications: {
         weight: "1kg",
@@ -2229,12 +2225,27 @@ function Remedies() {
   ];
 
   // Filter Tabs definition
-  const filterTabs = ['All', 'Immunity', 'Dietry', 'Haircare', 'Skincare', 'Women', 'Men', 'Eyecare', 'Others'];
+  const filterTabs = [
+    'All',
+    'Immunity',
+    'Dietary',
+    'Haircare',
+    'Skincare',
+    'Beauty Care',
+    'Women',
+    'Men',
+    'Eyecare',
+    'Joint Pain',
+    'FMCG',
+    'Agriculture & Veterinary',
+    'Others'];
 
   // Filter products based on active category
-  const filteredProducts = activeCategory === 'All' 
-    ? products 
-    : products.filter(p => p.category === activeCategory);
+  const filteredProducts = activeCategory === "All"
+    ? products
+    : products.filter((product) =>
+        product.category?.includes(activeCategory)
+      );
 
   return (
     <div className="remedies-page-layout light-theme">
@@ -2290,7 +2301,11 @@ function Remedies() {
 
                   <div className="product-info">
                     <div className="product-header-meta">
-                      <span className="product-category-badge">{prod.category}</span>
+                      <span className="product-category-badge">
+                        {Array.isArray(prod.category)
+                        ? prod.category.join(", ")
+                        : prod.category}
+                      </span>
                       <span className="product-rating">
                         <i className="bi bi-star-fill gold-icon"></i> {prod.rating} ({prod.reviews})
                       </span>
@@ -2336,7 +2351,11 @@ function Remedies() {
               </div>
 
               <div className="modal-info-col">
-                <span className="product-category-badge">{selectedProduct.category}</span>
+                <span className="product-category-badge">
+                  {Array.isArray(selectedProduct.category)
+                    ? selectedProduct.category.join(", ")
+                    : selectedProduct.category}
+                </span>
                 <h2>{selectedProduct.name}</h2>
                 <div className="modal-price">{selectedProduct.price}</div>
 
