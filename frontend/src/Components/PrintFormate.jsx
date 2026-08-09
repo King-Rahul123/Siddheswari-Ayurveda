@@ -16,8 +16,14 @@ export default function PrintInvoice() {
     subTotal = 0,
     discount = 0,
     gstAmount = 0,
-    netAmount = 0,
+    grandTotal,
+    roundOff,
+    netAmount,
   } = state || {};
+
+  const rawGrandTotal = grandTotal !== undefined ? grandTotal : (subTotal - discount + gstAmount);
+  const roundedNet = netAmount !== undefined ? netAmount : Math.round(rawGrandTotal);
+  const computedRoundOff = roundOff !== undefined ? roundOff : Number((roundedNet - rawGrandTotal).toFixed(2));
 
   const displayPhone = phone || customerPhone || mobile || "N/A";
 
@@ -151,9 +157,17 @@ export default function PrintInvoice() {
               <span>GST</span>
               <strong>₹{Number(gstAmount).toFixed(2)}</strong>
             </div>
-            <div className="summary-row grand-total-row">
+            <div className="summary-row">
               <span>Grand Total</span>
-              <strong>₹{Number(netAmount).toFixed(2)}</strong>
+              <strong>₹{Number(rawGrandTotal).toFixed(2)}</strong>
+            </div>
+            <div className="summary-row">
+              <span>Round Off</span>
+              <strong>{computedRoundOff > 0 ? `+${computedRoundOff.toFixed(2)}` : computedRoundOff.toFixed(2)}</strong>
+            </div>
+            <div className="summary-row grand-total-row">
+              <span>Net Amount</span>
+              <strong>₹{Number(roundedNet).toFixed(2)}</strong>
             </div>
           </div>
         </div>

@@ -199,9 +199,9 @@ const generateSalePDF = (saleData, items = []) => {
         doc.text(item.batch || "-", cols[3].x, currentY, { width: cols[3].w, align: cols[3].align });
         doc.text(item.expiry || "-", cols[4].x, currentY, { width: cols[4].w, align: cols[4].align });
         doc.text(String(qty), cols[5].x, currentY, { width: cols[5].w, align: cols[5].align });
-        doc.text(`Rs. ${rate.toFixed(2)}`, cols[6].x, currentY, { width: cols[6].w, align: cols[6].align });
+        doc.text(`₹ ${rate.toFixed(2)}`, cols[6].x, currentY, { width: cols[6].w, align: cols[6].align });
         doc.text(`${gstPercent}%`, cols[7].x, currentY, { width: cols[7].w, align: cols[7].align });
-        doc.text(`Rs. ${lineAmount.toFixed(2)}`, cols[8].x, currentY, { width: cols[8].w, align: cols[8].align });
+        doc.text(`₹ ${lineAmount.toFixed(2)}`, cols[8].x, currentY, { width: cols[8].w, align: cols[8].align });
 
         currentY += 18;
       });
@@ -225,7 +225,11 @@ const generateSalePDF = (saleData, items = []) => {
       const calculatedSubTotal = saleData.totalAmount || subTotal;
       const calculatedDiscount = saleData.discountTotal || totalDiscount;
       const calculatedGst = saleData.gstTotal || totalGst;
-      const calculatedGrandTotal = saleData.grandTotal || saleData.netAmount || (calculatedSubTotal - calculatedDiscount + calculatedGst);
+      
+      // Calculate Raw Total, Rounded Total & Rounding Difference
+      const rawGrandTotal = saleData.grandTotal || (calculatedSubTotal - calculatedDiscount + calculatedGst);
+      const roundedGrandTotal = saleData.netAmount !== undefined ? Math.round(saleData.netAmount) : Math.round(rawGrandTotal); 
+      const roundOffAmount = saleData.roundOff !== undefined ? saleData.roundOff : Number((roundedGrandTotal - rawGrandTotal).toFixed(2));
 
       const summaryXLabel = startX + 320;
       const summaryXVal = startX + 440;
@@ -236,21 +240,36 @@ const generateSalePDF = (saleData, items = []) => {
         .fontSize(10)
         .fillColor("#475569")
         .text("Subtotal", summaryXLabel, currentY, { width: 110, align: "left" })
-        .text(`Rs. ${Number(calculatedSubTotal).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
+        .text(`₹ ${Number(calculatedSubTotal).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
 
       currentY += 16;
       doc
         .text("Discount", summaryXLabel, currentY, { width: 110, align: "left" })
-        .text(`Rs. ${Number(calculatedDiscount).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
+        .text(`₹ ${Number(calculatedDiscount).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
 
       currentY += 16;
       doc
         .text("GST", summaryXLabel, currentY, { width: 110, align: "left" })
-        .text(`Rs. ${Number(calculatedGst).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
+        .text(`₹ ${Number(calculatedGst).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
 
-      currentY += 20;
+      currentY += 16;
+      doc
+        .text("Grand Total", summaryXLabel, currentY, { width: 110, align: "left" })
+        .text(`₹ ${Number(rawGrandTotal).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
 
-      // Grand Total Row
+      currentY += 16;
+      // Round Off Row (Placed UNDER Grand Total)
+      const roundOffSign = roundOffAmount > 0.001 ? "+" : ""; 
+      doc
+        .font("Helvetica")
+        .fontSize(10)
+        .fillColor("#475569")
+        .text("Round Off", summaryXLabel, currentY, { width: 110, align: "left" })
+        .text(`${roundOffSign}${Number(roundOffAmount).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
+
+      currentY += 22; // Space down before Net Amount Box
+
+      // Net Amount Box (Final Rounded Payable Amount)
       doc
         .rect(summaryXLabel - 10, currentY - 4, 230, 22)
         .fill("#f8fafc")
@@ -260,10 +279,10 @@ const generateSalePDF = (saleData, items = []) => {
         .font("Helvetica-Bold")
         .fontSize(11)
         .fillColor("#14532d")
-        .text("Grand Total", summaryXLabel, currentY, { width: 110, align: "left" })
-        .text(`Rs. ${Number(calculatedGrandTotal).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
+        .text("Net Amount", summaryXLabel, currentY, { width: 110, align: "left" })
+        .text(`₹ ${Number(roundedGrandTotal).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
 
-      currentY += 35;
+      currentY += 25; // Space before the divider line
 
       // Divider before signature
       doc
