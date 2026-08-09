@@ -21,10 +21,10 @@ import Analytics from "./Pages/Analytics";
 import Appointment from "./Pages/Appointment";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import Remedies from "./Pages/Remedies.jsx"
+import Outstanding from "./Pages/Outstanding.jsx";
 
 const PurchaseEntry = lazy(() => import("./Components/PurchaseEntry"));
 // import EditPurchase from "./Components/EditPurchase";
-
 
 
 /* ---------- DASHBOARD LAYOUT (FIXED) ---------- */
@@ -75,6 +75,7 @@ export default function App() {
           <Route path="/dashboard/staff-report" element={<StaffReport />} />
           <Route path="/dashboard/analytics" element={<Suspense fallback={<Loader />}><Analytics /></Suspense>} />
           <Route path="/dashboard/appointments" element={<Suspense fallback={<Loader />}><Appointment /></Suspense>} />
+          <Route path="/dashboard/outstanding" element={<Suspense fallback={<Loader />}><Outstanding /></Suspense>} />
         </Route>
       </Routes>
       <ToastContainer
