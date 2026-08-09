@@ -64,7 +64,7 @@ function Remedies() {
       tag: "Daily Detox",
       badge: "Kshirapak Process",
       specifications: {
-        weight: "",
+        weight: "5g x 30 sachets",
         dosage: "",
         keyIngredients: "",
         benefits: "",
@@ -83,7 +83,7 @@ function Remedies() {
       tag: "Meal Replacement",
       badge: "",
       specifications: {
-        weight: "",
+        weight: "500g",
         dosage: "",
         keyIngredients: "",
         benefits: "",
@@ -102,7 +102,7 @@ function Remedies() {
       tag: "Protein Nutrition",
       badge: "",
       specifications: {
-        weight: "",
+        weight: "200g",
         dosage: "",
         keyIngredients: "",
         benefits: "",
@@ -246,7 +246,7 @@ function Remedies() {
     {
       id: 13,
       name: "Leh Berry Face Cleanser",
-      category: ["SkinCare", "FMCG"],
+      category: ["Skincare", "FMCG"],
       price: "₹212",
       rating: 4.9,
       reviews: 164,
