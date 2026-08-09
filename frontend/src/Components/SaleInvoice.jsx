@@ -270,7 +270,9 @@ export default function SaleInvoice() {
     return sum + (afterDisc * Number(item.gst || 0)) / 100;
   }, 0);
 
-  const netAmount = subTotal - totalItemDiscount + gstAmount;
+  const grandTotal = subTotal - totalItemDiscount + gstAmount;
+  const netAmount = Math.round(grandTotal);
+  const roundOff = Number((netAmount - grandTotal).toFixed(2));
 
   const handleEnterKey = (e) => {
     if (e.key === "+" || e.code === "NumpadAdd") {
@@ -338,8 +340,10 @@ export default function SaleInvoice() {
         totalQty,
         totalAmount: subTotal,
         discountTotal: totalItemDiscount,
+        gstTotal: gstAmount,
+        grandTotal: grandTotal,
+        roundOff: roundOff,
         netAmount: netAmount,
-        grandTotal: netAmount,
         createdBy: loggedInUser?.username || "Admin",
       };
 
@@ -419,6 +423,8 @@ export default function SaleInvoice() {
         subTotal,
         discount: totalItemDiscount,
         gstAmount,
+        grandTotal,
+        roundOff,
         netAmount,
       },
     });
@@ -730,6 +736,8 @@ export default function SaleInvoice() {
               <h4>Subtotal : ₹{subTotal.toFixed(2)}</h4>
               <h4>Discount : ₹{totalItemDiscount.toFixed(2)}</h4>
               <h4>GST : ₹{gstAmount.toFixed(2)}</h4>
+              <h4>Grand Total : ₹{grandTotal.toFixed(2)}</h4>
+              <h4>Round Off : {roundOff > 0 ? `+${roundOff.toFixed(2)}` : roundOff.toFixed(2)}</h4>
               <h3>Net Amount : ₹{netAmount.toFixed(2)}</h3>
             </div>
           </form>

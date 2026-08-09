@@ -36,7 +36,7 @@ export default function Sales() {
     });
 
     const totalRevenue = salesData.reduce(
-        (sum, sale) => sum + Number(sale.grandTotal || sale.netAmount || sale.totalAmount || sale.total || 0),
+        (sum, sale) => sum + Number(sale.netAmount || sale.grandTotal || sale.totalAmount || sale.total || 0),
         0
     );
 
@@ -49,7 +49,7 @@ export default function Sales() {
             return saleDateStr === todayStr;
         })
         .reduce(
-            (sum, sale) => sum + Number(sale.grandTotal || sale.netAmount || sale.totalAmount || sale.total || 0),
+            (sum, sale) => sum + Number(sale.netAmount || sale.grandTotal || sale.totalAmount || sale.total || 0),
             0
         );
 
@@ -140,7 +140,7 @@ export default function Sales() {
                                             <td>{sale.date}</td>
                                             <td>{sale.customerName}</td>
                                             <td>₹{Number(sale.totalAmount || sale.total || 0).toFixed(2)}</td>
-                                            <td>₹{Number(sale.grandTotal || sale.netAmount || sale.totalAmount || 0).toFixed(2)}</td>
+                                            <td>₹{Number(sale.netAmount || sale.grandTotal || sale.totalAmount || 0).toFixed(2)}</td>
                                             <td className="gap-2 flex justify-center">
                                                 <button className="edit-btn" onClick={() =>navigate(`/dashboard/sales/edit/${sale.saleId}`)}><i className="bi bi-pencil-square text-gray-500"></i></button>
                                                 <button
