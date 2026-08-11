@@ -11,7 +11,8 @@ const productSchema = new mongoose.Schema(
     hsnCode: { type: String, default: "" },
     gstRate: { type: Number, default: 0 },
     minStock: { type: Number, default: 0 },
-    discount: { type: Number, default: 0 }
+    discount: { type: Number, default: 0 },
+    actionStatus: { type: String, default: "" }
   },
   { timestamps: true }
 );
