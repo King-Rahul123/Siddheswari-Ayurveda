@@ -85,6 +85,156 @@ router.get("/pdf/:saleId", async (req, res) => {
   }
 });
 
+// Get unpaid/outstanding bills
+router.get("/unpaid-bills", async (req, res) => {
+  try {
+    const sales = await Sale.find().sort({ createdAt: -1 });
+    const formatted = sales.map((sale) => {
+      const obj = sale.toObject();
+      const total = Number(obj.grandTotal || obj.netAmount || obj.totalAmount || obj.total || 0);
+      const paid = Number(obj.paidAmount || 0);
+      const due = Math.max(0, total - paid);
+      let status = obj.status;
+      if (!status) {
+        status = due <= 0 ? "Paid" : paid > 0 ? "Partial" : "Due";
+      }
+      return {
+        ...obj,
+        total,
+        paidAmount: paid,
+        dueAmount: due,
+        status,
+        paymentMethod: obj.paymentMethod || "-"
+      };
+    });
+    res.json(formatted);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update payment for a specific sale
+router.patch("/:saleId/payment", async (req, res) => {
+  try {
+    const { saleId } = req.params;
+    const { amount, paymentMethod, transactionId, note } = req.body;
+
+    const payAmount = Number(amount);
+    if (isNaN(payAmount) || payAmount <= 0) {
+      return res.status(400).json({ message: "Valid payment amount is required" });
+    }
+
+    let sale = await Sale.findOne({
+      $or: [{ saleId }, { _id: mongoose.Types.ObjectId.isValid(saleId) ? saleId : null }]
+    });
+
+    if (!sale) {
+      return res.status(404).json({ message: "Sale invoice not found" });
+    }
+
+    const totalBill = Number(sale.grandTotal || sale.totalAmount || sale.netAmount || sale.total || 0);
+    const currentPaid = Number(sale.paidAmount || 0);
+    const newPaid = currentPaid + payAmount;
+    const newDue = Math.max(0, totalBill - newPaid);
+    const newStatus = newDue <= 0 ? "Paid" : newPaid > 0 ? "Partial" : "Due";
+
+    sale.paidAmount = newPaid > totalBill ? totalBill : newPaid;
+    sale.dueAmount = newDue;
+    sale.status = newStatus;
+    sale.paymentMethod = paymentMethod || "Cash";
+
+    if (!Array.isArray(sale.payments)) {
+      sale.payments = [];
+    }
+    sale.payments.push({
+      amount: payAmount,
+      method: paymentMethod || "Cash",
+      transactionId: transactionId || "",
+      note: note || "",
+      date: new Date()
+    });
+
+    await sale.save();
+    res.json({ success: true, message: "Payment updated successfully", bill: sale });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Clear payment sequentially for a customer across pending invoices
+router.post("/clear-payment", async (req, res) => {
+  try {
+    const { customerName, customerPhone, customerCode, amount, paymentMethod, transactionId, note } = req.body;
+
+    const totalPayAmount = Number(amount);
+    if (isNaN(totalPayAmount) || totalPayAmount <= 0) {
+      return res.status(400).json({ message: "Valid payment amount is required" });
+    }
+
+    // Build filter for customer
+    const filter = {};
+    if (customerCode && customerCode.trim()) {
+      filter.customerCode = customerCode.trim();
+    } else if (customerPhone && customerPhone.trim()) {
+      filter.customerPhone = customerPhone.trim();
+    } else if (customerName && customerName.trim()) {
+      filter.customerName = new RegExp("^" + customerName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "$", "i");
+    } else {
+      return res.status(400).json({ message: "Customer details are required" });
+    }
+
+    // Find all sales for customer sorted by oldest first
+    const sales = await Sale.find(filter).sort({ createdAt: 1 });
+
+    let remainingToPay = totalPayAmount;
+    const updatedSales = [];
+
+    for (const sale of sales) {
+      if (remainingToPay <= 0) break;
+
+      const totalBill = Number(sale.grandTotal || sale.totalAmount || sale.netAmount || sale.total || 0);
+      const currentPaid = Number(sale.paidAmount || 0);
+      const currentDue = Math.max(0, totalBill - currentPaid);
+
+      if (currentDue <= 0) continue; // Already paid
+
+      const payForThisBill = Math.min(remainingToPay, currentDue);
+      const newPaid = currentPaid + payForThisBill;
+      const newDue = Math.max(0, totalBill - newPaid);
+      const newStatus = newDue <= 0 ? "Paid" : newPaid > 0 ? "Partial" : "Due";
+
+      sale.paidAmount = newPaid;
+      sale.dueAmount = newDue;
+      sale.status = newStatus;
+      sale.paymentMethod = paymentMethod || "Cash";
+
+      if (!Array.isArray(sale.payments)) {
+        sale.payments = [];
+      }
+      sale.payments.push({
+        amount: payForThisBill,
+        method: paymentMethod || "Cash",
+        transactionId: transactionId || "",
+        note: note || "",
+        date: new Date()
+      });
+
+      await sale.save();
+      updatedSales.push(sale);
+      remainingToPay -= payForThisBill;
+    }
+
+    res.json({
+      success: true,
+      message: `Cleared ₹${totalPayAmount - remainingToPay} across ${updatedSales.length} invoice(s)`,
+      remainingUnapplied: remainingToPay,
+      updatedSales
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Save Sale with Items, Decrease Stock, and generate PDF
 router.post("/", async (req, res) => {
   try {
@@ -156,9 +306,19 @@ router.post("/", async (req, res) => {
       saleId = `SDA-${nextId.toString().padStart(5, "0")}`;
     }
 
+    const billTotal = Number(saleData?.grandTotal || saleData?.netAmount || saleData?.totalAmount || saleData?.total || 0);
+    const initialPaid = Number(saleData?.paidAmount || 0);
+    const initialDue = Math.max(0, billTotal - initialPaid);
+    const initialStatus = initialDue <= 0 ? "Paid" : (initialPaid > 0 ? "Partial" : "Due");
+    const initialMethod = saleData?.paymentMethod && saleData?.paymentMethod !== "-" ? saleData.paymentMethod : (initialStatus === "Paid" ? "Cash" : "-");
+
     const sale = new Sale({
       ...saleData,
       saleId,
+      paidAmount: initialPaid,
+      dueAmount: initialDue,
+      status: initialStatus,
+      paymentMethod: initialMethod,
       items: items || []
     });
 

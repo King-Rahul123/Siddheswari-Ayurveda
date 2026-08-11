@@ -9,10 +9,21 @@ const authMiddleware = require("../middleware/authMiddleware");
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
-    const staff = await Staff.findOne({ username });
+
+    if (!username || !username.trim()) {
+      return res.status(400).json({ message: "Username is required" });
+    }
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    const trimmedUsername = username.trim();
+    const staff = await Staff.findOne({
+      username: { $regex: new RegExp(`^${trimmedUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, "i") }
+    });
 
     if (!staff) {
-      return res.status(404).json({ message: "Username not found" });
+      return res.status(404).json({ message: "Username is not listed" });
     }
 
     let isMatch = await bcrypt.compare(password, staff.password);

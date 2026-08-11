@@ -123,19 +123,72 @@ export default function Outstanding() {
     setSelectedBill(null);
   };
 
-  const handlePayment = async () => {
+  // Get all unpaid/partial bills for the selected customer
+  const customerPendingBills = useMemo(() => {
+    if (!selectedBill) return [];
+
+    const targetCustomerName = (selectedBill.customerName || selectedBill.customer || "").trim().toLowerCase();
+    const targetCustomerPhone = (selectedBill.customerPhone || selectedBill.phone || "").trim();
+
+    return bills.filter((b) => {
+      const status = normalizedStatus(b);
+      if (status === "Paid") return false;
+
+      const bName = (b.customerName || b.customer || "").trim().toLowerCase();
+      const bPhone = (b.customerPhone || b.phone || "").trim();
+
+      const nameMatch = targetCustomerName && bName === targetCustomerName;
+      const phoneMatch = targetCustomerPhone && bPhone === targetCustomerPhone;
+
+      return nameMatch || phoneMatch;
+    });
+  }, [selectedBill, bills]);
+
+  // Projected allocation of entered amount across customer's pending bills
+  const paymentAllocation = useMemo(() => {
+    const entered = Number(paymentForm.amount || 0);
+    let remaining = entered;
+
+    return customerPendingBills.map((b) => {
+      const billTotal = getTotal(b);
+      const billPaid = getPaid(b);
+      const billDue = getDue(b);
+
+      if (remaining <= 0) {
+        return {
+          ...b,
+          allocated: 0,
+          newPaid: billPaid,
+          newDue: billDue,
+          newStatus: normalizedStatus(b)
+        };
+      }
+
+      const allocated = Math.min(remaining, billDue);
+      const newPaid = billPaid + allocated;
+      const newDue = Math.max(0, billTotal - newPaid);
+      const newStatus = newDue <= 0 ? "Paid" : newPaid > 0 ? "Partial" : "Due";
+
+      remaining -= allocated;
+
+      return {
+        ...b,
+        allocated,
+        newPaid,
+        newDue,
+        newStatus
+      };
+    });
+  }, [customerPendingBills, paymentForm.amount]);
+
+  const handlePayment = async (e) => {
+    if (e) e.preventDefault();
     if (!selectedBill) return;
 
     const amount = Number(paymentForm.amount);
-    const due = getDue(selectedBill);
 
     if (!amount || amount <= 0) {
       toast.warning("Enter a valid payment amount");
-      return;
-    }
-
-    if (amount > due) {
-      toast.warning(`Payment cannot exceed due amount ₹${due.toLocaleString("en-IN")}`);
       return;
     }
 
@@ -153,68 +206,63 @@ export default function Outstanding() {
       const billId =
         selectedBill.id ??
         selectedBill._id ??
+        selectedBill.saleId ??
         selectedBill.invoiceNumber ??
         selectedBill.billNumber;
 
-      // Change this endpoint/body only if your existing backend uses
-      // a different sales/payment API.
-      const res = await apiFetch(`/sales/${billId}/payment`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount,
-          paymentMethod: paymentForm.method,
-          transactionId:
-            paymentForm.method === "UPI"
-              ? paymentForm.transactionId.trim()
-              : "",
-          note: paymentForm.note.trim(),
-        }),
-      });
+      const customerName = selectedBill.customerName || selectedBill.customer || "";
+      const customerPhone = selectedBill.customerPhone || selectedBill.phone || "";
+      const customerCode = selectedBill.customerCode || "";
+
+      // If customer has multiple pending bills, use customer clear-payment
+      let res;
+      if (customerPendingBills.length > 1) {
+        res = await apiFetch("/sales/clear-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customerName,
+            customerPhone,
+            customerCode,
+            amount,
+            paymentMethod: paymentForm.method,
+            transactionId: paymentForm.method === "UPI" ? paymentForm.transactionId.trim() : "",
+            note: paymentForm.note.trim()
+          })
+        });
+      } else {
+        res = await apiFetch(`/sales/${billId}/payment`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount,
+            paymentMethod: paymentForm.method,
+            transactionId: paymentForm.method === "UPI" ? paymentForm.transactionId.trim() : "",
+            note: paymentForm.note.trim()
+          })
+        });
+      }
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || "Payment update failed");
       }
 
-      const updated = await res.json().catch(() => null);
-
-      setBills((current) =>
-        current.map((bill) => {
-          const currentId =
-            bill.id ?? bill._id ?? bill.invoiceNumber ?? bill.billNumber;
-
-          if (currentId !== billId) return bill;
-
-          const newPaid =
-            getPaid(bill) + amount;
-
-          return {
-            ...bill,
-            ...(updated?.bill || updated || {}),
-            paidAmount: newPaid,
-            paymentMethod: paymentForm.method,
-            lastPaymentMethod: paymentForm.method,
-            lastPaymentAmount: amount,
-            transactionId:
-              paymentForm.method === "UPI"
-                ? paymentForm.transactionId.trim()
-                : "",
-          };
-        })
-      );
-
-      toast.success(
-        `₹${amount.toLocaleString("en-IN")} payment updated successfully`
-      );
+      toast.success(`₹${amount.toLocaleString("en-IN")} payment processed successfully!`);
       closePayment();
+      await loadBills();
     } catch (error) {
       console.error("Payment update error:", error);
       toast.error(error.message || "Unable to update payment");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleKeyDownModal = (e) => {
+    if (e.key === "Enter" && !saving) {
+      e.preventDefault();
+      handlePayment();
     }
   };
 
@@ -334,6 +382,7 @@ export default function Outstanding() {
                 <option value="All">All Methods</option>
                 <option value="Cash">Cash</option>
                 <option value="UPI">UPI</option>
+                <option value="-">— (Unassigned)</option>
               </select>
             </div>
           </section>
@@ -380,7 +429,7 @@ export default function Outstanding() {
                       const status = normalizedStatus(bill);
                       const method = bill.paymentMethod || bill.method || "—";
                       const invoice =
-                        bill.invoiceNumber ?? bill.billNumber ?? bill.id ?? "—";
+                        bill.invoiceNumber ?? bill.billNumber ?? bill.saleId ?? bill.id ?? "—";
                       const customer =
                         bill.customerName ?? bill.customer ?? "Walk-in Customer";
 
@@ -409,21 +458,33 @@ export default function Outstanding() {
                             </div>
                           </td>
 
-                          <td>{bill.date || bill.billDate || bill.createdAt || "—"}</td>
+                          <td>{bill.date || bill.billDate || (bill.createdAt ? new Date(bill.createdAt).toLocaleDateString("en-IN") : "—")}</td>
 
                           <td className="amount total">{formatCurrency(total)}</td>
 
                           <td>
-                            {method === "Cash" ? (
-                              <span className="payment-method cash">
-                                <i className="bi bi-cash"></i> Cash
-                              </span>
-                            ) : method === "UPI" ? (
-                              <span className="payment-method upi">
-                                <i className="bi bi-phone"></i> UPI
-                              </span>
+                            {status === "Paid" ? (
+                              method === "Cash" ? (
+                                <span className="payment-method cash">
+                                  <i className="bi bi-cash"></i> Cash
+                                </span>
+                              ) : method === "UPI" ? (
+                                <span className="payment-method upi">
+                                  <i className="bi bi-phone"></i> UPI
+                                </span>
+                              ) : (
+                                <span className="payment-method empty">—</span>
+                              )
                             ) : (
-                              <span className="payment-method empty">—</span>
+                              <button
+                                type="button"
+                                className="pay-method-btn"
+                                onClick={() => openPayment(bill)}
+                                title="Click to clear payment"
+                              >
+                                <span className="method-label">{method !== "—" ? method : "—"}</span>
+                                <span className="pay-badge"><i className="bi bi-wallet2"></i> Clear Pay</span>
+                              </button>
                             )}
                           </td>
 
@@ -458,6 +519,7 @@ export default function Outstanding() {
             <div
               className="payment-modal"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={handleKeyDownModal}
             >
               <div className="payment-modal-top">
                 <div className="payment-modal-icon">
@@ -473,45 +535,27 @@ export default function Outstanding() {
               </div>
 
               <div className="payment-modal-heading">
-                <span>UPDATE PAYMENT</span>
-                <h3>Bill {selectedBill.invoiceNumber ?? selectedBill.billNumber ?? "—"}</h3>
-                <p>{selectedBill.customerName ?? selectedBill.customer ?? "Walk-in Customer"}</p>
+                <span>CLEAR PAYMENT FOR CUSTOMER</span>
+                <h3>{selectedBill.customerName ?? selectedBill.customer ?? "Walk-in Customer"}</h3>
+                <p>Invoice #{selectedBill.saleId ?? selectedBill.invoiceNumber ?? selectedBill.billNumber ?? "—"}</p>
               </div>
 
               <div className="payment-balance">
                 <div>
-                  <small>Total Bill</small>
-                  <strong>{formatCurrency(getTotal(selectedBill))}</strong>
+                  <small>Selected Bill Due</small>
+                  <strong>{formatCurrency(getDue(selectedBill))}</strong>
                 </div>
                 <div>
-                  <small>Already Paid</small>
-                  <strong>{formatCurrency(getPaid(selectedBill))}</strong>
+                  <small>Customer Total Due</small>
+                  <strong>{formatCurrency(customerPendingBills.reduce((s, b) => s + getDue(b), 0))}</strong>
                 </div>
                 <div className="balance-due">
-                  <small>Remaining Due</small>
-                  <strong>{formatCurrency(getDue(selectedBill))}</strong>
+                  <small>Pending Invoices</small>
+                  <strong>{customerPendingBills.length} Bill(s)</strong>
                 </div>
               </div>
 
-              <div className="payment-form">
-                <label>Payment Amount</label>
-                <div className="payment-amount-input">
-                  <span>₹</span>
-                  <input
-                    type="number"
-                    min="1"
-                    max={getDue(selectedBill)}
-                    value={paymentForm.amount}
-                    onChange={(e) =>
-                      setPaymentForm((prev) => ({
-                        ...prev,
-                        amount: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter amount"
-                  />
-                </div>
-
+              <form className="payment-form" onSubmit={handlePayment}>
                 <label>Payment Method</label>
                 <div className="payment-method-grid">
                   <button
@@ -546,6 +590,25 @@ export default function Outstanding() {
                   </button>
                 </div>
 
+                <label htmlFor="modal-payment-amount">Payment Amount (Press Enter to Apply)</label>
+                <div className="payment-amount-input">
+                  <span>₹</span>
+                  <input
+                    id="modal-payment-amount"
+                    type="number"
+                    min="1"
+                    autoFocus
+                    value={paymentForm.amount}
+                    onChange={(e) =>
+                      setPaymentForm((prev) => ({
+                        ...prev,
+                        amount: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter payment amount"
+                  />
+                </div>
+
                 {paymentForm.method === "UPI" && (
                   <div className="upi-field">
                     <label>UPI Transaction ID</label>
@@ -575,14 +638,52 @@ export default function Outstanding() {
                       note: e.target.value,
                     }))
                   }
-                  placeholder="Add a note about this payment..."
+                  placeholder="Add payment note..."
                   rows="2"
                 ></textarea>
-              </div>
+              </form>
+
+              {/* Customer Pending Invoices Allocation Preview */}
+              {customerPendingBills.length > 0 && (
+                <div className="customer-bills-preview">
+                  <h5>Customer Pending Invoices Breakdown</h5>
+                  <div className="preview-table-wrap">
+                    <table className="preview-table">
+                      <thead>
+                        <tr>
+                          <th>Invoice</th>
+                          <th>Total</th>
+                          <th>Current Due</th>
+                          <th>Allocated</th>
+                          <th>New Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paymentAllocation.map((item) => (
+                          <tr key={item.id ?? item._id ?? item.saleId} className={item.allocated > 0 ? "active-alloc" : ""}>
+                            <td><strong>{item.saleId || item.invoiceNumber || item.billNumber}</strong></td>
+                            <td>{formatCurrency(getTotal(item))}</td>
+                            <td className="text-danger">{formatCurrency(getDue(item))}</td>
+                            <td className="text-success font-weight-bold">
+                              {item.allocated > 0 ? `+${formatCurrency(item.allocated)}` : "₹0"}
+                            </td>
+                            <td>
+                              <span className={`bill-status ${item.newStatus.toLowerCase()}`}>
+                                {item.newStatus}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
               <div className="payment-modal-footer">
                 <button
                   className="payment-cancel-btn"
+                  type="button"
                   onClick={closePayment}
                   disabled={saving}
                 >
@@ -591,18 +692,19 @@ export default function Outstanding() {
 
                 <button
                   className="payment-save-btn"
+                  type="button"
                   onClick={handlePayment}
                   disabled={saving}
                 >
                   {saving ? (
                     <>
                       <span className="spinner-border spinner-border-sm"></span>
-                      Saving...
+                      Processing...
                     </>
                   ) : (
                     <>
                       <i className="bi bi-check2-circle"></i>
-                      Confirm Payment
+                      Clear Payment (Enter)
                     </>
                   )}
                 </button>
