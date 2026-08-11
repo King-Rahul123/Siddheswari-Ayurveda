@@ -1,0 +1,1343 @@
+/* =========================================================
+   EXPIRY RETURN PAGE
+   Siddheswari Ayurveda Dashboard
+   ========================================================= */
+
+.expiry-return-page {
+  padding: 24px;
+  min-height: calc(100vh - 70px);
+  background: #f6f8f4;
+}
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.expiry-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.expiry-title-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.expiry-title-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    #1f6b45,
+    #3c8c5c
+  );
+  color: #fff;
+  font-size: 23px;
+  box-shadow: 0 8px 20px rgba(31, 107, 69, 0.18);
+}
+
+.expiry-title-row h2 {
+  margin: 0;
+  color: #183b2a;
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.expiry-title-row p {
+  margin: 5px 0 0;
+  color: #7a877e;
+  font-size: 13px;
+}
+
+.expiry-refresh-btn {
+  border: 1px solid #d8e4dc;
+  background: #fff;
+  color: #24583d;
+  height: 43px;
+  padding: 0 17px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.expiry-refresh-btn:hover {
+  background: #eef7f0;
+  border-color: #bcd6c4;
+  transform: translateY(-1px);
+}
+
+.expiry-refresh-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.expiry-spin {
+  animation: expirySpin 1s linear infinite;
+}
+
+@keyframes expirySpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   SUMMARY CARDS
+   ========================================================= */
+
+.expiry-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.expiry-summary-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  min-height: 115px;
+  border-radius: 17px;
+  background: #fff;
+  border: 1px solid #e7ece8;
+  box-shadow: 0 5px 18px rgba(26, 63, 43, 0.055);
+  transition: all 0.25s ease;
+}
+
+.expiry-summary-card::after {
+  content: "";
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  right: -35px;
+  bottom: -45px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.expiry-summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(26, 63, 43, 0.09);
+}
+
+.expiry-summary-icon {
+  width: 49px;
+  height: 49px;
+  min-width: 49px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.expiry-summary-card > div:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.expiry-summary-card span {
+  color: #78857d;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.expiry-summary-card strong {
+  margin-top: 3px;
+  color: #213b2c;
+  font-size: 25px;
+  line-height: 1.2;
+  font-weight: 750;
+}
+
+.expiry-summary-card small {
+  margin-top: 3px;
+  color: #929d96;
+  font-size: 10px;
+}
+
+/* Summary colors */
+
+.expired-card {
+  border-top: 3px solid #c84a4a;
+}
+
+.expired-card .expiry-summary-icon {
+  background: #fdecec;
+  color: #c03939;
+}
+
+.critical-card {
+  border-top: 3px solid #d98625;
+}
+
+.critical-card .expiry-summary-icon {
+  background: #fff2df;
+  color: #d47b13;
+}
+
+.near-card {
+  border-top: 3px solid #bd9b2f;
+}
+
+.near-card .expiry-summary-icon {
+  background: #fff9dc;
+  color: #ad8c20;
+}
+
+.value-card {
+  border-top: 3px solid #36835a;
+}
+
+.value-card .expiry-summary-icon {
+  background: #eaf6ed;
+  color: #287247;
+}
+
+/* =========================================================
+   EXPIRY ALERT
+   ========================================================= */
+
+.expiry-alert {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 18px;
+  margin-bottom: 18px;
+  border: 1px solid #e2d7ad;
+  border-radius: 14px;
+  background: linear-gradient(
+    90deg,
+    #fffbed,
+    #fffdf6
+  );
+}
+
+.expiry-alert-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 11px;
+  background: #fff1c7;
+  color: #a97a12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.expiry-alert strong {
+  display: block;
+  color: #765b13;
+  font-size: 13px;
+}
+
+.expiry-alert p {
+  margin: 3px 0 0;
+  color: #8b7a4b;
+  font-size: 11px;
+}
+
+/* =========================================================
+   TOOLBAR
+   ========================================================= */
+
+.expiry-toolbar-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 15px;
+  margin-bottom: 18px;
+  border: 1px solid #e3e9e4;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 4px 15px rgba(25, 60, 40, 0.04);
+}
+
+.expiry-search {
+  position: relative;
+  width: 360px;
+}
+
+.expiry-search > i {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #839087;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.expiry-search input {
+  width: 100%;
+  height: 41px;
+  padding: 0 38px;
+  border: 1px solid #dfe7e1;
+  border-radius: 10px;
+  outline: none;
+  background: #fafcfb;
+  color: #30453a;
+  font-size: 12px;
+  transition: 0.2s ease;
+}
+
+.expiry-search input:focus {
+  border-color: #6ca17e;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(63, 132, 85, 0.08);
+}
+
+.expiry-search input::placeholder {
+  color: #a1aaa4;
+}
+
+.expiry-search button {
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #a4ada7;
+  cursor: pointer;
+  padding: 0;
+}
+
+.expiry-search button:hover {
+  color: #557061;
+}
+
+.expiry-filters {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.expiry-filters select {
+  height: 41px;
+  min-width: 135px;
+  padding: 0 30px 0 12px;
+  border: 1px solid #dfe7e1;
+  border-radius: 10px;
+  outline: none;
+  background: #fafcfb;
+  color: #53645a;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.expiry-filters select:focus {
+  border-color: #6ca17e;
+}
+
+/* =========================================================
+   TABLE CARD
+   ========================================================= */
+
+.expiry-table-card {
+  background: #fff;
+  border: 1px solid #e3e9e4;
+  border-radius: 17px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(25, 60, 40, 0.045);
+}
+
+.expiry-table-header {
+  min-height: 73px;
+  padding: 16px 19px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #edf1ee;
+}
+
+.expiry-table-header h4 {
+  margin: 0;
+  color: #244332;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.expiry-table-header p {
+  margin: 4px 0 0;
+  color: #929c96;
+  font-size: 10px;
+}
+
+.expiry-legend {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+}
+
+.expiry-legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #7a857e;
+  font-size: 10px;
+}
+
+.expiry-legend i {
+  font-size: 7px;
+}
+
+.legend-expired {
+  color: #d95353;
+}
+
+.legend-critical {
+  color: #df8c27;
+}
+
+.legend-near {
+  color: #c6a634;
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.expiry-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.expiry-table thead th {
+  padding: 13px 11px;
+  background: #f7faf7;
+  color: #68766e;
+  border-bottom: 1px solid #e5ebe6;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  white-space: nowrap;
+}
+
+.expiry-table tbody td {
+  padding: 13px 11px;
+  color: #526159;
+  border-bottom: 1px solid #eef2ef;
+  font-size: 11px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.expiry-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.expiry-table tbody tr:hover {
+  background: #f9fcfa;
+}
+
+.expiry-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* =========================================================
+   PRODUCT
+   ========================================================= */
+
+.expiry-product-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 185px;
+}
+
+.expiry-product-icon {
+  width: 35px;
+  height: 35px;
+  min-width: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: #edf7ef;
+  color: #367b4d;
+}
+
+.expiry-product-cell strong {
+  display: block;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #304b3a;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.expiry-product-cell small {
+  display: block;
+  margin-top: 2px;
+  color: #9aa59f;
+  font-size: 9px;
+}
+
+.batch-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: #f1f4f2;
+  color: #66746b;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   EXPIRY DATE
+   ========================================================= */
+
+.expiry-date {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.expiry-date strong {
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.expiry-date small {
+  font-size: 9px;
+}
+
+.expiry-date.expired strong {
+  color: #c53f3f;
+}
+
+.expiry-date.expired small {
+  color: #d76b6b;
+}
+
+.expiry-date.critical strong {
+  color: #cb7719;
+}
+
+.expiry-date.critical small {
+  color: #dc9347;
+}
+
+.expiry-date.near-expiry strong {
+  color: #a68920;
+}
+
+.expiry-date.near-expiry small {
+  color: #b6a149;
+}
+
+.expiry-date.safe strong {
+  color: #32724b;
+}
+
+.expiry-date.safe small {
+  color: #699078;
+}
+
+.expiry-date.unknown strong,
+.expiry-date.unknown small {
+  color: #8b938e;
+}
+
+/* =========================================================
+   STOCK
+   ========================================================= */
+
+.stock-qty {
+  display: inline-flex;
+  min-width: 29px;
+  justify-content: center;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: #edf6ef;
+  color: #34734a;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.stock-qty.zero {
+  background: #f5f5f5;
+  color: #999;
+}
+
+.expiry-rate {
+  color: #355343 !important;
+  font-weight: 650;
+}
+
+/* =========================================================
+   EXPIRY STATUS
+   ========================================================= */
+
+.expiry-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.expiry-status i {
+  font-size: 6px;
+}
+
+.expiry-status.expired {
+  color: #bf3e3e;
+  background: #fceded;
+}
+
+.expiry-status.critical {
+  color: #c37516;
+  background: #fff2df;
+}
+
+.expiry-status.near-expiry {
+  color: #9e8420;
+  background: #fff9dd;
+}
+
+.expiry-status.safe {
+  color: #34744d;
+  background: #ebf6ee;
+}
+
+.expiry-status.unknown {
+  color: #737c77;
+  background: #f1f3f2;
+}
+
+/* =========================================================
+   RETURN STATUS
+   ========================================================= */
+
+.return-status {
+  display: inline-flex;
+  padding: 5px 8px;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.return-status.returnable {
+  background: #e9f7ed;
+  color: #287247;
+}
+
+.return-status.review {
+  background: #fff7dd;
+  color: #a47c17;
+}
+
+.return-status.returned {
+  background: #e9eef8;
+  color: #4a638c;
+}
+
+.return-status.safe {
+  background: #edf4ef;
+  color: #668071;
+}
+
+.return-status.no-stock {
+  background: #f2f3f3;
+  color: #8b918e;
+}
+
+/* =========================================================
+   TABLE ACTION BUTTONS
+   ========================================================= */
+
+.expiry-return-btn,
+.expiry-review-btn {
+  height: 31px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.expiry-return-btn {
+  background: #e8f5eb;
+  color: #287247;
+  border-color: #cce5d1;
+}
+
+.expiry-return-btn:hover {
+  background: #287247;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.expiry-review-btn {
+  background: #fff6dd;
+  color: #9a771d;
+  border-color: #ebdcae;
+}
+
+.expiry-review-btn:hover {
+  background: #9a771d;
+  color: #fff;
+}
+
+.no-action {
+  color: #b4bbb6;
+  font-size: 12px;
+}
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.expiry-loading {
+  height: 250px;
+  text-align: center !important;
+  color: #7b8980 !important;
+}
+
+.expiry-loading span {
+  margin-left: 9px;
+  font-size: 11px;
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.expiry-empty-state {
+  height: 280px;
+  text-align: center !important;
+}
+
+.expiry-empty-icon {
+  width: 55px;
+  height: 55px;
+  margin: 0 auto 10px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #edf5ef;
+  color: #6a9275;
+  font-size: 23px;
+}
+
+.expiry-empty-state h5 {
+  margin: 0;
+  color: #526359;
+  font-size: 13px;
+}
+
+.expiry-empty-state p {
+  margin: 5px 0 0;
+  color: #9aa49e;
+  font-size: 10px;
+}
+
+/* =========================================================
+   MODAL OVERLAY
+   ========================================================= */
+
+.expiry-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  background: rgba(18, 35, 25, 0.57);
+  backdrop-filter: blur(5px);
+  animation: expiryOverlayIn 0.2s ease;
+}
+
+@keyframes expiryOverlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* =========================================================
+   RETURN MODAL
+   ========================================================= */
+
+.expiry-return-modal {
+  width: min(700px, 100%);
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 21px;
+  background: #fff;
+  box-shadow:
+    0 25px 80px rgba(17, 42, 27, 0.25),
+    0 5px 20px rgba(17, 42, 27, 0.1);
+  animation: expiryModalIn 0.25s ease;
+}
+
+@keyframes expiryModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.expiry-return-modal::-webkit-scrollbar {
+  width: 5px;
+}
+
+.expiry-return-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.expiry-return-modal::-webkit-scrollbar-thumb {
+  background: #cbd9ce;
+  border-radius: 10px;
+}
+
+/* =========================================================
+   MODAL TOP
+   ========================================================= */
+
+.expiry-modal-top {
+  height: 75px;
+  padding: 18px 20px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.expiry-modal-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    #e5f4e9,
+    #d2ebda
+  );
+  color: #287247;
+  font-size: 20px;
+}
+
+.expiry-close-btn {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 9px;
+  background: #f3f5f3;
+  color: #748078;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.expiry-close-btn:hover {
+  background: #e9ecea;
+  color: #37453d;
+}
+
+.expiry-close-btn:disabled {
+  opacity: 0.5;
+}
+
+/* =========================================================
+   MODAL HEADING
+   ========================================================= */
+
+.expiry-modal-heading {
+  padding: 0 25px 18px;
+}
+
+.expiry-modal-heading > span {
+  color: #4d8b61;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 1.2px;
+}
+
+.expiry-modal-heading h3 {
+  margin: 4px 0 3px;
+  color: #203b2c;
+  font-size: 20px;
+  font-weight: 750;
+}
+
+.expiry-modal-heading p {
+  margin: 0;
+  color: #8a958e;
+  font-size: 10px;
+}
+
+/* =========================================================
+   STOCK INFO
+   ========================================================= */
+
+.return-stock-info {
+  margin: 0 25px 21px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  overflow: hidden;
+  border: 1px solid #e2e9e4;
+  border-radius: 12px;
+  background: #f8faf8;
+}
+
+.return-stock-info > div {
+  padding: 13px 15px;
+  border-right: 1px solid #e2e9e4;
+}
+
+.return-stock-info > div:last-child {
+  border-right: none;
+}
+
+.return-stock-info small {
+  display: block;
+  margin-bottom: 4px;
+  color: #8b9690;
+  font-size: 9px;
+}
+
+.return-stock-info strong {
+  color: #365542;
+  font-size: 12px;
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.expiry-return-form {
+  padding: 0 25px 23px;
+}
+
+.return-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 15px;
+}
+
+.expiry-return-form label {
+  display: block;
+  margin-bottom: 6px;
+  color: #526258;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.expiry-return-form label span {
+  color: #9ca59f;
+  font-weight: 400;
+}
+
+.expiry-return-form input,
+.expiry-return-form select,
+.expiry-return-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #dfe7e1;
+  outline: none;
+  border-radius: 9px;
+  background: #fbfcfb;
+  color: #3f5047;
+  font-size: 11px;
+  transition: 0.2s ease;
+}
+
+.expiry-return-form input,
+.expiry-return-form select {
+  height: 40px;
+  padding: 0 11px;
+}
+
+.expiry-return-form textarea {
+  padding: 10px 11px;
+  resize: vertical;
+  min-height: 72px;
+  font-family: inherit;
+}
+
+.expiry-return-form input:focus,
+.expiry-return-form select:focus,
+.expiry-return-form textarea:focus {
+  border-color: #6c9f7a;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(61, 131, 82, 0.07);
+}
+
+.expiry-return-form input::placeholder,
+.expiry-return-form textarea::placeholder {
+  color: #a9b1ac;
+}
+
+/* =========================================================
+   QUANTITY INPUT
+   ========================================================= */
+
+.return-quantity-input {
+  position: relative;
+}
+
+.return-quantity-input > i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #5e8970;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.return-quantity-input input {
+  padding-left: 35px;
+  padding-right: 50px;
+}
+
+.return-quantity-input span {
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8b978f;
+  font-size: 9px;
+  pointer-events: none;
+}
+
+/* =========================================================
+   RETURN VALUE
+   ========================================================= */
+
+.return-value-box {
+  height: 40px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #d8e6dc;
+  border-radius: 9px;
+  background: #edf7ef;
+  color: #287247;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+/* =========================================================
+   MODAL FOOTER
+   ========================================================= */
+
+.expiry-return-footer {
+  padding: 16px 25px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  border-top: 1px solid #edf1ee;
+  background: #fafcfb;
+  border-radius: 0 0 21px 21px;
+}
+
+.expiry-cancel-btn,
+.expiry-confirm-btn {
+  height: 40px;
+  padding: 0 17px;
+  border-radius: 9px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.expiry-cancel-btn {
+  background: #eef1ef;
+  color: #66736b;
+}
+
+.expiry-cancel-btn:hover {
+  background: #e4e9e5;
+}
+
+.expiry-confirm-btn {
+  background: linear-gradient(
+    135deg,
+    #267247,
+    #378657
+  );
+  color: #fff;
+  box-shadow: 0 5px 13px rgba(43, 115, 70, 0.18);
+}
+
+.expiry-confirm-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 7px 17px rgba(43, 115, 70, 0.25);
+}
+
+.expiry-confirm-btn:disabled,
+.expiry-cancel-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================================
+   RESPONSIVE - LARGE TABLETS
+   ========================================================= */
+
+@media (max-width: 1200px) {
+
+  .expiry-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .expiry-toolbar-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .expiry-search {
+    width: 100%;
+  }
+
+  .expiry-filters {
+    width: 100%;
+  }
+
+  .expiry-filters select {
+    flex: 1;
+  }
+
+  .expiry-table-card {
+    overflow-x: auto;
+  }
+
+  .expiry-table {
+    min-width: 1100px;
+  }
+
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .expiry-return-page {
+    padding: 17px;
+  }
+
+  .expiry-page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .expiry-refresh-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .expiry-summary-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 11px;
+  }
+
+  .expiry-summary-card {
+    padding: 15px;
+    min-height: 95px;
+  }
+
+  .expiry-summary-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    font-size: 16px;
+  }
+
+  .expiry-summary-card strong {
+    font-size: 20px;
+  }
+
+  .expiry-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .expiry-filters select {
+    width: 100%;
+  }
+
+  .expiry-legend {
+    display: none;
+  }
+
+  .expiry-table-header {
+    align-items: flex-start;
+  }
+
+  .expiry-modal-overlay {
+    padding: 12px;
+  }
+
+  .expiry-return-modal {
+    max-height: 95vh;
+  }
+
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 520px) {
+
+  .expiry-return-page {
+    padding: 12px;
+  }
+
+  .expiry-title-icon {
+    width: 45px;
+    height: 45px;
+    min-width: 45px;
+    border-radius: 13px;
+    font-size: 18px;
+  }
+
+  .expiry-title-row h2 {
+    font-size: 21px;
+  }
+
+  .expiry-title-row p {
+    font-size: 11px;
+  }
+
+  .expiry-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .expiry-summary-card {
+    min-height: 82px;
+  }
+
+  .expiry-alert {
+    align-items: flex-start;
+  }
+
+  .expiry-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .expiry-search {
+    width: 100%;
+  }
+
+  .return-stock-info {
+    grid-template-columns: 1fr;
+  }
+
+  .return-stock-info > div {
+    border-right: none;
+    border-bottom: 1px solid #e2e9e4;
+  }
+
+  .return-stock-info > div:last-child {
+    border-bottom: none;
+  }
+
+  .return-form-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .expiry-modal-heading h3 {
+    font-size: 17px;
+  }
+
+  .expiry-return-footer {
+    flex-direction: column-reverse;
+  }
+
+  .expiry-cancel-btn,
+  .expiry-confirm-btn {
+    width: 100%;
+  }
+
+}
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+.expiry-refresh-btn:focus-visible,
+.expiry-return-btn:focus-visible,
+.expiry-review-btn:focus-visible,
+.expiry-cancel-btn:focus-visible,
+.expiry-confirm-btn:focus-visible,
+.expiry-close-btn:focus-visible {
+  outline: 3px solid rgba(53, 125, 78, 0.2);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   SMOOTH SCROLL
+   ========================================================= */
+
+.expiry-return-page,
+.expiry-return-modal {
+  scrollbar-width: thin;
+  scrollbar-color: #c8d6cc transparent;
+}

@@ -22,34 +22,10 @@ import Appointment from "./Pages/Appointment";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import Remedies from "./Pages/Remedies.jsx"
 import Outstanding from "./Pages/Outstanding.jsx";
+import ExpiryReturn from "./Pages/ExpiryReturn.jsx";
 
 const PurchaseEntry = lazy(() => import("./Components/PurchaseEntry"));
 // import EditPurchase from "./Components/EditPurchase";
-
-
-/* ---------- DASHBOARD LAYOUT (FIXED) ---------- */
-/* function DashboardLayout() {
-  const location = useLocation();
-  const [mobileMenubarOpen, setMobileMenubarOpen] = useState(false);
-
-  // Show header ONLY
-  const showHeader = ["/dashboard", "/dashboard/analytics", "/dashboard/profile"].includes(location.pathname);
-
-  return (
-    <div className="flex bg-green-200">                 
-      <div className="fixed inset-0 z-0 pointer-events-none flex items-center justify-center opacity-10">
-        <p className="text-[90px] font-bold text-slate-800 rotate-[-30deg] select-none">Siddheswari & Gita</p>
-      </div>
-      <D_Menubar mobileMenubarOpen={mobileMenubarOpen} setMobileMenubarOpen={setMobileMenubarOpen} />
-      <div className="flex-1 relative z-10">                                    
-        {showHeader && <D_Header setMobileMenubarOpen={setMobileMenubarOpen} />}
-        <div className="md:ml-72 px-4">
-          <Outlet />
-        </div>
-      </div>
-    </div>
-  );
-} */
 
 /* ---------- APP ---------- */
 export default function App() {
@@ -76,6 +52,7 @@ export default function App() {
           <Route path="/dashboard/analytics" element={<Suspense fallback={<Loader />}><Analytics /></Suspense>} />
           <Route path="/dashboard/appointments" element={<Suspense fallback={<Loader />}><Appointment /></Suspense>} />
           <Route path="/dashboard/outstanding" element={<Suspense fallback={<Loader />}><Outstanding /></Suspense>} />
+          <Route path="/dashboard/expiry-return" element={<Suspense fallback={<Loader />}><ExpiryReturn /></Suspense>} />
         </Route>
       </Routes>
       <ToastContainer

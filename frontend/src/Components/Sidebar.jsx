@@ -122,6 +122,11 @@ export default function Sidebar() {
                 Stock Report
               </li>
 
+              <li className={ window.location.pathname === "/dashboard/expiry-return" ? "active" : "" } onClick={() => navigate("/dashboard/expiry-return")} >
+                <i className="bi bi-cart-check"></i>
+                Expiry Return
+              </li>
+
               {loggedInUser?.role?.toLowerCase() === "admin" && (
                 <li className={
                     window.location.pathname === "/dashboard/staff-report"
