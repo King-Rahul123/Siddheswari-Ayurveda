@@ -185,8 +185,11 @@ const generateSalePDF = (saleData, items = []) => {
         const itemSubtotal = qty * rate;
         const discAmt = (itemSubtotal * discPercent) / 100;
         const afterDisc = itemSubtotal - discAmt;
-        const gstAmt = (afterDisc * gstPercent) / 100;
-        const lineAmount = Number(item.amount || (afterDisc + gstAmt));
+
+        // const gstAmt = (afterDisc * gstPercent) / 100;     (to include gst)
+        const gstAmt = 0;
+
+        const lineAmount = itemSubtotal;
 
         subTotal += itemSubtotal;
         totalDiscount += discAmt;

@@ -174,7 +174,7 @@ export default function SaleInvoice() {
 
       const itemSubtotal = qty * rate;
       const itemDiscountAmt = (itemSubtotal * discount) / 100;
-      current.amount = itemSubtotal - itemDiscountAmt;
+      current.amount = itemSubtotal;
 
       updated[index] = current;
       return updated;
@@ -206,7 +206,7 @@ export default function SaleInvoice() {
 
       const itemSubtotal = newQty * rate;
       const itemDiscountAmt = (itemSubtotal * discount) / 100;
-      const amount = itemSubtotal - itemDiscountAmt;
+      const amount = itemSubtotal;
 
       updated[rowIndex] = {
         ...updated[rowIndex],
@@ -261,15 +261,17 @@ export default function SaleInvoice() {
     0
   );
 
-  const gstAmount = items.reduce((sum, item) => {
-    const qty = Number(item.qty || 0);
-    const rate = Number(item.rate || 0);
-    const discount = Number(item.discount || 0);
-    const itemSub = qty * rate;
-    const afterDisc = itemSub - (itemSub * discount) / 100;
-    return sum + (afterDisc * Number(item.gst || 0)) / 100;
-  }, 0);
+  // (when gst no. include)
+  // const gstAmount = items.reduce((sum, item) => {
+  //   const qty = Number(item.qty || 0);
+  //   const rate = Number(item.rate || 0);
+  //   const discount = Number(item.discount || 0);
+  //   const itemSub = qty * rate;
+  //   const afterDisc = itemSub - (itemSub * discount) / 100;
+  //   return sum + (afterDisc * Number(item.gst || 0)) / 100;
+  // }, 0);     
 
+  const gstAmount = 0;
   const grandTotal = subTotal - totalItemDiscount + gstAmount;
   const netAmount = Math.round(grandTotal);
   const roundOff = Number((netAmount - grandTotal).toFixed(2));

@@ -73,12 +73,6 @@ const ExpiryReturn = () => {
     product.product ||
     "Unknown Product";
 
-  const getProductCode = (product) =>
-    product.productCode ||
-    product.code ||
-    product.sku ||
-    "—";
-
   const getBatch = (product) =>
     product.batchNumber ||
     product.batch ||
@@ -209,13 +203,6 @@ const ExpiryReturn = () => {
         className: "near-expiry",
       };
     }
-
-    return {
-      days,
-      status: "Safe",
-      label: `${days}d remaining`,
-      className: "safe",
-    };
   };
 
   /* =========================================================
