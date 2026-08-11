@@ -11,7 +11,8 @@ const stockSchema = new mongoose.Schema(
     rate: { type: Number, default: 0 },
     expiryDate: { type: String, default: "" },
     hsn: { type: String, default: "" },
-    gst: { type: Number, default: 0 }
+    gst: { type: Number, default: 0 },
+    actionStatus: { type: String, default: "" }
   },
   { timestamps: true }
 );

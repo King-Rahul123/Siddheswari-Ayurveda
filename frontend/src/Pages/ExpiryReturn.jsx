@@ -14,21 +14,12 @@ const ExpiryReturn = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [expiryFilter, setExpiryFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState("Returnable");
-  const [supplierFilter, setSupplierFilter] = useState("All");
+  const [actionFilter, setActionFilter] = useState("All");
 
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [selectedAction, setSelectedAction] = useState("");
   const [saving, setSaving] = useState(false);
-
-  const [returnForm, setReturnForm] = useState({
-    quantity: "",
-    reason: "Expired Stock",
-    supplier: "",
-    purchaseInvoice: "",
-    returnDate: new Date().toISOString().split("T")[0],
-    note: "",
-  });
 
   /* =========================================================
      LOAD EXPIRY STOCK
@@ -64,77 +55,48 @@ const ExpiryReturn = () => {
   };
 
   /* =========================================================
-     HELPER FUNCTIONS
-     ========================================================= */
-
-  const getProductName = (product) =>
-    product.productName ||
-    product.name ||
-    product.product ||
-    "Unknown Product";
-
-  const getBatch = (product) =>
-    product.batchNumber ||
-    product.batch ||
-    product.batchNo ||
-    "—";
-
-  const getExpiryDate = (product) =>
-    product.expiryDate ||
-    product.expiry ||
-    product.batchExpiry ||
-    product.expirationDate ||
-    null;
-
-  const getQuantity = (product) =>
-    Number(
-      product.availableQty ??
-        product.stock ??
-        product.quantity ??
-        product.currentStock ??
-        0
-    );
-
-  const getPurchaseRate = (product) =>
-    Number(
-      product.purchaseRate ??
-        product.costPrice ??
-        product.rate ??
-        product.price ??
-        0
-    );
-
-  const getSupplier = (product) =>
-    product.supplierName ||
-    product.supplier ||
-    product.vendor ||
-    "—";
-
-  /* =========================================================
      DATE HANDLING
      ========================================================= */
 
   const parseDate = (value) => {
-    if (!value) return null;
+    if (!value || value === "—" || value === "-") return null;
 
-    const date = new Date(value);
+    const str = String(value).trim();
 
-    if (!Number.isNaN(date.getTime())) {
-      return date;
+    // 1. Prioritize MM/YY or MM/YYYY format (e.g. "01/28", "03/28", "06/27", "02/28", "12/2028")
+    const mmyyMatch = str.match(/^(0[1-9]|1[0-2])[\/-](\d{2}|\d{4})$/);
+    if (mmyyMatch) {
+      const month = parseInt(mmyyMatch[1], 10);
+      let year = parseInt(mmyyMatch[2], 10);
+      if (year < 100) {
+        year += 2000;
+      }
+      const lastDay = new Date(year, month, 0).getDate();
+      return new Date(year, month - 1, lastDay);
     }
 
-    const parts = String(value).split(/[/-]/);
+    // 2. Check DD/MM/YYYY or DD-MM-YYYY format (e.g. "28/01/2028")
+    const ddmmyyyyMatch = str.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+    if (ddmmyyyyMatch) {
+      const day = parseInt(ddmmyyyyMatch[1], 10);
+      const month = parseInt(ddmmyyyyMatch[2], 10);
+      const year = parseInt(ddmmyyyyMatch[3], 10);
+      return new Date(year, month - 1, day);
+    }
 
-    if (parts.length === 3) {
-      const [day, month, year] = parts;
+    // 3. Check YYYY-MM-DD format (e.g. "2028-01-31")
+    const yyyymmddMatch = str.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/);
+    if (yyyymmddMatch) {
+      const year = parseInt(yyyymmddMatch[1], 10);
+      const month = parseInt(yyyymmddMatch[2], 10);
+      const day = parseInt(yyyymmddMatch[3], 10);
+      return new Date(year, month - 1, day);
+    }
 
-      const fallbackDate = new Date(
-        `${year}-${month}-${day}`
-      );
-
-      if (!Number.isNaN(fallbackDate.getTime())) {
-        return fallbackDate;
-      }
+    // 4. Fallback for valid full dates (only if year is > 2005)
+    const date = new Date(str);
+    if (!Number.isNaN(date.getTime()) && date.getFullYear() > 2005) {
+      return date;
     }
 
     return null;
@@ -142,7 +104,6 @@ const ExpiryReturn = () => {
 
   const formatDate = (value) => {
     const date = parseDate(value);
-
     if (!date) return value || "—";
 
     return date.toLocaleDateString("en-IN", {
@@ -153,35 +114,28 @@ const ExpiryReturn = () => {
   };
 
   /* =========================================================
-     EXPIRY STATUS
+     EXPIRY STATUS COMPUTATION (Only Expired & ≤60 Days)
      ========================================================= */
 
   const getExpiryInfo = (product) => {
-    const expiry = parseDate(getExpiryDate(product));
+    const expiryDateStr = product.expiryDate || product.expiry || product.batchExpiry || null;
+    const expiry = parseDate(expiryDateStr);
 
     if (!expiry) {
-      return {
-        days: null,
-        status: "Unknown",
-        label: "Date unavailable",
-        className: "unknown",
-      };
+      return null;
     }
 
     const today = new Date();
-
     today.setHours(0, 0, 0, 0);
     expiry.setHours(0, 0, 0, 0);
 
-    const days = Math.ceil(
-      (expiry.getTime() - today.getTime()) / 86400000
-    );
+    const days = Math.ceil((expiry.getTime() - today.getTime()) / 86400000);
 
-    if (days < 0) {
+    if (days <= 0) {
       return {
         days,
         status: "Expired",
-        label: `Expired ${Math.abs(days)}d ago`,
+        label: "Expired",
         className: "expired",
       };
     }
@@ -189,422 +143,173 @@ const ExpiryReturn = () => {
     if (days <= 30) {
       return {
         days,
-        status: "Critical",
-        label: `${days}d remaining`,
+        status: "Expire in 30 days",
+        label: "Expire in 30 days",
         className: "critical",
       };
     }
 
-    if (days <= 90) {
+    if (days <= 60) {
       return {
         days,
-        status: "Near Expiry",
-        label: `${days}d remaining`,
+        status: "Expire in 60 days",
+        label: "Expire in 60 days",
         className: "near-expiry",
       };
     }
+
+    return null; // Exclude safe products (>60 days)
   };
-
-  /* =========================================================
-     RETURN STATUS
-     ========================================================= */
-
-  const getReturnStatus = (product) => {
-    const expiryInfo = getExpiryInfo(product);
-
-    if (
-      product.returned === true ||
-      product.returnStatus === "Returned"
-    ) {
-      return "Returned";
-    }
-
-    if (getQuantity(product) <= 0) {
-      return "No Stock";
-    }
-
-    if (
-      expiryInfo.status === "Expired" ||
-      expiryInfo.status === "Critical"
-    ) {
-      return "Returnable";
-    }
-
-    if (expiryInfo.status === "Near Expiry") {
-      return "Review";
-    }
-
-    return "Safe";
-  };
-
-  /* =========================================================
-     SUPPLIER LIST
-     ========================================================= */
-
-  const suppliers = useMemo(() => {
-    const supplierList = products
-      .map((product) => getSupplier(product))
-      .filter(
-        (supplier) =>
-          supplier &&
-          supplier !== "—"
-      );
-
-    return ["All", ...new Set(supplierList)];
-  }, [products]);
 
   /* =========================================================
      FILTER PRODUCTS
      ========================================================= */
 
   const filteredProducts = useMemo(() => {
-    const keyword = searchTerm
-      .trim()
-      .toLowerCase();
+    const keyword = searchTerm.trim().toLowerCase();
 
     return products.filter((product) => {
       const expiryInfo = getExpiryInfo(product);
-      const returnStatus = getReturnStatus(product);
+      if (!expiryInfo) return false; // Show ONLY expired or <= 60 days
 
-      const productName = getProductName(product);
-      const batch = getBatch(product);
-      const supplier = getSupplier(product);
+      const productName = product.productName || product.name || "Unknown Product";
+      const batch = product.batchNumber || product.batch || product.batchNo || "—";
+      const actionStatus = product.actionStatus || "";
 
       const matchesSearch =
         !keyword ||
-        String(productName)
-          .toLowerCase()
-          .includes(keyword) ||
-        String(batch)
-          .toLowerCase()
-          .includes(keyword) ||
-        String(supplier)
-          .toLowerCase()
-          .includes(keyword);
+        String(productName).toLowerCase().includes(keyword) ||
+        String(batch).toLowerCase().includes(keyword);
 
       let matchesExpiry = true;
-
       if (expiryFilter === "Expired") {
-        matchesExpiry =
-          expiryInfo.status === "Expired";
+        matchesExpiry = expiryInfo.days <= 0;
+      } else if (expiryFilter === "30") {
+        matchesExpiry = expiryInfo.days > 0 && expiryInfo.days <= 30;
+      } else if (expiryFilter === "60") {
+        matchesExpiry = expiryInfo.days > 30 && expiryInfo.days <= 60;
       }
 
-      if (expiryFilter === "30") {
-        matchesExpiry =
-          expiryInfo.days !== null &&
-          expiryInfo.days >= 0 &&
-          expiryInfo.days <= 30;
+      let matchesAction = true;
+      if (actionFilter === "Pending") {
+        matchesAction = !actionStatus;
+      } else if (actionFilter === "Returned") {
+        matchesAction = actionStatus === "Returned";
+      } else if (actionFilter === "No Stock") {
+        matchesAction = actionStatus === "No Stock";
       }
 
-      if (expiryFilter === "90") {
-        matchesExpiry =
-          expiryInfo.days !== null &&
-          expiryInfo.days >= 0 &&
-          expiryInfo.days <= 90;
-      }
-
-      const matchesStatus =
-        statusFilter === "All" ||
-        returnStatus === statusFilter;
-
-      const matchesSupplier =
-        supplierFilter === "All" ||
-        supplier === supplierFilter;
-
-      return (
-        matchesSearch &&
-        matchesExpiry &&
-        matchesStatus &&
-        matchesSupplier
-      );
+      return matchesSearch && matchesExpiry && matchesAction;
     });
-  }, [
-    products,
-    searchTerm,
-    expiryFilter,
-    statusFilter,
-    supplierFilter,
-  ]);
+  }, [products, searchTerm, expiryFilter, actionFilter]);
 
   /* =========================================================
      SUMMARY
      ========================================================= */
 
   const summary = useMemo(() => {
-    let expiredProducts = 0;
-    let criticalProducts = 0;
-    let nearExpiryProducts = 0;
-    let returnQty = 0;
-    let returnValue = 0;
+    let expiredCount = 0;
+    let expire30Count = 0;
+    let expire60Count = 0;
 
     products.forEach((product) => {
-      const expiryInfo = getExpiryInfo(product);
+      const info = getExpiryInfo(product);
+      if (!info) return;
 
-      const quantity = getQuantity(product);
-      const rate = getPurchaseRate(product);
-
-      if (expiryInfo.status === "Expired") {
-        expiredProducts++;
-        returnQty += quantity;
-        returnValue += quantity * rate;
-      }
-
-      if (expiryInfo.status === "Critical") {
-        criticalProducts++;
-        returnQty += quantity;
-        returnValue += quantity * rate;
-      }
-
-      if (expiryInfo.status === "Near Expiry") {
-        nearExpiryProducts++;
-      }
+      if (info.days <= 0) expiredCount++;
+      else if (info.days <= 30) expire30Count++;
+      else if (info.days <= 60) expire60Count++;
     });
 
     return {
-      expiredProducts,
-      criticalProducts,
-      nearExpiryProducts,
-      returnQty,
-      returnValue,
+      expiredCount,
+      expire30Count,
+      expire60Count,
+      totalCount: expiredCount + expire30Count + expire60Count,
     };
   }, [products]);
 
   /* =========================================================
-     CURRENCY
+     ACTION MODAL HANDLERS
      ========================================================= */
 
-  const formatCurrency = (value) => {
-    return `₹${Number(value || 0).toLocaleString(
-      "en-IN",
-      {
-        maximumFractionDigits: 2,
-      }
-    )}`;
-  };
-
-  /* =========================================================
-     OPEN RETURN MODAL
-     ========================================================= */
-
-  const openReturnModal = (product) => {
-    const expiryInfo = getExpiryInfo(product);
-
+  const openActionModal = (product) => {
     setSelectedProduct(product);
-
-    setReturnForm({
-      quantity:
-        getQuantity(product) > 0
-          ? String(getQuantity(product))
-          : "",
-
-      reason:
-        expiryInfo.status === "Expired"
-          ? "Expired Stock"
-          : "Near Expiry",
-
-      supplier:
-        getSupplier(product) === "—"
-          ? ""
-          : getSupplier(product),
-
-      purchaseInvoice:
-        product.purchaseInvoice ||
-        product.invoiceNumber ||
-        product.billNumber ||
-        "",
-
-      returnDate:
-        new Date()
-          .toISOString()
-          .split("T")[0],
-
-      note: "",
-    });
-
-    setShowReturnModal(true);
+    setSelectedAction(product.actionStatus || "Returned");
+    setShowActionModal(true);
   };
 
-  /* =========================================================
-     CLOSE MODAL
-     ========================================================= */
-
-  const closeReturnModal = () => {
+  const closeActionModal = () => {
     if (saving) return;
-
-    setShowReturnModal(false);
+    setShowActionModal(false);
     setSelectedProduct(null);
   };
 
-  /* =========================================================
-     SUBMIT RETURN
-     ========================================================= */
-
-  const submitReturn = async () => {
+  const saveActionStatus = async () => {
     if (!selectedProduct) return;
-
-    const quantity = Number(
-      returnForm.quantity
-    );
-
-    const availableQuantity =
-      getQuantity(selectedProduct);
-
-    if (!quantity || quantity <= 0) {
-      toast.warning(
-        "Enter a valid return quantity"
-      );
-      return;
-    }
-
-    if (quantity > availableQuantity) {
-      toast.warning(
-        `Return quantity cannot exceed available stock (${availableQuantity})`
-      );
-      return;
-    }
-
-    if (!returnForm.supplier.trim()) {
-      toast.warning(
-        "Enter supplier name"
-      );
-      return;
-    }
-
-    if (!returnForm.returnDate) {
-      toast.warning(
-        "Select return date"
-      );
+    if (!selectedAction) {
+      toast.warning("Please choose an action option");
       return;
     }
 
     setSaving(true);
 
     try {
-      const productId =
+      const targetId =
         selectedProduct.id ||
         selectedProduct._id ||
-        selectedProduct.productId ||
-        selectedProduct.code ||
-        selectedProduct.productCode;
+        selectedProduct.stockId;
 
-      const payload = {
-        productId,
+      const res = await apiFetch(`/stock/${targetId}/action`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ actionStatus: selectedAction }),
+      });
 
-        productName:
-          getProductName(selectedProduct),
-
-        batchNumber:
-          getBatch(selectedProduct),
-
-        quantity,
-
-        supplier:
-          returnForm.supplier.trim(),
-
-        purchaseInvoice:
-          returnForm.purchaseInvoice.trim(),
-
-        reason:
-          returnForm.reason,
-
-        returnDate:
-          returnForm.returnDate,
-
-        note:
-          returnForm.note.trim(),
-      };
-
-      const response = await apiFetch(
-        "/stock/expiry-return",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify(
-            payload
-          ),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData =
-          await response
-            .json()
-            .catch(() => ({}));
-
-        throw new Error(
-          errorData.message ||
-            "Expiry return failed"
-        );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to update action status");
       }
 
-      toast.success(
-        `${quantity} unit${
-          quantity > 1 ? "s" : ""
-        } marked for expiry return`
-      );
-
-      setShowReturnModal(false);
-      setSelectedProduct(null);
-
+      toast.success(`Action updated to "${selectedAction}"`);
+      closeActionModal();
       await loadExpiryStock();
     } catch (error) {
-      console.error(
-        "Expiry return error:",
-        error
-      );
-
-      toast.error(
-        error.message ||
-          "Unable to create expiry return"
-      );
+      console.error("Save action error:", error);
+      toast.error(error.message || "Unable to save action status");
     } finally {
       setSaving(false);
     }
   };
 
   /* =========================================================
-     JSX
+     CURRENCY FORMATTER
      ========================================================= */
+
+  const formatCurrency = (value) => {
+    return `₹${Number(value || 0).toLocaleString("en-IN", {
+      maximumFractionDigits: 2,
+    })}`;
+  };
 
   return (
     <div className="dashboard">
-
       <Sidebar />
 
       <div className="dashboard-wrapper">
-
         <Header />
 
         <main className="dashboard-content expiry-return-page">
-
-          {/* =================================================
-              PAGE HEADER
-          ================================================= */}
-
+          {/* PAGE HEADER */}
           <div className="expiry-page-header">
-
             <div className="expiry-title-row">
-
               <div className="expiry-title-icon">
-                <i className="bi bi-arrow-return-left"></i>
+                <i className="bi bi-clock-history"></i>
               </div>
-
               <div>
-                <h2>
-                  Expiry Return
-                </h2>
-
-                <p>
-                  Manage expired and
-                  near-expiry stock returns
-                </p>
+                <h2>Expiry Control</h2>
+                <p>Track expired products and items expiring in 30 or 60 days</p>
               </div>
-
             </div>
 
             <button
@@ -614,986 +319,356 @@ const ExpiryReturn = () => {
             >
               <i
                 className={`bi ${
-                  loading
-                    ? "bi-arrow-repeat expiry-spin"
-                    : "bi-arrow-clockwise"
+                  loading ? "bi-arrow-repeat expiry-spin" : "bi-arrow-clockwise"
                 }`}
               ></i>
-
               Refresh Stock
             </button>
-
           </div>
 
-          {/* =================================================
-              SUMMARY CARDS
-          ================================================= */}
-
+          {/* SUMMARY CARDS */}
           <section className="expiry-summary-grid">
-
             <div className="expiry-summary-card expired-card">
-
               <div className="expiry-summary-icon">
                 <i className="bi bi-calendar-x-fill"></i>
               </div>
-
               <div>
-                <span>
-                  Expired Products
-                </span>
-
-                <strong>
-                  {summary.expiredProducts}
-                </strong>
-
-                <small>
-                  Immediate attention
-                </small>
+                <span>Expired Products</span>
+                <strong>{summary.expiredCount}</strong>
+                <small>Immediate action needed</small>
               </div>
-
             </div>
 
             <div className="expiry-summary-card critical-card">
-
               <div className="expiry-summary-icon">
                 <i className="bi bi-exclamation-triangle-fill"></i>
               </div>
-
               <div>
-                <span>
-                  Within 30 Days
-                </span>
-
-                <strong>
-                  {summary.criticalProducts}
-                </strong>
-
-                <small>
-                  Critical expiry window
-                </small>
+                <span>Expire in 30 Days</span>
+                <strong>{summary.expire30Count}</strong>
+                <small>Critical window</small>
               </div>
-
             </div>
 
             <div className="expiry-summary-card near-card">
-
               <div className="expiry-summary-icon">
                 <i className="bi bi-hourglass-split"></i>
               </div>
-
               <div>
-                <span>
-                  Within 90 Days
-                </span>
-
-                <strong>
-                  {summary.nearExpiryProducts}
-                </strong>
-
-                <small>
-                  Review for return
-                </small>
+                <span>Expire in 60 Days</span>
+                <strong>{summary.expire60Count}</strong>
+                <small>Review & plan return</small>
               </div>
-
             </div>
 
             <div className="expiry-summary-card value-card">
-
               <div className="expiry-summary-icon">
-                <i className="bi bi-box-arrow-up"></i>
+                <i className="bi bi-box-seam"></i>
               </div>
-
               <div>
-                <span>
-                  Returnable Quantity
-                </span>
-
-                <strong>
-                  {summary.returnQty}
-                </strong>
-
-                <small>
-                  {formatCurrency(
-                    summary.returnValue
-                  )} stock value
-                </small>
+                <span>Total Expiring Items</span>
+                <strong>{summary.totalCount}</strong>
+                <small>Products tracked</small>
               </div>
-
             </div>
-
           </section>
 
-          {/* =================================================
-              ALERT
-          ================================================= */}
-
-          <section className="expiry-alert">
-
-            <div className="expiry-alert-icon">
-              <i className="bi bi-shield-exclamation"></i>
-            </div>
-
-            <div>
-
-              <strong>
-                Expiry Control
-              </strong>
-
-              <p>
-                Verify product, batch,
-                expiry date and available
-                quantity before confirming
-                a supplier return.
-              </p>
-
-            </div>
-
-          </section>
-
-          {/* =================================================
-              SEARCH & FILTER
-          ================================================= */}
-
+          {/* SEARCH & FILTERS */}
           <section className="expiry-toolbar-card">
-
             <div className="expiry-search">
-
               <i className="bi bi-search"></i>
-
               <input
                 type="text"
-                placeholder="Search product, batch or supplier..."
+                placeholder="Search product or batch..."
                 value={searchTerm}
-                onChange={(event) =>
-                  setSearchTerm(
-                    event.target.value
-                  )
-                }
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
-
               {searchTerm && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSearchTerm("")
-                  }
-                >
+                <button type="button" onClick={() => setSearchTerm("")}>
                   <i className="bi bi-x-circle-fill"></i>
                 </button>
               )}
-
             </div>
 
             <div className="expiry-filters">
-
               <select
                 value={expiryFilter}
-                onChange={(event) =>
-                  setExpiryFilter(
-                    event.target.value
-                  )
-                }
+                onChange={(e) => setExpiryFilter(e.target.value)}
               >
-                <option value="All">
-                  All Expiry
-                </option>
-
-                <option value="Expired">
-                  Expired
-                </option>
-
-                <option value="30">
-                  Within 30 Days
-                </option>
-
-                <option value="90">
-                  Within 90 Days
-                </option>
+                <option value="All">All Expiry Windows</option>
+                <option value="Expired">Expired Only</option>
+                <option value="30">Expire in 30 Days</option>
+                <option value="60">Expire in 60 Days</option>
               </select>
 
               <select
-                value={statusFilter}
-                onChange={(event) =>
-                  setStatusFilter(
-                    event.target.value
-                  )
-                }
+                value={actionFilter}
+                onChange={(e) => setActionFilter(e.target.value)}
               >
-                <option value="All">
-                  All Status
-                </option>
-
-                <option value="Returnable">
-                  Returnable
-                </option>
-
-                <option value="Review">
-                  Review
-                </option>
-
-                <option value="Returned">
-                  Returned
-                </option>
-
-                <option value="Safe">
-                  Safe
-                </option>
-
-                <option value="No Stock">
-                  No Stock
-                </option>
+                <option value="All">All Action Status</option>
+                <option value="Pending">Pending Action</option>
+                <option value="Returned">Returned</option>
+                <option value="No Stock">No Stock</option>
               </select>
-
-              <select
-                value={supplierFilter}
-                onChange={(event) =>
-                  setSupplierFilter(
-                    event.target.value
-                  )
-                }
-              >
-                {suppliers.map(
-                  (supplier) => (
-                    <option
-                      key={supplier}
-                      value={supplier}
-                    >
-                      {supplier === "All"
-                        ? "All Suppliers"
-                        : supplier}
-                    </option>
-                  )
-                )}
-              </select>
-
             </div>
-
           </section>
 
-          {/* =================================================
-              TABLE
-          ================================================= */}
-
+          {/* TABLE */}
           <section className="expiry-table-card">
-
             <div className="expiry-table-header">
-
               <div>
-
-                <h4>
-                  Expiry Stock Register
-                </h4>
-
-                <p>
-                  {filteredProducts.length}{" "}
-                  products shown
-                </p>
-
+                <h4>Expiry Stock Register</h4>
+                <p>{filteredProducts.length} items shown</p>
               </div>
 
               <div className="expiry-legend">
-
                 <span>
-                  <i className="bi bi-circle-fill legend-expired"></i>
-                  Expired
+                  <i className="bi bi-circle-fill legend-expired"></i> Expired
                 </span>
-
                 <span>
-                  <i className="bi bi-circle-fill legend-critical"></i>
-                  ≤ 30 Days
+                  <i className="bi bi-circle-fill legend-critical"></i> Expire in 30 days
                 </span>
-
                 <span>
-                  <i className="bi bi-circle-fill legend-near"></i>
-                  ≤ 90 Days
+                  <i className="bi bi-circle-fill legend-near"></i> Expire in 60 days
                 </span>
-
               </div>
-
             </div>
 
             <div className="table-responsive">
-
               <table className="dashboard-table expiry-table">
-
                 <thead>
-
                   <tr>
-                    <th>Sl.</th>
-                    <th>Product</th>
+                    <th>Sl No.</th>
+                    <th>Product Name</th>
                     <th>Batch</th>
                     <th>Expiry Date</th>
-                    <th>Available</th>
-                    <th>Purchase Rate</th>
-                    <th>Supplier</th>
-                    <th>Expiry Status</th>
-                    <th>Return Status</th>
+                    <th>MRP</th>
+                    <th>Status</th>
                     <th>Action</th>
                   </tr>
-
                 </thead>
 
                 <tbody>
-
                   {loading ? (
-
                     <tr>
-
-                      <td
-                        colSpan="10"
-                        className="expiry-loading"
-                      >
-
+                      <td colSpan="7" className="expiry-loading">
                         <div className="spinner-border spinner-border-sm text-success"></div>
-
-                        <span>
-                          Loading expiry stock...
-                        </span>
-
+                        <span>Loading expiry stock...</span>
                       </td>
-
                     </tr>
-
                   ) : filteredProducts.length > 0 ? (
+                    filteredProducts.map((product, index) => {
+                      const expiryInfo = getExpiryInfo(product);
+                      const productName =
+                        product.productName || product.name || "Unknown Product";
+                      const batch =
+                        product.batchNumber || product.batch || product.batchNo || "—";
+                      const expiryDateStr =
+                        product.expiryDate || product.expiry || product.batchExpiry || "—";
+                      const mrp = Number(product.mrp || product.rate || 0);
 
-                    filteredProducts.map(
-                      (product, index) => {
+                      return (
+                        <tr
+                          key={
+                            product.id ||
+                            product._id ||
+                            product.stockId ||
+                            `${productName}-${batch}-${index}`
+                          }
+                        >
+                          <td className="text-center">{index + 1}</td>
 
-                        const expiryInfo =
-                          getExpiryInfo(
-                            product
-                          );
-
-                        const returnStatus =
-                          getReturnStatus(
-                            product
-                          );
-
-                        const quantity =
-                          getQuantity(
-                            product
-                          );
-
-                        return (
-
-                          <tr
-                            key={
-                              product.id ||
-                              product._id ||
-                              `${getProductName(
-                                product
-                              )}-${getBatch(
-                                product
-                              )}-${index}`
-                            }
-                          >
-
-                            <td className="text-center">
-                              {index + 1}
-                            </td>
-
-                            <td>
-
-                              <div className="expiry-product-cell">
-
-                                <div className="expiry-product-icon">
-                                  <i className="bi bi-capsule"></i>
-                                </div>
-
-                                <div>
-
-                                  <strong>
-                                    {getProductName(
-                                      product
-                                    )}
-                                  </strong>
-
-                                  <small>
-                                    {getProductCode(
-                                      product
-                                    )}
-                                  </small>
-
-                                </div>
-
+                          <td>
+                            <div className="expiry-product-cell">
+                              <div className="expiry-product-icon">
+                                <i className="bi bi-capsule"></i>
                               </div>
-
-                            </td>
-
-                            <td>
-                              <span className="batch-pill">
-                                {getBatch(
-                                  product
-                                )}
-                              </span>
-                            </td>
-
-                            <td>
-
-                              <div
-                                className={`expiry-date ${expiryInfo.className}`}
-                              >
-
-                                <strong>
-                                  {formatDate(
-                                    getExpiryDate(
-                                      product
-                                    )
-                                  )}
-                                </strong>
-
-                                <small>
-                                  {
-                                    expiryInfo.label
-                                  }
-                                </small>
-
+                              <div>
+                                <strong>{productName}</strong>
                               </div>
+                            </div>
+                          </td>
 
-                            </td>
+                          <td>
+                            <span className="batch-pill">{batch}</span>
+                          </td>
 
-                            <td>
+                          <td>
+                            <div className={`expiry-date ${expiryInfo?.className}`}>
+                              <strong>{formatDate(expiryDateStr)}</strong>
+                            </div>
+                          </td>
 
-                              <span
-                                className={`stock-qty ${
-                                  quantity <= 0
-                                    ? "zero"
-                                    : ""
-                                }`}
+                          <td className="expiry-rate">
+                            {formatCurrency(mrp)}
+                          </td>
+
+                          <td>
+                            <span className={`expiry-status ${expiryInfo?.className}`}>
+                              <i className="bi bi-circle-fill"></i>
+                              {expiryInfo?.status}
+                            </span>
+                          </td>
+
+                          <td>
+                            {product.actionStatus ? (
+                              <button
+                                type="button"
+                                className={`btn-action-badge ${product.actionStatus.toLowerCase().replace(/\s+/g, '-')}`}
+                                onClick={() => openActionModal(product)}
+                                title="Click to edit action"
                               >
-                                {quantity}
-                              </span>
-
-                            </td>
-
-                            <td className="expiry-rate">
-                              {formatCurrency(
-                                getPurchaseRate(
-                                  product
-                                )
-                              )}
-                            </td>
-
-                            <td>
-                              {getSupplier(
-                                product
-                              )}
-                            </td>
-
-                            <td>
-
-                              <span
-                                className={`expiry-status ${expiryInfo.className}`}
+                                <span>{product.actionStatus}</span>
+                                <i className="bi bi-pencil-square"></i>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="btn-select-action"
+                                onClick={() => openActionModal(product)}
                               >
-
-                                <i className="bi bi-circle-fill"></i>
-
-                                {
-                                  expiryInfo.status
-                                }
-
-                              </span>
-
-                            </td>
-
-                            <td>
-
-                              <span
-                                className={`return-status ${returnStatus
-                                  .toLowerCase()
-                                  .replace(
-                                    /\s+/g,
-                                    "-"
-                                  )}`}
-                              >
-                                {
-                                  returnStatus
-                                }
-                              </span>
-
-                            </td>
-
-                            <td>
-
-                              {returnStatus ===
-                                "Returnable" &&
-                              quantity > 0 ? (
-
-                                <button
-                                  className="expiry-return-btn"
-                                  onClick={() =>
-                                    openReturnModal(
-                                      product
-                                    )
-                                  }
-                                >
-                                  <i className="bi bi-arrow-return-left"></i>
-                                  Return
-                                </button>
-
-                              ) : returnStatus ===
-                                  "Review" &&
-                                quantity > 0 ? (
-
-                                <button
-                                  className="expiry-review-btn"
-                                  onClick={() =>
-                                    openReturnModal(
-                                      product
-                                    )
-                                  }
-                                >
-                                  <i className="bi bi-eye"></i>
-                                  Review
-                                </button>
-
-                              ) : (
-
-                                <span className="no-action">
-                                  —
-                                </span>
-
-                              )}
-
-                            </td>
-
-                          </tr>
-
-                        );
-                      }
-                    )
-
+                                <i className="bi bi-gear"></i> Select Action
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
-
                     <tr>
-
-                      <td
-                        colSpan="10"
-                        className="expiry-empty-state"
-                      >
-
+                      <td colSpan="7" className="expiry-empty-state">
                         <div className="expiry-empty-icon">
                           <i className="bi bi-box-seam"></i>
                         </div>
-
-                        <h5>
-                          No expiry stock found
-                        </h5>
-
-                        <p>
-                          Try changing your
-                          search or filters.
-                        </p>
-
+                        <h5>No expired or near-expiry items found</h5>
+                        <p>Try changing your search or filter options.</p>
                       </td>
-
                     </tr>
-
                   )}
-
                 </tbody>
-
               </table>
-
             </div>
-
           </section>
-
         </main>
 
-        {/* =================================================
-            RETURN MODAL
-        ================================================= */}
-
-        {showReturnModal &&
-          selectedProduct && (
-
+        {/* ACTION MODAL */}
+        {showActionModal && selectedProduct && (
+          <div className="expiry-modal-overlay" onClick={closeActionModal}>
             <div
-              className="expiry-modal-overlay"
-              onClick={
-                closeReturnModal
-              }
+              className="expiry-action-modal"
+              onClick={(e) => e.stopPropagation()}
             >
-
-              <div
-                className="expiry-return-modal"
-                onClick={(event) =>
-                  event.stopPropagation()
-                }
-              >
-
-                <div className="expiry-modal-top">
-
-                  <div className="expiry-modal-icon">
-                    <i className="bi bi-arrow-return-left"></i>
-                  </div>
-
-                  <button
-                    className="expiry-close-btn"
-                    onClick={
-                      closeReturnModal
-                    }
-                    disabled={saving}
-                  >
-                    <i className="bi bi-x-lg"></i>
-                  </button>
-
+              <div className="expiry-modal-top">
+                <div className="expiry-modal-icon">
+                  <i className="bi bi-gear-wide-connected"></i>
                 </div>
-
-                <div className="expiry-modal-heading">
-
-                  <span>
-                    STOCK RETURN
-                  </span>
-
-                  <h3>
-                    {getProductName(
-                      selectedProduct
-                    )}
-                  </h3>
-
-                  <p>
-                    Batch:{" "}
-                    {getBatch(
-                      selectedProduct
-                    )}
-                  </p>
-
-                </div>
-
-                {/* STOCK INFO */}
-
-                <div className="return-stock-info">
-
-                  <div>
-
-                    <small>
-                      Expiry Date
-                    </small>
-
-                    <strong>
-                      {formatDate(
-                        getExpiryDate(
-                          selectedProduct
-                        )
-                      )}
-                    </strong>
-
-                  </div>
-
-                  <div>
-
-                    <small>
-                      Available Stock
-                    </small>
-
-                    <strong>
-                      {getQuantity(
-                        selectedProduct
-                      )}{" "}
-                      units
-                    </strong>
-
-                  </div>
-
-                  <div>
-
-                    <small>
-                      Purchase Rate
-                    </small>
-
-                    <strong>
-                      {formatCurrency(
-                        getPurchaseRate(
-                          selectedProduct
-                        )
-                      )}
-                    </strong>
-
-                  </div>
-
-                </div>
-
-                {/* FORM */}
-
-                <div className="expiry-return-form">
-
-                  <div className="return-form-row">
-
-                    <div>
-
-                      <label>
-                        Return Quantity
-                      </label>
-
-                      <div className="return-quantity-input">
-
-                        <i className="bi bi-box-arrow-up"></i>
-
-                        <input
-                          type="number"
-                          min="1"
-                          max={getQuantity(
-                            selectedProduct
-                          )}
-                          value={
-                            returnForm.quantity
-                          }
-                          onChange={(event) =>
-                            setReturnForm(
-                              (previous) => ({
-                                ...previous,
-                                quantity:
-                                  event.target
-                                    .value,
-                              })
-                            )
-                          }
-                          placeholder="Enter quantity"
-                        />
-
-                        <span>
-                          units
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                    <div>
-
-                      <label>
-                        Return Reason
-                      </label>
-
-                      <select
-                        value={
-                          returnForm.reason
-                        }
-                        onChange={(event) =>
-                          setReturnForm(
-                            (previous) => ({
-                              ...previous,
-                              reason:
-                                event.target
-                                  .value,
-                            })
-                          )
-                        }
-                      >
-
-                        <option>
-                          Expired Stock
-                        </option>
-
-                        <option>
-                          Near Expiry
-                        </option>
-
-                        <option>
-                          Damaged Packaging
-                        </option>
-
-                        <option>
-                          Supplier Recall
-                        </option>
-
-                        <option>
-                          Other
-                        </option>
-
-                      </select>
-
-                    </div>
-
-                  </div>
-
-                  <div className="return-form-row">
-
-                    <div>
-
-                      <label>
-                        Supplier
-                      </label>
-
-                      <input
-                        type="text"
-                        value={
-                          returnForm.supplier
-                        }
-                        onChange={(event) =>
-                          setReturnForm(
-                            (previous) => ({
-                              ...previous,
-                              supplier:
-                                event.target
-                                  .value,
-                            })
-                          )
-                        }
-                        placeholder="Supplier name"
-                      />
-
-                    </div>
-
-                    <div>
-
-                      <label>
-                        Purchase Invoice
-                      </label>
-
-                      <input
-                        type="text"
-                        value={
-                          returnForm.purchaseInvoice
-                        }
-                        onChange={(event) =>
-                          setReturnForm(
-                            (previous) => ({
-                              ...previous,
-                              purchaseInvoice:
-                                event.target
-                                  .value,
-                            })
-                          )
-                        }
-                        placeholder="Invoice number"
-                      />
-
-                    </div>
-
-                  </div>
-
-                  <div className="return-form-row">
-
-                    <div>
-
-                      <label>
-                        Return Date
-                      </label>
-
-                      <input
-                        type="date"
-                        value={
-                          returnForm.returnDate
-                        }
-                        onChange={(event) =>
-                          setReturnForm(
-                            (previous) => ({
-                              ...previous,
-                              returnDate:
-                                event.target
-                                  .value,
-                            })
-                          )
-                        }
-                      />
-
-                    </div>
-
-                    <div>
-
-                      <label>
-                        Estimated Return Value
-                      </label>
-
-                      <div className="return-value-box">
-
-                        {formatCurrency(
-                          Number(
-                            returnForm.quantity ||
-                              0
-                          ) *
-                            getPurchaseRate(
-                              selectedProduct
-                            )
-                        )}
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                  <label>
-                    Notes{" "}
-                    <span>
-                      (Optional)
-                    </span>
-                  </label>
-
-                  <textarea
-                    rows="3"
-                    value={
-                      returnForm.note
-                    }
-                    onChange={(event) =>
-                      setReturnForm(
-                        (previous) => ({
-                          ...previous,
-                          note:
-                            event.target
-                              .value,
-                        })
-                      )
-                    }
-                    placeholder="Add any return notes..."
-                  ></textarea>
-
-                </div>
-
-                {/* FOOTER */}
-
-                <div className="expiry-return-footer">
-
-                  <button
-                    className="expiry-cancel-btn"
-                    onClick={
-                      closeReturnModal
-                    }
-                    disabled={saving}
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    className="expiry-confirm-btn"
-                    onClick={
-                      submitReturn
-                    }
-                    disabled={saving}
-                  >
-
-                    {saving ? (
-
-                      <>
-                        <span className="spinner-border spinner-border-sm"></span>
-
-                        Processing...
-                      </>
-
-                    ) : (
-
-                      <>
-                        <i className="bi bi-check2-circle"></i>
-
-                        Confirm Return
-                      </>
-
-                    )}
-
-                  </button>
-
-                </div>
-
+                <button
+                  className="expiry-close-btn"
+                  onClick={closeActionModal}
+                  disabled={saving}
+                >
+                  <i className="bi bi-x-lg"></i>
+                </button>
               </div>
 
+              <div className="expiry-modal-heading">
+                <span>CHOOSE PRODUCT ACTION</span>
+                <h3>{selectedProduct.productName || selectedProduct.name || "Unknown Product"}</h3>
+                <p>Batch: {selectedProduct.batch || selectedProduct.batchNumber || "—"}</p>
+              </div>
+
+              <div className="expiry-stock-info">
+                <div>
+                  <small>Expiry Date</small>
+                  <strong>{formatDate(selectedProduct.expiryDate || selectedProduct.expiry)}</strong>
+                </div>
+                <div>
+                  <small>MRP</small>
+                  <strong>{formatCurrency(selectedProduct.mrp || 0)}</strong>
+                </div>
+                <div>
+                  <small>Status</small>
+                  <strong>{getExpiryInfo(selectedProduct)?.status || "—"}</strong>
+                </div>
+              </div>
+
+              <div className="action-options-grid">
+                <label
+                  className={`action-option-card ${
+                    selectedAction === "Returned" ? "selected returned" : ""
+                  }`}
+                  onClick={() => setSelectedAction("Returned")}
+                >
+                  <input
+                    type="radio"
+                    name="stockAction"
+                    value="Returned"
+                    checked={selectedAction === "Returned"}
+                    onChange={(e) => setSelectedAction(e.target.value)}
+                  />
+                  <div className="option-content">
+                    <i className="bi bi-box-arrow-left icon-returned"></i>
+                    <div>
+                      <strong>Returned</strong>
+                      <span>Mark product batch as returned to vendor</span>
+                    </div>
+                  </div>
+                </label>
+
+                <label
+                  className={`action-option-card ${
+                    selectedAction === "No Stock" ? "selected nostock" : ""
+                  }`}
+                  onClick={() => setSelectedAction("No Stock")}
+                >
+                  <input
+                    type="radio"
+                    name="stockAction"
+                    value="No Stock"
+                    checked={selectedAction === "No Stock"}
+                    onChange={(e) => setSelectedAction(e.target.value)}
+                  />
+                  <div className="option-content">
+                    <i className="bi bi-slash-circle icon-nostock"></i>
+                    <div>
+                      <strong>No Stock</strong>
+                      <span>Mark product as no stock / written off</span>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div className="expiry-modal-footer">
+                <button
+                  type="button"
+                  className="expiry-cancel-btn"
+                  onClick={closeActionModal}
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="expiry-confirm-btn"
+                  onClick={saveActionStatus}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm"></span>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-check2-circle"></i> Save Action
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-
-          )}
-
+          </div>
+        )}
       </div>
-
     </div>
   );
 };

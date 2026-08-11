@@ -1319,6 +1319,182 @@
 }
 
 /* =========================================================
+   ACTION BUTTON & ACTION BADGE STYLES
+   ========================================================= */
+
+.btn-select-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9px;
+  border: 1px solid #d4dfd7;
+  background: #fff;
+  color: #2e6042;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-select-action:hover {
+  background: #edf7f0;
+  border-color: #2a7349;
+  transform: translateY(-1px);
+}
+
+.btn-action-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-action-badge.returned {
+  background: #eaf7ed;
+  color: #216b3c;
+  border-color: #a8e0b9;
+}
+
+.btn-action-badge.no-stock {
+  background: #f1f3f5;
+  color: #495057;
+  border-color: #ced4da;
+}
+
+.btn-action-badge:hover {
+  filter: brightness(0.96);
+  transform: translateY(-1px);
+}
+
+.btn-action-badge i {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* =========================================================
+   ACTION POPUP MODAL
+   ========================================================= */
+
+.expiry-action-modal {
+  width: min(480px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 25px 70px rgba(18, 48, 30, 0.22);
+  animation: modalUp 0.25s ease;
+}
+
+.expiry-stock-info {
+  margin: 0 22px 18px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid #e2e9e4;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fbfdfc;
+}
+
+.expiry-stock-info > div {
+  padding: 11px;
+  border-right: 1px solid #e2e9e4;
+}
+
+.expiry-stock-info > div:last-child {
+  border-right: none;
+}
+
+.expiry-stock-info small {
+  display: block;
+  color: #7b8880;
+  font-size: 10px;
+}
+
+.expiry-stock-info strong {
+  display: block;
+  color: #213529;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.action-options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 0 22px 20px;
+}
+
+.action-option-card {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  border: 2px solid #e2e9e4;
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-option-card input[type="radio"] {
+  display: none;
+}
+
+.action-option-card:hover {
+  border-color: #a8d5b5;
+  background: #f9fdfa;
+}
+
+.action-option-card.selected.returned {
+  border-color: #287747;
+  background: #f0faf3;
+  box-shadow: 0 4px 14px rgba(40, 119, 71, 0.12);
+}
+
+.action-option-card.selected.nostock {
+  border-color: #495057;
+  background: #f8f9fa;
+  box-shadow: 0 4px 14px rgba(73, 80, 87, 0.12);
+}
+
+.option-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.option-content i {
+  font-size: 24px;
+}
+
+.icon-returned {
+  color: #287747;
+}
+
+.icon-nostock {
+  color: #6c757d;
+}
+
+.option-content strong {
+  display: block;
+  color: #1f3326;
+  font-size: 14px;
+}
+
+.option-content span {
+  display: block;
+  color: #718076;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+/* =========================================================
    ACCESSIBILITY
    ========================================================= */
 
