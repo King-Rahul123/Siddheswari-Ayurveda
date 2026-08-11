@@ -2,28 +2,46 @@ import { API_BASE_URL } from "../api/config";
 import { apiFetch } from "../api/apiClient";
 
 export const login = async (username, password) => {
-  const res = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
-  });
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || "Login failed");
-  }
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (e) {
+      data = {};
+    }
 
-  // Save token and user details
-  if (data.token) {
-    localStorage.setItem("token", data.token);
-  }
-  if (data.user) {
-    localStorage.setItem("loggedInUser", JSON.stringify(data.user));
-  } else {
-    localStorage.setItem("loggedInUser", JSON.stringify(data));
-  }
+    if (!res.ok) {
+      const fallbackMsg = res.status === 404
+        ? "Username is not listed"
+        : res.status === 400
+        ? "Incorrect password"
+        : "Login failed";
+      throw new Error(data.message || fallbackMsg);
+    }
 
-  return data;
+    // Save token and user details
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    }
+    if (data.user) {
+      localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+    } else {
+      localStorage.setItem("loggedInUser", JSON.stringify(data));
+    }
+
+    return data;
+  } catch (error) {
+    if (error.name === "TypeError" && (error.message.includes("fetch") || error.message.includes("Failed"))) {
+      throw new Error("Unable to connect to server. Please check your network connection.");
+    }
+    throw error;
+  }
 };
 
 export const logout = () => {
