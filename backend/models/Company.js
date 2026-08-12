@@ -5,9 +5,11 @@ const companySchema = new mongoose.Schema(
     companiesCode: { type: String, required: true, unique: true },
     companyName: { type: String, required: true },
     phone: { type: String, default: "" },
+    mobile: { type: String, default: "" },
     email: { type: String, default: "" },
     address: { type: String, default: "" },
-    gstin: { type: String, default: "" }
+    gstin: { type: String, default: "" },
+    gst: { type: String, default: "" }
   },
   { timestamps: true }
 );

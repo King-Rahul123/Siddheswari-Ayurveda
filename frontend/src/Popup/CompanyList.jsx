@@ -40,11 +40,12 @@ export default function CompanyList({
 
     const filteredCompanies = (companies || []).filter((company) => {
         const text = search.toLowerCase();
+        const phoneNo = company.phone || company.mobile || "";
 
         return (
             String(company.companyName || "").toLowerCase().includes(text) ||
             String(company.companiesCode || "").toLowerCase().includes(text) ||
-            String(company.mobile || "").toLowerCase().includes(text) ||
+            String(phoneNo).toLowerCase().includes(text) ||
             String(company.email || "").toLowerCase().includes(text)
         );
     });
@@ -165,7 +166,7 @@ export default function CompanyList({
                                         >
                                             <td>{company.companiesCode}</td>
                                             <td>{company.companyName}</td>
-                                            <td>{company.mobile}</td>
+                                            <td>{company.phone || company.mobile || "-"}</td>
                                         </tr>
                                     ))
                                 )}

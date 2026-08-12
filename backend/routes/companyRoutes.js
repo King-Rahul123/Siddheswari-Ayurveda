@@ -22,7 +22,19 @@ router.get("/next-code", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const companies = await Company.find().sort({ createdAt: -1 });
-    res.json(companies);
+    const normalizedCompanies = companies.map((c) => {
+      const doc = c.toObject();
+      const phoneNo = doc.mobile || doc.phone || "";
+      const gstNo = doc.gst || doc.gstin || "";
+      return {
+        ...doc,
+        phone: phoneNo,
+        mobile: phoneNo,
+        gst: gstNo,
+        gstin: gstNo,
+      };
+    });
+    res.json(normalizedCompanies);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -38,9 +50,16 @@ router.post("/", async (req, res) => {
       companiesCode = `DR${nextId.toString().padStart(4, "0")}`;
     }
 
+    const phoneNo = companyData.mobile || companyData.phone || "";
+    const gstNo = companyData.gst || companyData.gstin || "";
+
     const company = new Company({
       ...companyData,
-      companiesCode
+      companiesCode,
+      phone: phoneNo,
+      mobile: phoneNo,
+      gst: gstNo,
+      gstin: gstNo,
     });
 
     await company.save();
