@@ -307,3 +307,42 @@
     color:#fff;
     cursor:pointer;
 }
+
+/* ===========================
+   Invoice Summary
+=========================== */
+
+.invoice-summary {
+    width: 350px;
+    background: linear-gradient(135deg, #ffffff, #f5fff8);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    border: 1px solid #e2e8f0;
+}
+
+.invoice-summary h4 {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    color: #475569;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.invoice-summary h3 {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px dashed #cbd5e1;
+    color: #15803d;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+@media(max-width:768px){
+    .invoice-summary{
+        width: 100%;
+    }
+}

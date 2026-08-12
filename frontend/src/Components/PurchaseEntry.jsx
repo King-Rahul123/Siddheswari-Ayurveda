@@ -321,7 +321,12 @@ export default function PurchaseEntry() {
                 date: invoiceDate,
                 totalItems: items.length,
                 totalQty,
-                totalAmount,
+                totalAmount: subTotal,
+                discountTotal: totalItemDiscount,
+                gstTotal: gstAmount,
+                grandTotal: grandTotal,
+                roundOff: roundOff,
+                netAmount: netAmount,
                 createdBy: loggedInUser?.username || "",
             };
 
@@ -475,8 +480,34 @@ export default function PurchaseEntry() {
         }
     };
 
-    const activeRowsCount = rows.filter((r) => r.productName && r.productName.trim() !== "").length;
-    const activeTotalAmount = rows.filter((r) => r.productName && r.productName.trim() !== "").reduce((sum, item) => sum + Number(item.qty || 0) * Number(item.mrp || 0), 0);
+    const validItems = rows.filter((r) => r.productName && r.productName.trim() !== "");
+    const activeRowsCount = validItems.length;
+    const totalQtyCount = validItems.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+
+    const subTotal = validItems.reduce(
+        (sum, item) => sum + Number(item.qty || 0) * Number(item.mrp || 0),
+        0
+    );
+
+    const totalItemDiscount = validItems.reduce(
+        (sum, item) =>
+            sum +
+            (Number(item.qty || 0) * Number(item.mrp || 0) * Number(item.discount || 0)) / 100,
+        0
+    );
+
+    const gstAmount = validItems.reduce((sum, item) => {
+        const qty = Number(item.qty || 0);
+        const rate = Number(item.mrp || 0);
+        const discount = Number(item.discount || 0);
+        const itemSub = qty * rate;
+        const afterDisc = itemSub - (itemSub * discount) / 100;
+        return sum + (afterDisc * Number(item.gst || 0)) / 100;
+    }, 0);
+
+    const grandTotal = subTotal - totalItemDiscount + gstAmount;
+    const netAmount = Math.round(grandTotal);
+    const roundOff = Number((netAmount - grandTotal).toFixed(2));
 
     return (
         <div className="dashboard">
@@ -666,17 +697,34 @@ export default function PurchaseEntry() {
                                 </table>
                             </div>
 
-                            <div className="flex justify-between items-center mt-4 p-3 bg-white rounded shadow">
-                                <div className="text-sm font-semibold text-gray-700">
-                                    Total Items: {activeRowsCount} | Net Total: ₹{activeTotalAmount.toFixed(2)}
+                            <div className="purchase-bottom-section flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mt-6">
+                                <div className="flex flex-col gap-2">
+                                    <div className="text-sm font-semibold text-gray-700 bg-white p-3 rounded-lg border shadow-sm">
+                                        Total Items: <span className="text-emerald-700 font-bold">{activeRowsCount}</span> | Total Qty: <span className="text-emerald-700 font-bold">{totalQtyCount}</span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 italic">
+                                        Tip: Press <kbd className="bg-gray-200 px-1.5 py-0.5 rounded border text-gray-700 font-sans">End</kbd> to save purchase entry, or <kbd className="bg-gray-200 px-1.5 py-0.5 rounded border text-gray-700 font-sans">Esc</kbd> to exit.
+                                    </p>
                                 </div>
-                                <button
-                                    type="button"
-                                    className="save-btn bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded font-semibold transition"
-                                    onClick={triggerSaveFlow}
-                                >
-                                    Save Purchase (End)
-                                </button>
+
+                                <div className="flex flex-col items-end gap-3 w-full md:w-auto">
+                                    <div className="invoice-summary">
+                                        <h4>Subtotal : <span>₹{subTotal.toFixed(2)}</span></h4>
+                                        <h4>Discount : <span>₹{totalItemDiscount.toFixed(2)}</span></h4>
+                                        <h4>GST : <span>₹{gstAmount.toFixed(2)}</span></h4>
+                                        <h4>Grand Total : <span>₹{grandTotal.toFixed(2)}</span></h4>
+                                        <h4>Round Off : <span>{roundOff > 0 ? `+${roundOff.toFixed(2)}` : roundOff.toFixed(2)}</span></h4>
+                                        <h3>Net Amount : <span>₹{netAmount.toFixed(2)}</span></h3>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="save-btn bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold transition text-base shadow-lg"
+                                        onClick={triggerSaveFlow}
+                                    >
+                                        Save Purchase (End)
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -779,7 +827,7 @@ export default function PurchaseEntry() {
                     {/* Confirmation Modal */}
                     {showConfirmModal && (
                         <div className="popup-overlay flex items-center justify-center bg-black/50 fixed inset-0 z-50">
-                            <div className="popup-box max-w-md w-full bg-white rounded-lg shadow-2xl p-6 border">
+                            <div className="popup-box max-w-md w-full bg-white rounded-2xl shadow-2xl p-6 border">
                                 <div className="popup-header flex justify-between items-center border-b pb-3 mb-4">
                                     <h4 className="text-lg font-bold text-gray-800 m-0">Confirm Purchase Entry</h4>
                                     <button
@@ -792,25 +840,63 @@ export default function PurchaseEntry() {
                                     <p className="text-gray-600 text-sm">
                                         Do you want to save this purchase entry or preview the details first?
                                     </p>
-                                    <div className="bg-gray-50 p-3 rounded text-sm space-y-1 border">
-                                        <div><strong>Supplier:</strong> {companySearchText || "N/A"}</div>
-                                        <div><strong>Invoice No:</strong> {invoiceNo || "N/A"}</div>
-                                        <div><strong>Date:</strong> {invoiceDate}</div>
-                                        <div><strong>Total Items:</strong> {activeRowsCount}</div>
-                                        <div><strong>Total Amount:</strong> ₹{activeTotalAmount.toFixed(2)}</div>
+                                    <div className="bg-emerald-50/50 p-4 rounded-xl text-sm space-y-2 border border-emerald-100">
+                                        <div className="flex justify-between text-gray-700">
+                                            <span><strong>Supplier:</strong></span>
+                                            <span className="font-medium">{companySearchText || "N/A"}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-700">
+                                            <span><strong>Invoice No:</strong></span>
+                                            <span className="font-medium">{invoiceNo || "N/A"}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-700">
+                                            <span><strong>Date:</strong></span>
+                                            <span className="font-medium">{invoiceDate}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-700 border-b border-gray-200 pb-2">
+                                            <span><strong>Total Items:</strong></span>
+                                            <span className="font-medium">{activeRowsCount}</span>
+                                        </div>
+
+                                        <div className="pt-1 space-y-1.5 text-gray-700">
+                                            <div className="flex justify-between">
+                                                <span>Subtotal:</span>
+                                                <span className="font-semibold">₹{subTotal.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span>Discount:</span>
+                                                <span className="font-semibold text-red-600">- ₹{totalItemDiscount.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span>GST:</span>
+                                                <span className="font-semibold">₹{gstAmount.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span>Grand Total:</span>
+                                                <span className="font-semibold">₹{grandTotal.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-xs text-gray-500">
+                                                <span>Round Off:</span>
+                                                <span>{roundOff > 0 ? `+${roundOff.toFixed(2)}` : roundOff.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between border-t border-emerald-200 pt-2 text-base font-bold text-emerald-800">
+                                                <span>Net Amount:</span>
+                                                <span>₹{netAmount.toFixed(2)}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="popup-footer flex justify-end gap-3 pt-3 border-t">
                                     <button
                                         type="button"
-                                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium text-sm"
+                                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium text-sm transition"
                                         onClick={() => setShowConfirmModal(false)}
                                     >
                                         Edit Entry
                                     </button>
                                     <button
                                         type="button"
-                                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium text-sm"
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition"
                                         onClick={() => {
                                             setShowConfirmModal(false);
                                             setShowPreviewModal(true);
@@ -820,7 +906,7 @@ export default function PurchaseEntry() {
                                     </button>
                                     <button
                                         type="button"
-                                        className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 font-medium text-sm"
+                                        className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium text-sm transition"
                                         onClick={executeSavePurchase}
                                     >
                                         Continue & Save
@@ -885,11 +971,30 @@ export default function PurchaseEntry() {
                                         </table>
                                     </div>
 
-                                    <div className="flex justify-between items-center bg-emerald-50 p-4 rounded text-emerald-950 font-semibold border border-emerald-200">
-                                        <div>Total Items: {rows.filter(r => r.productName && r.productName.trim() !== "").length}</div>
-                                        <div>Total Quantity: {rows.filter(r => r.productName && r.productName.trim() !== "").reduce((sum, i) => sum + Number(i.qty || 0), 0)}</div>
-                                        <div className="text-lg text-emerald-700">
-                                            Grand Total: ₹{activeTotalAmount.toFixed(2)}
+                                    <div className="grid grid-cols-2 md:grid-cols-6 gap-3 bg-emerald-50/60 p-4 rounded-xl text-sm border border-emerald-200">
+                                        <div>
+                                            <span className="text-xs text-gray-500 block">Subtotal</span>
+                                            <span className="font-semibold">₹{subTotal.toFixed(2)}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-gray-500 block">Discount</span>
+                                            <span className="font-semibold text-red-600">- ₹{totalItemDiscount.toFixed(2)}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-gray-500 block">GST</span>
+                                            <span className="font-semibold">₹{gstAmount.toFixed(2)}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-gray-500 block">Grand Total</span>
+                                            <span className="font-semibold">₹{grandTotal.toFixed(2)}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-gray-500 block">Round Off</span>
+                                            <span className="font-medium text-gray-600">{roundOff > 0 ? `+${roundOff.toFixed(2)}` : roundOff.toFixed(2)}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-emerald-800 font-bold block">Net Amount</span>
+                                            <span className="text-lg font-bold text-emerald-700">₹{netAmount.toFixed(2)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -916,4 +1021,4 @@ export default function PurchaseEntry() {
             </div>
         </div>
     );
-}
+}
