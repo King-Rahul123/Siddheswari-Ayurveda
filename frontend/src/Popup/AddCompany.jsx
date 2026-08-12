@@ -39,7 +39,7 @@ export default function AddCompany({
 								<input
 									ref={mobileRef}
 									name="mobile"
-									value={newCompany.mobile}
+									value={newCompany.mobile || newCompany.phone || ""}
 									onChange={onChange}
 									onKeyDown={(e) => onFieldKeyDown(e, emailRef)}
 								/>

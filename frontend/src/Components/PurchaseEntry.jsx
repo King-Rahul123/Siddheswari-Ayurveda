@@ -246,6 +246,7 @@ export default function PurchaseEntry() {
 
     const [newCompany, setNewCompany] = useState({
         companyName: "",
+        phone: "",
         mobile: "",
         email: "",
         gst: "",
@@ -427,9 +428,11 @@ export default function PurchaseEntry() {
     }, []);
 
     const handleCompanyChange = (e) => {
+        const { name, value } = e.target;
         setNewCompany((prev) => ({
             ...prev,
-            [e.target.name]: e.target.value,
+            [name]: value,
+            ...(name === "mobile" || name === "phone" ? { phone: value, mobile: value } : {}),
         }));
     };
 
@@ -445,15 +448,17 @@ export default function PurchaseEntry() {
             const companyData = {
                 companiesCode,
                 companyName: newCompany.companyName,
-                mobile: newCompany.mobile,
-                email: newCompany.email,
-                gst: newCompany.gst,
+                phone: newCompany.phone || newCompany.mobile || "",
+                mobile: newCompany.mobile || newCompany.phone || "",
+                email: newCompany.email || "",
+                gst: newCompany.gst || "",
             };
 
             await addcompanies(companyData);
 
             setNewCompany({
                 companyName: "",
+                phone: "",
                 mobile: "",
                 email: "",
                 gst: "",
@@ -1021,4 +1026,4 @@ export default function PurchaseEntry() {
             </div>
         </div>
     );
-}
+}
