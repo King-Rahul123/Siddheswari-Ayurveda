@@ -20,10 +20,8 @@ const createEmptyRow = () => ({
     productName: "",
     batch: "",
     qty: "",
-    free: "",
     expiry: "",
     mrp: "",
-    rate: "",
     discount: "",
     gst: "",
     hsn: "",
@@ -47,7 +45,6 @@ export default function PurchaseEntry() {
     const itemCodeRef = useRef(null);
     const hsnRef = useRef(null);
     const mrpRef = useRef(null);
-    const rateRef = useRef(null);
     const gstRef = useRef(null);
     const unitRef = useRef(null);
     const minStockRef = useRef(null);
@@ -63,7 +60,7 @@ export default function PurchaseEntry() {
     const [selectedRow, setSelectedRow] = useState(0);
 
     const [activeField, setActiveField] = useState("");
-
+    
     const [newProduct, setNewProduct] = useState({
         companyName: "",
         productName: "",
@@ -71,7 +68,6 @@ export default function PurchaseEntry() {
         hsn: "",
         gst: "",
         mrp: "",
-        rate: "",
         unit: "",
         minStock: "",
         discount: "",
@@ -79,14 +75,13 @@ export default function PurchaseEntry() {
 
     const columns = [
         "productName",
+        "hsn",
         "batch",
         "qty",
-        "free",
         "expiry",
         "mrp",
-        "rate",
         "gst",
-        "amount",
+        "discount",
     ];
 
     const updateCell = (row, field, value) => {
@@ -111,66 +106,6 @@ export default function PurchaseEntry() {
         });
     };
 
-<<<<<<< HEAD
-    const getNextEditableRowIndex = useCallback((currentRowIndex) => {
-        for (let r = currentRowIndex + 1; r < rows.length; r++) {
-            if (!rows[r]?.isDeleted) return r;
-        }
-        return -1;
-    }, [rows]);
-
-    const getPrevEditableRowIndex = useCallback((currentRowIndex) => {
-        for (let r = currentRowIndex - 1; r >= 0; r--) {
-            if (!rows[r]?.isDeleted) return r;
-        }
-        return -1;
-    }, [rows]);
-
-    const markRowDeleted = useCallback((rowIndex) => {
-        const row = rows[rowIndex];
-        if (!row) return;
-
-        if (!row.productName && !row.batch && !row.qty && !row.mrp) {
-            return;
-        }
-
-        setRows((prev) => {
-            const temp = [...prev];
-            temp[rowIndex] = {
-                ...temp[rowIndex],
-                isDeleted: true,
-                batch: "",
-                qty: "",
-                free: "",
-                expiry: "",
-                mrp: "",
-                rate: "",
-                discount: "",
-                gst: "",
-                hsn: "",
-                productId: "",
-                itemCode: "",
-            };
-            return temp;
-        });
-
-        const nextRow = getNextEditableRowIndex(rowIndex);
-        if (nextRow !== -1) {
-            setTimeout(() => {
-                tableRefs.current[nextRow]?.[0]?.focus();
-            }, 50);
-        } else {
-            const prevRow = getPrevEditableRowIndex(rowIndex);
-            if (prevRow !== -1) {
-                setTimeout(() => {
-                    tableRefs.current[prevRow]?.[0]?.focus();
-                }, 50);
-            }
-        }
-    }, [rows, getNextEditableRowIndex, getPrevEditableRowIndex]);
-
-=======
->>>>>>> b4e5ec99093ea66b842e16ea0653b2a5638ec75f
     const moveNext = (row, col) => {
         if (col < columns.length - 1) {
             tableRefs.current[row]?.[col + 1]?.focus();
@@ -285,7 +220,6 @@ export default function PurchaseEntry() {
             hsn: "",
             gst: "",
             mrp: "",
-            rate: "",
             unit: "",
             minStock: "",
             discount: "",
@@ -297,10 +231,9 @@ export default function PurchaseEntry() {
             await addProduct({
                 productName: product.productName,
                 itemCode,
-                // hsnCode: product.hsn || "",
+                hsnCode: product.hsn || "",
                 gstRate: Number(product.gst || 0),
                 mrp: Number(product.mrp || 0),
-                rate: Number(product.rate || 0),
                 minStock: Number(product.minStock || 0),
                 discount: Number(product.discount || 0)
             });
@@ -363,24 +296,24 @@ export default function PurchaseEntry() {
                 .filter((r) => r.productName && r.productName.trim() !== "")
                 .map((r) => {
                     const code = r.itemCode || r.productId || "";
-                    const itemRate = Number(r.rate || r.mrp || 0);
-                    const itemQty = Number(r.qty || 0);
                     return {
                         ...r,
                         itemCode: code,
                         productId: code,
                         productName: r.productName.trim(),
-                        qty: itemQty,
-                        free: Number(r.free || 0),
-                        rate: itemRate,
-                        mrp: Number(r.mrp || 0),
+                        qty: Number(r.qty || 0),
                         expiryDate: r.expiry,
-                        amount: itemQty * itemRate
+                        amount: Number(r.qty || 0) * Number(r.mrp || 0)
                     };
                 });
 
             const totalQty = items.reduce(
-                (sum, item) => sum + Number(item.qty || 0) + Number(item.free || 0),
+                (sum, item) => sum + Number(item.qty || 0),
+                0
+            );
+            const totalAmount = items.reduce(
+                (sum, item) =>
+                    sum + Number(item.qty || 0) * Number(item.mrp || 0),
                 0
             );
 
@@ -413,21 +346,12 @@ export default function PurchaseEntry() {
                 date: invoiceDate,
                 totalItems: items.length,
                 totalQty,
-<<<<<<< HEAD
-                totalAmount: subTotal,
-                discountTotal: 0,
-                gstTotal: gstAmount,
-                grandTotal: grandTotal,
-                roundOff: roundOff,
-                netAmount: netAmount,
-=======
                 totalAmount,
                 discountTotal,
                 gstTotal,
                 grandTotal,
                 roundOff,
                 netAmount,
->>>>>>> b4e5ec99093ea66b842e16ea0653b2a5638ec75f
                 createdBy: loggedInUser?.username || "",
             };
 
@@ -510,13 +434,13 @@ export default function PurchaseEntry() {
         };
     }, [
         triggerSaveFlow,
-        navigate,
+        navigate, 
         showConfirmModal,
         showPreviewModal,
-        showAddProductPopup,
-        showAddCompanyPopup,
-        activeField,
-        closeAddProduct,
+        showAddProductPopup, 
+        showAddCompanyPopup, 
+        activeField, 
+        closeAddProduct, 
         closeAddCompany,
         showCompanySearch,
         showProductPopup
@@ -587,21 +511,30 @@ export default function PurchaseEntry() {
 
     const validItems = rows.filter((r) => r.productName && r.productName.trim() !== "");
     const activeRowsCount = validItems.length;
-    const totalQtyCount = validItems.reduce((sum, item) => sum + Number(item.qty || 0) + Number(item.free || 0), 0);
+    const totalQtyCount = validItems.reduce((sum, item) => sum + Number(item.qty || 0), 0);
 
     const subTotal = validItems.reduce(
-        (sum, item) => sum + Number(item.qty || 0) * Number(item.rate || item.mrp || 0),
+        (sum, item) => sum + Number(item.qty || 0) * Number(item.mrp || 0),
+        0
+    );
+
+    const totalItemDiscount = validItems.reduce(
+        (sum, item) =>
+            sum +
+            (Number(item.qty || 0) * Number(item.mrp || 0) * Number(item.discount || 0)) / 100,
         0
     );
 
     const gstAmount = validItems.reduce((sum, item) => {
         const qty = Number(item.qty || 0);
-        const rate = Number(item.rate || item.mrp || 0);
+        const rate = Number(item.mrp || 0);
+        const discount = Number(item.discount || 0);
         const itemSub = qty * rate;
-        return sum + (itemSub * Number(item.gst || 0)) / 100;
+        const afterDisc = itemSub - (itemSub * discount) / 100;
+        return sum + (afterDisc * Number(item.gst || 0)) / 100;
     }, 0);
 
-    const grandTotal = subTotal + gstAmount;
+    const grandTotal = subTotal - totalItemDiscount + gstAmount;
     const netAmount = Math.round(grandTotal);
     const roundOff = Number((netAmount - grandTotal).toFixed(2));
 
@@ -712,14 +645,13 @@ export default function PurchaseEntry() {
                                         <tr>
                                             <th>#</th>
                                             <th>Product</th>
+                                            <th>HSN</th>
                                             <th>Batch</th>
                                             <th>Qty</th>
-                                            <th>Free</th>
                                             <th>Expiry (MM/YY)</th>
                                             <th>MRP</th>
-                                            <th>Rate</th>
                                             <th>GST %</th>
-                                            <th>Amount</th>
+                                            <th>Dis %</th>
                                         </tr>
                                     </thead>
 
@@ -789,81 +721,7 @@ export default function PurchaseEntry() {
                                                             }}
                                                         />
                                                     </td>
-<<<<<<< HEAD
-                                                ) : (
-                                                    columns.map((column, colIndex) => (
-                                                        <td key={column}>
-                                                            <input
-                                                                ref={(el) => {
-                                                                    if (!tableRefs.current[rowIndex])
-                                                                        tableRefs.current[rowIndex] = [];
-
-                                                                    tableRefs.current[rowIndex][colIndex] = el;
-                                                                }}
-
-                                                                value={column === "amount" ? (Number(row.rate || row.mrp || 0) * Number(row.qty || 0)).toFixed(2) : (row[column] || "")}
-
-                                                                readOnly={column === "hsn" || column === "gst" || column === "amount"}
-
-                                                                maxLength={column === "expiry" ? 5 : undefined}
-
-                                                                onFocus={() => {
-                                                                    lastFocusedCell.current = tableRefs.current[rowIndex][colIndex];
-
-                                                                    if (column === "productName") {
-                                                                        setActiveField("product");
-                                                                        setSelectedRow(rowIndex);
-                                                                    }
-                                                                }}
-
-                                                                onChange={(e) => {
-                                                                    let value = e.target.value;
-
-                                                                    if (column === "expiry") {
-                                                                        value = value.replace(/\D/g, "");
-                                                                        value = value.slice(0, 4);
-                                                                        if (value.length >= 2) {
-                                                                            let month = parseInt(value.substring(0, 2), 10);
-                                                                            if (month > 12) month = 12;
-                                                                            if (month < 1 && value.length === 2) month = 1;
-                                                                            value = month.toString().padStart(2, "0") + value.substring(2);
-                                                                        }
-                                                                        if (value.length > 2) {
-                                                                            value = value.substring(0, 2) + "/" + value.substring(2);
-                                                                        }
-                                                                    }
-                                                                    updateCell(rowIndex, column, value);
-                                                                    if (column === "productName") {
-                                                                        setSelectedRow(rowIndex);
-                                                                    }
-                                                                }}
-
-                                                                onKeyDown={(e) => {
-                                                                    if (e.key === "Delete") {
-                                                                        e.preventDefault();
-                                                                        markRowDeleted(rowIndex);
-                                                                        return;
-                                                                    }
-
-                                                                    if (column === "productName" && e.key === "Enter") {
-                                                                        e.preventDefault();
-                                                                        e.stopPropagation();
-
-                                                                        lastFocusedCell.current = e.target;
-                                                                        setSelectedRow(rowIndex);
-                                                                        setShowProductPopup(true);
-                                                                        return;
-                                                                    }
-
-                                                                    handleTableKey(e, rowIndex, colIndex);
-                                                                }}
-                                                            />
-                                                        </td>
-                                                    ))
-                                                )}
-=======
                                                 ))}
->>>>>>> b4e5ec99093ea66b842e16ea0653b2a5638ec75f
                                             </tr>
                                         ))}
                                     </tbody>
@@ -883,6 +741,7 @@ export default function PurchaseEntry() {
                                 <div className="flex flex-col items-end gap-3 w-full md:w-auto">
                                     <div className="invoice-summary">
                                         <h4>Subtotal : <span>₹{subTotal.toFixed(2)}</span></h4>
+                                        <h4>Discount : <span>₹{totalItemDiscount.toFixed(2)}</span></h4>
                                         <h4>GST : <span>₹{gstAmount.toFixed(2)}</span></h4>
                                         <h4>Grand Total : <span>₹{grandTotal.toFixed(2)}</span></h4>
                                         <h4>Round Off : <span>{roundOff > 0 ? `+${roundOff.toFixed(2)}` : roundOff.toFixed(2)}</span></h4>
@@ -912,7 +771,6 @@ export default function PurchaseEntry() {
                         itemCodeRef={itemCodeRef}
                         hsnRef={hsnRef}
                         mrpRef={mrpRef}
-                        rateRef={rateRef}
                         gstRef={gstRef}
                         unitRef={unitRef}
                         minStockRef={minStockRef}
@@ -970,9 +828,6 @@ export default function PurchaseEntry() {
                             const mrpVal = Array.isArray(product.mrp)
                                 ? (product.mrp.length > 0 ? product.mrp[product.mrp.length - 1] : "")
                                 : (product.mrp || product.price || "");
-                            const rateVal = product.rate !== undefined && product.rate !== null && product.rate !== ""
-                                ? product.rate
-                                : mrpVal;
                             const batchVal = Array.isArray(product.batch)
                                 ? (product.batch.length > 0 ? product.batch[product.batch.length - 1] : "")
                                 : (product.batch || "");
@@ -991,13 +846,11 @@ export default function PurchaseEntry() {
                                 batch: batchVal,
                                 expiry: product.expiry || product.expiryDate || "",
                                 mrp: mrpVal,
-                                rate: rateVal,
-                                free: "",
                                 discount: product.discount || "",
                             });
                             setShowProductPopup(false);
                             setTimeout(() => {
-                                tableRefs.current[selectedRow]?.[1]?.focus();
+                                tableRefs.current[selectedRow]?.[2]?.focus();
                             }, 100);
                         }}
                     />
@@ -1040,6 +893,10 @@ export default function PurchaseEntry() {
                                             <div className="flex justify-between">
                                                 <span>Subtotal:</span>
                                                 <span className="font-semibold">₹{subTotal.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span>Discount:</span>
+                                                <span className="font-semibold text-red-600">- ₹{totalItemDiscount.toFixed(2)}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span>GST:</span>
@@ -1116,14 +973,13 @@ export default function PurchaseEntry() {
                                                 <tr className="bg-emerald-100 text-emerald-900 border-b">
                                                     <th className="p-2 border">#</th>
                                                     <th className="p-2 border">Product Name</th>
+                                                    <th className="p-2 border">HSN</th>
                                                     <th className="p-2 border">Batch</th>
-                                                    <th className="p-2 border text-center">Expiry (MM/YY)</th>
+                                                    <th className="p-2 border">Expiry (MM/YY)</th>
                                                     <th className="p-2 border text-right">Qty</th>
-                                                    <th className="p-2 border text-right">Free</th>
                                                     <th className="p-2 border text-right">MRP (₹)</th>
-                                                    <th className="p-2 border text-right">Rate (₹)</th>
                                                     <th className="p-2 border text-right">GST %</th>
-                                                    <th className="p-2 border text-right">Amount (₹)</th>
+                                                    <th className="p-2 border text-right">Total (₹)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1131,15 +987,14 @@ export default function PurchaseEntry() {
                                                     <tr key={idx} className="border-b hover:bg-gray-50">
                                                         <td className="p-2 border">{idx + 1}</td>
                                                         <td className="p-2 border font-semibold">{item.productName}</td>
+                                                        <td className="p-2 border">{item.hsn || "-"}</td>
                                                         <td className="p-2 border">{item.batch || "-"}</td>
-                                                        <td className="p-2 border text-center">{item.expiry || "-"}</td>
+                                                        <td className="p-2 border">{item.expiry || "-"}</td>
                                                         <td className="p-2 border text-right">{item.qty || 0}</td>
-                                                        <td className="p-2 border text-right">{item.free || 0}</td>
                                                         <td className="p-2 border text-right">₹{Number(item.mrp || 0).toFixed(2)}</td>
-                                                        <td className="p-2 border text-right">₹{Number(item.rate || item.mrp || 0).toFixed(2)}</td>
                                                         <td className="p-2 border text-right">{item.gst || 0}%</td>
                                                         <td className="p-2 border text-right font-bold">
-                                                            ₹{(Number(item.qty || 0) * Number(item.rate || item.mrp || 0)).toFixed(2)}
+                                                            ₹{(Number(item.qty || 0) * Number(item.mrp || 0)).toFixed(2)}
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -1147,10 +1002,14 @@ export default function PurchaseEntry() {
                                         </table>
                                     </div>
 
-                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 bg-emerald-50/60 p-4 rounded-xl text-sm border border-emerald-200">
+                                    <div className="grid grid-cols-2 md:grid-cols-6 gap-3 bg-emerald-50/60 p-4 rounded-xl text-sm border border-emerald-200">
                                         <div>
                                             <span className="text-xs text-gray-500 block">Subtotal</span>
                                             <span className="font-semibold">₹{subTotal.toFixed(2)}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-gray-500 block">Discount</span>
+                                            <span className="font-semibold text-red-600">- ₹{totalItemDiscount.toFixed(2)}</span>
                                         </div>
                                         <div>
                                             <span className="text-xs text-gray-500 block">GST</span>
