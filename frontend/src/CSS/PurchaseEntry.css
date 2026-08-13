@@ -345,4 +345,21 @@
     .invoice-summary{
         width: 100%;
     }
-}
+}
+
+/* ===========================
+   Deleted Row Styling
+=========================== */
+
+.bulk-table tbody tr.deleted-row {
+    background: #fff5f5 !important;
+}
+
+.bulk-table td.deleted-cell {
+    background: #fff5f5 !important;
+    color: #991b1b;
+    border: 1px solid #fecaca !important;
+    vertical-align: middle;
+    height: 34px;
+}
+
