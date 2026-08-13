@@ -26,6 +26,7 @@ const createEmptyRow = () => ({
     discount: "",
     gst: "",
     hsn: "",
+    isDeleted: false,
 });
 
 const createRows = () =>
@@ -106,23 +107,90 @@ export default function PurchaseEntry() {
         });
     };
 
+    const getNextEditableRowIndex = useCallback((currentRowIndex) => {
+        for (let r = currentRowIndex + 1; r < rows.length; r++) {
+            if (!rows[r]?.isDeleted) return r;
+        }
+        return -1;
+    }, [rows]);
+
+    const getPrevEditableRowIndex = useCallback((currentRowIndex) => {
+        for (let r = currentRowIndex - 1; r >= 0; r--) {
+            if (!rows[r]?.isDeleted) return r;
+        }
+        return -1;
+    }, [rows]);
+
+    const markRowDeleted = useCallback((rowIndex) => {
+        const row = rows[rowIndex];
+        if (!row) return;
+
+        if (!row.productName && !row.batch && !row.qty && !row.mrp) {
+            return;
+        }
+
+        setRows((prev) => {
+            const temp = [...prev];
+            temp[rowIndex] = {
+                ...temp[rowIndex],
+                isDeleted: true,
+                batch: "",
+                qty: "",
+                expiry: "",
+                mrp: "",
+                discount: "",
+                gst: "",
+                hsn: "",
+                productId: "",
+                itemCode: "",
+            };
+            return temp;
+        });
+
+        const nextRow = getNextEditableRowIndex(rowIndex);
+        if (nextRow !== -1) {
+            setTimeout(() => {
+                tableRefs.current[nextRow]?.[0]?.focus();
+            }, 50);
+        } else {
+            const prevRow = getPrevEditableRowIndex(rowIndex);
+            if (prevRow !== -1) {
+                setTimeout(() => {
+                    tableRefs.current[prevRow]?.[0]?.focus();
+                }, 50);
+            }
+        }
+    }, [rows, getNextEditableRowIndex, getPrevEditableRowIndex]);
+
     const moveNext = (row, col) => {
         if (col < columns.length - 1) {
             tableRefs.current[row]?.[col + 1]?.focus();
-        } else if (row < rows.length - 1) {
-            tableRefs.current[row + 1]?.[0]?.focus();
+        } else {
+            const nextRow = getNextEditableRowIndex(row);
+            if (nextRow !== -1) {
+                tableRefs.current[nextRow]?.[0]?.focus();
+            }
         }
     };
 
     const movePrevious = (row, col) => {
         if (col > 0) {
             tableRefs.current[row]?.[col - 1]?.focus();
-        } else if (row > 0) {
-            tableRefs.current[row - 1]?.[columns.length - 1]?.focus();
+        } else {
+            const prevRow = getPrevEditableRowIndex(row);
+            if (prevRow !== -1) {
+                tableRefs.current[prevRow]?.[columns.length - 1]?.focus();
+            }
         }
     };
 
     const handleTableKey = (e, row, col) => {
+        if (e.key === "Delete") {
+            e.preventDefault();
+            markRowDeleted(row);
+            return;
+        }
+
         switch (e.key) {
             case "Enter":
                 e.preventDefault();
@@ -139,19 +207,23 @@ export default function PurchaseEntry() {
                 movePrevious(row, col);
                 break;
 
-            case "ArrowDown":
+            case "ArrowDown": {
                 e.preventDefault();
-                if (row < rows.length - 1) {
-                    tableRefs.current[row + 1]?.[col]?.focus();
+                const nextR = getNextEditableRowIndex(row);
+                if (nextR !== -1) {
+                    tableRefs.current[nextR]?.[col]?.focus();
                 }
                 break;
+            }
 
-            case "ArrowUp":
+            case "ArrowUp": {
                 e.preventDefault();
-                if (row > 0) {
-                    tableRefs.current[row - 1]?.[col]?.focus();
+                const prevR = getPrevEditableRowIndex(row);
+                if (prevR !== -1) {
+                    tableRefs.current[prevR]?.[col]?.focus();
                 }
                 break;
+            }
 
             default:
                 break;
@@ -277,7 +349,7 @@ export default function PurchaseEntry() {
     }, []);
 
     const triggerSaveFlow = useCallback(() => {
-        const validItems = rows.filter((r) => r.productName && r.productName.trim() !== "");
+        const validItems = rows.filter((r) => !r.isDeleted && r.productName && r.productName.trim() !== "");
         if (validItems.length === 0) {
             toast.error("Please add at least one product before saving.");
             return;
@@ -289,7 +361,7 @@ export default function PurchaseEntry() {
         try {
             const purchaseId = await getNextPurchaseId();
             const items = rows
-                .filter((r) => r.productName && r.productName.trim() !== "")
+                .filter((r) => !r.isDeleted && r.productName && r.productName.trim() !== "")
                 .map((r) => {
                     const code = r.itemCode || r.productId || "";
                     return {
@@ -485,7 +557,7 @@ export default function PurchaseEntry() {
         }
     };
 
-    const validItems = rows.filter((r) => r.productName && r.productName.trim() !== "");
+    const validItems = rows.filter((r) => !r.isDeleted && r.productName && r.productName.trim() !== "");
     const activeRowsCount = validItems.length;
     const totalQtyCount = validItems.reduce((sum, item) => sum + Number(item.qty || 0), 0);
 
@@ -529,6 +601,7 @@ export default function PurchaseEntry() {
                             </div>
                             <div className="text-xs md:flex gap-4 hidden">
                                 <span><strong>Enter:</strong> Next Field</span>
+                                <span><strong>Delete:</strong> Remove Row</span>
                                 <span><strong>F2:</strong> New Entry</span>
                                 <span><strong>End:</strong> Save</span>
                                 <span><strong>Esc:</strong> Exit</span>
@@ -631,71 +704,86 @@ export default function PurchaseEntry() {
 
                                     <tbody>
                                         {rows.map((row, rowIndex) => (
-                                            <tr key={row.id}>
+                                            <tr key={row.id} className={row.isDeleted ? "deleted-row" : ""}>
                                                 <td>{row.id}</td>
-                                                {columns.map((column, colIndex) => (
-                                                    <td key={column}>
-                                                        <input
-                                                            ref={(el) => {
-                                                                if (!tableRefs.current[rowIndex])
-                                                                    tableRefs.current[rowIndex] = [];
-
-                                                                tableRefs.current[rowIndex][colIndex] = el;
-                                                            }}
-
-                                                            value={row[column] || ""}
-                                                            
-                                                            readOnly={column === "hsn" || column === "gst"}
-
-                                                            maxLength={column === "expiry" ? 5 : undefined}
-
-                                                            onFocus={() => {
-                                                                lastFocusedCell.current = tableRefs.current[rowIndex][colIndex];
-
-                                                                if (column === "productName") {
-                                                                    setActiveField("product");
-                                                                    setSelectedRow(rowIndex);
-                                                                }
-                                                            }}
-
-                                                            onChange={(e) => {
-                                                                let value = e.target.value;
-
-                                                                if (column === "expiry") {
-                                                                    value = value.replace(/\D/g, "");
-                                                                    value = value.slice(0, 4);
-                                                                    if (value.length >= 2) {
-                                                                        let month = parseInt(value.substring(0, 2), 10);
-                                                                        if (month > 12) month = 12;
-                                                                        if (month < 1 && value.length === 2) month = 1;
-                                                                        value = month.toString().padStart(2, "0") + value.substring(2);
-                                                                    }
-                                                                    if (value.length > 2) {
-                                                                        value = value.substring(0, 2) + "/" + value.substring(2);
-                                                                    }
-                                                                }
-                                                                updateCell(rowIndex, column, value);
-                                                                if (column === "productName") {
-                                                                    setSelectedRow(rowIndex);
-                                                                }
-                                                            }}
-
-                                                            onKeyDown={(e) => {
-                                                                if (column === "productName" && e.key === "Enter") {
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-
-                                                                    lastFocusedCell.current = e.target;
-                                                                    setSelectedRow(rowIndex);
-                                                                    setShowProductPopup(true);
-                                                                    return;
-                                                                }
-
-                                                                handleTableKey(e, rowIndex, colIndex);
-                                                            }}
-                                                        />
+                                                {row.isDeleted ? (
+                                                    <td colSpan={columns.length} className="deleted-cell">
+                                                        <div className="flex items-center justify-between px-3 py-1 text-sm font-semibold">
+                                                            <span className="text-gray-800 font-bold">{row.productName}</span>
+                                                            <span className="text-red-600 font-bold tracking-wider">------DELETED------</span>
+                                                        </div>
                                                     </td>
-                                                ))}
+                                                ) : (
+                                                    columns.map((column, colIndex) => (
+                                                        <td key={column}>
+                                                            <input
+                                                                ref={(el) => {
+                                                                    if (!tableRefs.current[rowIndex])
+                                                                        tableRefs.current[rowIndex] = [];
+
+                                                                    tableRefs.current[rowIndex][colIndex] = el;
+                                                                }}
+
+                                                                value={row[column] || ""}
+                                                                
+                                                                readOnly={column === "hsn" || column === "gst"}
+
+                                                                maxLength={column === "expiry" ? 5 : undefined}
+
+                                                                onFocus={() => {
+                                                                    lastFocusedCell.current = tableRefs.current[rowIndex][colIndex];
+
+                                                                    if (column === "productName") {
+                                                                        setActiveField("product");
+                                                                        setSelectedRow(rowIndex);
+                                                                    }
+                                                                }}
+
+                                                                onChange={(e) => {
+                                                                    let value = e.target.value;
+
+                                                                    if (column === "expiry") {
+                                                                        value = value.replace(/\D/g, "");
+                                                                        value = value.slice(0, 4);
+                                                                        if (value.length >= 2) {
+                                                                            let month = parseInt(value.substring(0, 2), 10);
+                                                                            if (month > 12) month = 12;
+                                                                            if (month < 1 && value.length === 2) month = 1;
+                                                                            value = month.toString().padStart(2, "0") + value.substring(2);
+                                                                        }
+                                                                        if (value.length > 2) {
+                                                                            value = value.substring(0, 2) + "/" + value.substring(2);
+                                                                        }
+                                                                    }
+                                                                    updateCell(rowIndex, column, value);
+                                                                    if (column === "productName") {
+                                                                        setSelectedRow(rowIndex);
+                                                                    }
+                                                                }}
+
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === "Delete") {
+                                                                        e.preventDefault();
+                                                                        markRowDeleted(rowIndex);
+                                                                        return;
+                                                                    }
+
+                                                                    if (column === "productName" && e.key === "Enter") {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+
+                                                                        lastFocusedCell.current = e.target;
+                                                                        setSelectedRow(rowIndex);
+                                                                        setShowProductPopup(true);
+                                                                        return;
+                                                                    }
+
+                                                                    handleTableKey(e, rowIndex, colIndex);
+                                                                }}
+                                                            />
+                                                        </td>
+                                                    ))
+                                                )}
                                             </tr>
                                         ))}
                                     </tbody>
@@ -957,7 +1045,7 @@ export default function PurchaseEntry() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {rows.filter(r => r.productName && r.productName.trim() !== "").map((item, idx) => (
+                                                {rows.filter(r => !r.isDeleted && r.productName && r.productName.trim() !== "").map((item, idx) => (
                                                     <tr key={idx} className="border-b hover:bg-gray-50">
                                                         <td className="p-2 border">{idx + 1}</td>
                                                         <td className="p-2 border font-semibold">{item.productName}</td>
