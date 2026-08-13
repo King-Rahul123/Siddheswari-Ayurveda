@@ -178,11 +178,12 @@ const generateSalePDF = (saleData, items = []) => {
 
       itemList.forEach((item, index) => {
         const qty = Number(item.qty || 0);
-        const rate = Number(item.rate || 0);
+        const mrp = Number(item.mrp || item.rate || 0);
+        const rate = mrp;
         const discPercent = Number(item.discount || 0);
         const gstPercent = Number(item.gst || 0);
 
-        const itemSubtotal = qty * rate;
+        const itemSubtotal = qty * mrp;
         const discAmt = (itemSubtotal * discPercent) / 100;
         const afterDisc = itemSubtotal - discAmt;
 
@@ -202,7 +203,7 @@ const generateSalePDF = (saleData, items = []) => {
 
         doc.text(String(index + 1), cols[0].x, currentY, { width: cols[0].w, align: cols[0].align });
         doc.text(item.productName || "Product", cols[1].x, currentY, { width: cols[1].w, align: cols[1].align });
-        doc.text(item.hsn || "-", cols[2].x, currentY, { width: cols[2].w, align: cols[2].align });
+        doc.text(item.hsn || item.hsnCode || "-", cols[2].x, currentY, { width: cols[2].w, align: cols[2].align });
         doc.text(item.batch || "-", cols[3].x, currentY, { width: cols[3].w, align: cols[3].align });
         doc.text(item.expiry || "-", cols[4].x, currentY, { width: cols[4].w, align: cols[4].align });
         doc.text(String(qty), cols[5].x, currentY, { width: cols[5].w, align: cols[5].align });

@@ -10,7 +10,9 @@ const productSchema = new mongoose.Schema(
     rate: { type: Number, default: 0 },
     stock: { type: Number, default: 0 },
     hsnCode: { type: String, default: "" },
+    hsn: { type: String, default: "" },
     gstRate: { type: Number, default: 0 },
+    gst: { type: Number, default: 0 },
     minStock: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
     actionStatus: { type: String, default: "" }
@@ -20,7 +22,9 @@ const productSchema = new mongoose.Schema(
 
 productSchema.pre("save", function (next) {
   if (!this.hsnCode && this.hsn) this.hsnCode = this.hsn;
+  if (!this.hsn && this.hsnCode) this.hsn = this.hsnCode;
   if (!this.gstRate && this.gst) this.gstRate = Number(this.gst);
+  if (!this.gst && this.gstRate) this.gst = Number(this.gstRate);
   next();
 });
 
