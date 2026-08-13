@@ -312,6 +312,19 @@ router.post("/", async (req, res) => {
     const initialStatus = initialDue <= 0 ? "Paid" : (initialPaid > 0 ? "Partial" : "Due");
     const initialMethod = saleData?.paymentMethod && saleData?.paymentMethod !== "-" ? saleData.paymentMethod : (initialStatus === "Paid" ? "Cash" : "-");
 
+    const processedItems = (items || []).map((item) => {
+      const mrpVal = Number(item.mrp || item.rate || 0);
+      const rateVal = Number(item.rate || mrpVal || 0);
+      const qtyVal = Number(item.qty || 0);
+      return {
+        ...item,
+        mrp: mrpVal,
+        rate: rateVal,
+        amount: qtyVal * mrpVal,
+        hsn: item.hsn || item.hsnCode || ""
+      };
+    });
+
     const sale = new Sale({
       ...saleData,
       saleId,
@@ -319,7 +332,7 @@ router.post("/", async (req, res) => {
       dueAmount: initialDue,
       status: initialStatus,
       paymentMethod: initialMethod,
-      items: items || []
+      items: processedItems
     });
 
     await sale.save();

@@ -6,6 +6,7 @@ const purchaseItemSchema = new mongoose.Schema({
   productName: { type: String },
   batch: { type: String, default: "" },
   qty: { type: Number, default: 0 },
+  free: { type: Number, default: 0 },
   rate: { type: Number, default: 0 },
   mrp: { type: Number, default: 0 },
   amount: { type: Number, default: 0 },

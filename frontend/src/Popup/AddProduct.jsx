@@ -11,6 +11,7 @@ export default function AddProduct({
     itemCodeRef,
     hsnRef,
     mrpRef,
+    rateRef,
     gstRef,
     unitRef,
     minStockRef,
@@ -107,8 +108,23 @@ export default function AddProduct({
 									ref={mrpRef}
 									name="mrp"
 									type="number"
+									step="any"
 									placeholder="Enter MRP"
 									value={newProduct.mrp || ""}
+									onChange={onChange}
+									onKeyDown={(event) => onFieldKeyDown(event, rateRef)}
+								/>
+							</div>
+
+							<div className="form-group">
+								<label>Rate (₹)</label>
+								<input
+									ref={rateRef}
+									name="rate"
+									type="number"
+									step="any"
+									placeholder="Enter Rate"
+									value={newProduct.rate || ""}
 									onChange={onChange}
 									onKeyDown={(event) => onFieldKeyDown(event, gstRef)}
 								/>

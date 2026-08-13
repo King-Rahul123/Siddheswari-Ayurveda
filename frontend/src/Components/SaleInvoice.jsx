@@ -160,7 +160,7 @@ export default function SaleInvoice() {
       const current = { ...updated[index], [field]: value };
 
       const qty = Number(current.qty || 0);
-      const rate = Number(current.rate || 0);
+      const mrp = Number(current.mrp || 0);
       const discount = Number(current.discount || 0);
 
       // Warn if user enters qty greater than available stock
@@ -172,9 +172,7 @@ export default function SaleInvoice() {
         });
       }
 
-      const itemSubtotal = qty * rate;
-      const itemDiscountAmt = (itemSubtotal * discount) / 100;
-      current.amount = itemSubtotal;
+      current.amount = qty * mrp;
 
       updated[index] = current;
       return updated;
@@ -187,8 +185,8 @@ export default function SaleInvoice() {
       const currentQty = Number(updated[rowIndex]?.qty || 0);
       const newQty = currentQty > 0 ? currentQty : 1;
 
-      const rate = Number(product.rate || product.mrp || 0);
-      const mrp = Number(product.mrp || rate || 0);
+      const mrp = Number(product.mrp || 0);
+      const rate = Number(product.rate || 0);
       const gst = Number(product.gst ?? product.gstRate ?? 0);
       const discount = Number(product.discount || 0);
 
@@ -204,9 +202,7 @@ export default function SaleInvoice() {
         });
       }
 
-      const itemSubtotal = newQty * rate;
-      const itemDiscountAmt = (itemSubtotal * discount) / 100;
-      const amount = itemSubtotal;
+      const amount = newQty * mrp;
 
       updated[rowIndex] = {
         ...updated[rowIndex],
@@ -250,14 +246,14 @@ export default function SaleInvoice() {
   };
 
   const subTotal = items.reduce(
-    (sum, item) => sum + Number(item.qty || 0) * Number(item.rate || 0),
+    (sum, item) => sum + Number(item.qty || 0) * Number(item.mrp || 0),
     0
   );
 
   const totalItemDiscount = items.reduce(
     (sum, item) =>
       sum +
-      (Number(item.qty || 0) * Number(item.rate || 0) * Number(item.discount || 0)) / 100,
+      (Number(item.qty || 0) * Number(item.mrp || 0) * Number(item.discount || 0)) / 100,
     0
   );
 
@@ -292,9 +288,19 @@ export default function SaleInvoice() {
 
   const saveInvoice = async () => {
     try {
-      const validItems = items.filter(
-        (item) => item.productName && item.productName.trim() !== ""
-      );
+      const validItems = items
+        .filter((item) => item.productName && item.productName.trim() !== "")
+        .map((item) => {
+          const mrpVal = Number(item.mrp || 0);
+          const rateVal = Number(item.rate || 0);
+          const qtyVal = Number(item.qty || 0);
+          return {
+            ...item,
+            mrp: mrpVal,
+            rate: rateVal,
+            amount: qtyVal * mrpVal,
+          };
+        });
 
       if (validItems.length === 0) {
         setToast({
@@ -440,17 +446,15 @@ export default function SaleInvoice() {
         <main className="dashboard-content">
           {toast.show && (
             <div
-              className={`invoice-toast ${
-                toast.type === "error" ? "error" : ""
-              }`}
+              className={`invoice-toast ${toast.type === "error" ? "error" : ""
+                }`}
             >
               <div className="flex items-center gap-2">
                 <i
-                  className={`bi ${
-                    toast.type === "error"
+                  className={`bi ${toast.type === "error"
                       ? "bi-exclamation-circle-fill"
                       : "bi-check-circle-fill"
-                  }`}
+                    }`}
                 ></i>
                 <span>{toast.message}</span>
               </div>
