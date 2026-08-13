@@ -178,11 +178,12 @@ const generateSalePDF = (saleData, items = []) => {
 
       itemList.forEach((item, index) => {
         const qty = Number(item.qty || 0);
-        const rate = Number(item.rate || 0);
+        const mrp = Number(item.mrp || item.rate || 0);
+        const rate = mrp;
         const discPercent = Number(item.discount || 0);
         const gstPercent = Number(item.gst || 0);
 
-        const itemSubtotal = qty * rate;
+        const itemSubtotal = qty * mrp;
         const discAmt = (itemSubtotal * discPercent) / 100;
         const afterDisc = itemSubtotal - discAmt;
 
@@ -202,7 +203,7 @@ const generateSalePDF = (saleData, items = []) => {
 
         doc.text(String(index + 1), cols[0].x, currentY, { width: cols[0].w, align: cols[0].align });
         doc.text(item.productName || "Product", cols[1].x, currentY, { width: cols[1].w, align: cols[1].align });
-        doc.text(item.hsn || "-", cols[2].x, currentY, { width: cols[2].w, align: cols[2].align });
+        doc.text(item.hsn || item.hsnCode || "-", cols[2].x, currentY, { width: cols[2].w, align: cols[2].align });
         doc.text(item.batch || "-", cols[3].x, currentY, { width: cols[3].w, align: cols[3].align });
         doc.text(item.expiry || "-", cols[4].x, currentY, { width: cols[4].w, align: cols[4].align });
         doc.text(String(qty), cols[5].x, currentY, { width: cols[5].w, align: cols[5].align });
@@ -228,9 +229,9 @@ const generateSalePDF = (saleData, items = []) => {
       const calculatedSubTotal = saleData.totalAmount || subTotal;
       const calculatedDiscount = saleData.discountTotal || totalDiscount;
       const calculatedGst = saleData.gstTotal || totalGst;
-      
+
       const rawGrandTotal = saleData.grandTotal || (calculatedSubTotal - calculatedDiscount + calculatedGst);
-      const roundedGrandTotal = saleData.netAmount !== undefined ? Math.round(saleData.netAmount) : Math.round(rawGrandTotal); 
+      const roundedGrandTotal = saleData.netAmount !== undefined ? Math.round(saleData.netAmount) : Math.round(rawGrandTotal);
       const roundOffAmount = saleData.roundOff !== undefined ? saleData.roundOff : Number((roundedGrandTotal - rawGrandTotal).toFixed(2));
 
       const summaryXLabel = startX + 320;
@@ -260,7 +261,7 @@ const generateSalePDF = (saleData, items = []) => {
         .text(`₹ ${Number(rawGrandTotal).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
 
       currentY += 16;
-      const roundOffSign = roundOffAmount > 0.001 ? "+" : ""; 
+      const roundOffSign = roundOffAmount > 0.001 ? "+" : "";
       doc
         .font(fontRegular)
         .fontSize(10)
@@ -268,7 +269,7 @@ const generateSalePDF = (saleData, items = []) => {
         .text("Round Off", summaryXLabel, currentY, { width: 110, align: "left" })
         .text(`${roundOffSign}${Number(roundOffAmount).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
 
-      currentY += 22; 
+      currentY += 22;
 
       doc
         .rect(summaryXLabel - 10, currentY - 4, 230, 22)
@@ -282,7 +283,7 @@ const generateSalePDF = (saleData, items = []) => {
         .text("Net Amount", summaryXLabel, currentY, { width: 110, align: "left" })
         .text(`₹ ${Number(roundedGrandTotal).toFixed(2)}`, summaryXVal, currentY, { width: summaryW, align: "right" });
 
-      currentY += 25; 
+      currentY += 25;
 
       doc
         .moveTo(startX, currentY)

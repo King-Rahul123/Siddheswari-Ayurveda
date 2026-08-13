@@ -63,6 +63,8 @@ router.post("/", async (req, res) => {
       const code = (item.itemCode || item.productId || "").toString().trim();
       const name = (item.productName || "").toString().trim();
       const qtyNum = Number(item.qty || 0);
+      const freeNum = Number(item.free || 0);
+      const totalStockQty = qtyNum + freeNum;
 
       let updatedProd = null;
 
@@ -78,12 +80,14 @@ router.post("/", async (req, res) => {
 
       const itemBatch = (item.batch || "").toString().trim();
       const itemMrp = item.mrp !== undefined && item.mrp !== "" ? Number(item.mrp) : null;
+      const itemRate = item.rate !== undefined && item.rate !== "" ? Number(item.rate) : (itemMrp || 0);
       const itemExpiry = item.expiry || item.expiryDate || "";
       const itemHsn = item.hsn || item.hsnCode || "";
       const itemGst = item.gst !== undefined ? Number(item.gst) : 0;
 
       if (updatedProd) {
-        updatedProd.stock = Number(updatedProd.stock || 0) + qtyNum;
+        updatedProd.stock = Number(updatedProd.stock || 0) + totalStockQty;
+        if (itemRate) updatedProd.rate = itemRate;
 
         if (itemExpiry) updatedProd.expiry = itemExpiry;
         if (itemHsn) updatedProd.hsnCode = itemHsn;
@@ -123,7 +127,8 @@ router.post("/", async (req, res) => {
           productName: name || "Unnamed Product",
           batch: itemBatch ? [itemBatch] : [],
           mrp: itemMrp !== null && !isNaN(itemMrp) ? [itemMrp] : [],
-          stock: qtyNum,
+          rate: itemRate,
+          stock: totalStockQty,
           expiry: itemExpiry,
           hsnCode: itemHsn,
           gstRate: itemGst
@@ -150,11 +155,11 @@ router.post("/", async (req, res) => {
       }
 
       if (existingStock) {
-        existingStock.qty = Number(existingStock.qty || 0) + qtyNum;
+        existingStock.qty = Number(existingStock.qty || 0) + totalStockQty;
         if (itemMrp !== null && !isNaN(itemMrp)) {
           existingStock.mrp = itemMrp;
-          existingStock.rate = itemMrp;
         }
+        existingStock.rate = itemRate;
         if (itemExpiry) existingStock.expiryDate = itemExpiry;
         if (itemHsn) existingStock.hsn = itemHsn;
         if (itemGst) existingStock.gst = itemGst;
@@ -170,9 +175,9 @@ router.post("/", async (req, res) => {
           itemCode: itemCodeToUse,
           productName: productNameToUse,
           batch: batchToUse,
-          qty: qtyNum,
-          mrp: itemMrp !== null && !isNaN(itemMrp) ? itemMrp : 0,
-          rate: itemMrp !== null && !isNaN(itemMrp) ? itemMrp : 0,
+          qty: totalStockQty,
+          mrp: itemMrp !== null && !isNaN(itemMrp) ? itemMrp : itemRate,
+          rate: itemRate,
           expiryDate: itemExpiry || "-",
           hsn: itemHsn,
           gst: itemGst
