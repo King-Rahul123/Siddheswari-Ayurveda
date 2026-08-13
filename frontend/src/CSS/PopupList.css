@@ -35,6 +35,38 @@
     padding: 20px;
 }
 
+.popup-close {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    border-radius: 50%;
+
+    transition: all 0.2s ease;
+}
+
+.popup-close:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    transform: scale(1.08);
+}
+
+.popup-close:focus {
+    outline: none;
+    box-shadow: none;
+}
+
 .form-control{
     font-size:16px;
 }

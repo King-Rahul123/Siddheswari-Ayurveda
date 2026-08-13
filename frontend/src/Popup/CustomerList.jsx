@@ -19,8 +19,24 @@ export default function CustomerList({ show, onClose, onSelect }) {
             searchRef.current?.focus();
         }, 100);
 
-        return () => unsubscribe();
-    }, [show]);
+        const handleEscape = (e) => {
+            if (e.key === "Escape") {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof e.stopImmediatePropagation === "function") {
+                    e.stopImmediatePropagation();
+                }
+                onClose();
+            }
+        };
+
+        window.addEventListener("keydown", handleEscape, true);
+
+        return () => {
+            unsubscribe();
+            window.removeEventListener("keydown", handleEscape, true);
+        };
+    }, [show, onClose]);
 
     const filteredCustomers = (customers || []).filter((customer) => {
         const text = search.toLowerCase();
@@ -40,6 +56,16 @@ export default function CustomerList({ show, onClose, onSelect }) {
     }, [selectedIndex]);
 
     const handleKeyDown = (e) => {
+        if (e.key === "Escape") {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof e.stopImmediatePropagation === "function") {
+                e.stopImmediatePropagation();
+            }
+            onClose();
+            return;
+        }
+
         if (!filteredCustomers.length) return;
 
         switch (e.key) {
@@ -61,10 +87,6 @@ export default function CustomerList({ show, onClose, onSelect }) {
                 onClose();
                 break;
 
-            case "Escape":
-                onClose();
-                break;
-
             default:
                 break;
         }
@@ -77,10 +99,17 @@ export default function CustomerList({ show, onClose, onSelect }) {
             <div className="customer-popup">
                 <div className="popup-header">
                     <h4>Select Customer</h4>
-                    <button className="btn-close" onClick={onClose}></button>
+                    <button
+                        type="button"
+                        className="popup-close"
+                        onClick={onClose}
+                        aria-label="Close"
+                    >
+                        ×
+                    </button>
                 </div>
 
-                <div className="popup-body">
+                <div className="popup-body py-2">
                     <input
                         ref={searchRef}
                         type="text"

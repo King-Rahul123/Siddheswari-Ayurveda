@@ -17,22 +17,25 @@ export default function CompanyList({
     useEffect(() => {
         if (!show) return;
 
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             searchRef.current?.focus();
-        }, 100);
+        });
 
         const handleEscape = (e) => {
             if (e.key === "Escape") {
                 e.preventDefault();
                 e.stopPropagation();
+
                 if (typeof e.stopImmediatePropagation === "function") {
                     e.stopImmediatePropagation();
                 }
+
                 onClose();
             }
         };
 
         window.addEventListener("keydown", handleEscape, true);
+
         return () => {
             window.removeEventListener("keydown", handleEscape, true);
         };
@@ -112,10 +115,10 @@ export default function CompanyList({
             <div className="customer-popup">
                 <div className="popup-header">
                     <h4>Select Company</h4>
-                    <button type="button" className="btn-close" onClick={onClose}></button>
+                    <button type="button" className="popup-close" onClick={onClose} aria-label="Close">×</button>
                 </div>
 
-                <div className="popup-body">
+                <div className="popup-body py-2">
                     <input
                         ref={searchRef}
                         className="form-control mb-3"

@@ -10,6 +10,11 @@ export default function Header() {
       ? capitalize(loggedInUser.role)
       : capitalize(loggedInUser?.username);
 
+  // Get first letter of full name
+  const avatarLetter =
+    loggedInUser?.fullName?.trim()?.charAt(0).toUpperCase() ||
+    loggedInUser?.username?.trim()?.charAt(0).toUpperCase();
+
   return (
     <header className="dashboard-header text-center">
       <h3 className="text-black">Welcome to the Dashboard, <span className="text-primary">{displayName}</span></h3>
@@ -18,7 +23,9 @@ export default function Header() {
         <i className="bi bi-bell-fill notification-icon hidden md:block"></i>
 
         <div className="avatar">
-          <img src="https://i.pravatar.cc/50" alt="Profile" />
+          <span className="avatar-letter">
+            {avatarLetter}
+          </span>
         </div>
       </div>
     </header>
