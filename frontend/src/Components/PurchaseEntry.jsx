@@ -303,16 +303,12 @@ export default function PurchaseEntry() {
 
         try {
             const itemCode = product.itemCode?.trim() || await getNextProductCode();
-            const hsnVal = product.hsn?.trim() || "";
-            const gstVal = Number(product.gst || 0);
 
             await addProduct({
                 productName: product.productName,
                 itemCode,
-                hsn: hsnVal,
-                hsnCode: hsnVal,
-                gst: gstVal,
-                gstRate: gstVal,
+                // hsnCode: product.hsn || "",
+                gstRate: Number(product.gst || 0),
                 mrp: Number(product.mrp || 0),
                 rate: Number(product.rate || 0),
                 minStock: Number(product.minStock || 0),
@@ -320,24 +316,6 @@ export default function PurchaseEntry() {
             });
 
             toast.success("Product Added");
-
-            const mrpNum = product.mrp !== "" && product.mrp !== undefined ? Number(product.mrp) : "";
-            const rateNum = product.rate !== "" && product.rate !== undefined ? Number(product.rate) : (mrpNum || "");
-
-            updateRow(selectedRow, {
-                productId: itemCode,
-                itemCode: itemCode,
-                productName: product.productName,
-                hsn: hsnVal,
-                gst: gstVal !== 0 ? gstVal : "",
-                mrp: mrpNum,
-                rate: rateNum,
-                discount: product.discount ? Number(product.discount) : "",
-            });
-
-            setTimeout(() => {
-                tableRefs.current[selectedRow]?.[1]?.focus();
-            }, 100);
         } catch (err) {
             console.error(err);
             toast.error("Unable to save product");

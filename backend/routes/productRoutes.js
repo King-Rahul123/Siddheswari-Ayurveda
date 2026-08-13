@@ -49,21 +49,13 @@ router.post("/", async (req, res) => {
     const firstBatch = batchArray[0] || "-";
     const firstMrp = mrpArray[0] || 0;
     const rateVal = productData.rate !== undefined && productData.rate !== "" ? Number(productData.rate) : firstMrp;
-    const hsnVal = (productData.hsnCode || productData.hsn || "").toString().trim();
-    const gstVal = productData.gstRate !== undefined && productData.gstRate !== ""
-      ? Number(productData.gstRate)
-      : (productData.gst !== undefined && productData.gst !== "" ? Number(productData.gst) : 0);
 
     const product = new Product({
       ...productData,
       itemCode,
       batch: batchArray,
       mrp: mrpArray,
-      rate: rateVal,
-      hsnCode: hsnVal,
-      hsn: hsnVal,
-      gstRate: gstVal,
-      gst: gstVal
+      rate: rateVal
     });
 
     await product.save();
@@ -79,9 +71,7 @@ router.post("/", async (req, res) => {
           batch: firstBatch,
           mrp: firstMrp,
           rate: rateVal,
-          expiryDate: product.expiry || "-",
-          hsn: hsnVal,
-          gst: gstVal
+          expiryDate: product.expiry || "-"
         },
         $setOnInsert: {
           qty: Number(product.stock || 0)

@@ -3,7 +3,7 @@ import { subscribeProducts } from "../services/productService";
 import { subscribeStock } from "../services/stockService";
 import "../CSS/PopupList.css";
 
-export default function ProductList({ show, onClose, onSelect, mode = "sale" }) {
+export default function ProductList({ show, onClose, onSelect }) {
 
     const [products, setProducts] = useState([]);
     const [stocks, setStocks] = useState([]);
@@ -43,27 +43,22 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
         };
     }, [show, onClose]);
 
-    // Create product details map (gstRate, hsnCode, discount, rate, mrp) from Products database
+    // Create product details map (gstRate, hsnCode, discount) from Products database
     const prodDetailsMap = new Map();
     (products || []).forEach((p) => {
         const codeKey = (p.itemCode || p.code || "").toLowerCase();
         const nameKey = (p.productName || p.product || "").toLowerCase();
-        const mrpVal = Array.isArray(p.mrp) ? (p.mrp[p.mrp.length - 1] || 0) : Number(p.mrp || 0);
         const details = {
             gst: Number(p.gstRate ?? p.gst ?? 0),
             hsn: p.hsnCode || p.hsn || "",
-            discount: Number(p.discount || 0),
-            rate: Number(p.rate || 0),
-            mrp: Number(mrpVal || 0)
+            discount: Number(p.discount || 0)
         };
         if (codeKey) prodDetailsMap.set(codeKey, details);
         if (nameKey) prodDetailsMap.set(nameKey, details);
     });
 
-    const stockCodeKeys = new Set((stocks || []).map(s => (s.itemCode || s.code || "").toLowerCase()).filter(Boolean));
-    const stockNameKeys = new Set((stocks || []).map(s => (s.productName || s.product || "").toLowerCase()).filter(Boolean));
-
-    const stockItemsMapped = (stocks || []).map((s) => {
+    // BOTH Purchase and Sale now use the detailed Stocks list
+    const listToDisplay = (stocks || []).map((s) => {
         const codeKey = (s.itemCode || s.code || "").toLowerCase();
         const nameKey = (s.productName || s.product || "").toLowerCase();
         const matchedProd = prodDetailsMap.get(codeKey) || prodDetailsMap.get(nameKey) || {};
@@ -75,57 +70,22 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
         const hsnVal = s.hsn || s.hsnCode || matchedProd.hsn || "";
         const discVal = Number(s.discount || matchedProd.discount || 0);
 
-        const mrpVal = s.mrp !== undefined && s.mrp !== null && s.mrp !== "" ? Number(s.mrp) : Number(matchedProd.mrp || 0);
-        const rateVal = s.rate !== undefined && s.rate !== null && s.rate !== "" ? Number(s.rate) : Number(matchedProd.rate || 0);
-
         return {
             ...s,
             stockId: s.stockId || s._id,
             itemCode: s.itemCode || s.code || "",
             productName: s.productName || s.product || "Unnamed Product",
             batch: s.batch || "-",
-            mrp: mrpVal,
-            rate: rateVal,
+            mrp: Number(s.mrp || s.rate || 0),
+            rate: Number(s.rate || s.mrp || 0),
             expiry: s.expiryDate || s.expiry || "-",
             stock: Number(s.qty ?? s.stock ?? 0),
             gst: gstVal,
             gstRate: gstVal,
             hsn: hsnVal,
-            hsnCode: hsnVal,
             discount: discVal
         };
     });
-
-    const missingProdItems = (products || []).filter((p) => {
-        const codeKey = (p.itemCode || p.code || "").toLowerCase();
-        const nameKey = (p.productName || p.product || "").toLowerCase();
-        return (codeKey && !stockCodeKeys.has(codeKey)) || (nameKey && !stockNameKeys.has(nameKey));
-    }).map((p) => {
-        const hsnVal = p.hsnCode || p.hsn || "";
-        const gstVal = Number(p.gstRate ?? p.gst ?? 0);
-        const mrpVal = Array.isArray(p.mrp) ? (p.mrp[p.mrp.length - 1] || 0) : Number(p.mrp || 0);
-        const rateVal = Number(p.rate || 0);
-        const batchVal = Array.isArray(p.batch) ? (p.batch[p.batch.length - 1] || "-") : (p.batch || "-");
-
-        return {
-            ...p,
-            stockId: p._id,
-            itemCode: p.itemCode || "",
-            productName: p.productName || "Unnamed Product",
-            batch: batchVal,
-            mrp: mrpVal,
-            rate: rateVal,
-            expiry: p.expiry || "-",
-            stock: Number(p.stock || 0),
-            gst: gstVal,
-            gstRate: gstVal,
-            hsn: hsnVal,
-            hsnCode: hsnVal,
-            discount: Number(p.discount || 0)
-        };
-    });
-
-    const listToDisplay = [...stockItemsMapped, ...missingProdItems];
 
     const filteredItems = listToDisplay.filter((item) => {
         const text = search.toLowerCase();
@@ -204,13 +164,12 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
             <div className="customer-popup" style={{ maxWidth: "750px" }}>
                 <div className="popup-header">
                     <h4>Select Product Stock</h4>
-                    <button
-                        className="btn-close"
-                        onClick={onClose}
-                    ></button>
+                    <button type="button" className="popup-close" onClick={onClose} aria-label="Close">
+                        ×
+                    </button>
                 </div>
 
-                <div className="popup-body">
+                <div className="popup-body py-2">
                     <input
                         ref={searchRef}
                         className="form-control mb-3"

@@ -114,15 +114,15 @@ export default function PrintInvoice() {
           <tbody>
             {items.map((item, index) => {
               const qty = Number(item.qty || 0);
-              const mrp = Number(item.mrp || item.rate || 0);
+              const rate = Number(item.rate || 0);
               const disc = Number(item.discount || 0);
               const gst = Number(item.gst || 0);
-              
-              const itemSub = qty * mrp; 
+              const itemSub = qty * rate;
               const discAmt = (itemSub * disc) / 100;
               const afterDisc = itemSub - discAmt;
               const gstAmt = (afterDisc * gst) / 100;
-              const amount = Number(item.amount || itemSub); 
+              const amount = Number(item.amount || (afterDisc + gstAmt));
+
               return (
                 <tr key={index}>
                   <td style={{ textAlign: "center" }}>{index + 1}</td>
@@ -131,7 +131,7 @@ export default function PrintInvoice() {
                   <td style={{ textAlign: "center" }}>{item.batch || "-"}</td>
                   <td style={{ textAlign: "center" }}>{item.expiry || "-"}</td>
                   <td style={{ textAlign: "center" }}>{qty}</td>
-                  <td style={{ textAlign: "right" }}>₹{mrp.toFixed(2)}</td>
+                  <td style={{ textAlign: "right" }}>₹{rate.toFixed(2)}</td>
                   <td style={{ textAlign: "right" }}>{gst}%</td>
                   <td style={{ textAlign: "right" }}>₹{amount.toFixed(2)}</td>
                 </tr>
