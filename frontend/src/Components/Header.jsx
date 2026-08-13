@@ -24,7 +24,7 @@ export default function Header() {
 
         <div className="avatar">
           <span className="avatar-letter">
-            {avatarLetter}
+            {avatarLetter
           </span>
         </div>
       </div>
