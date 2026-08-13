@@ -3,7 +3,7 @@ import { subscribeProducts } from "../services/productService";
 import { subscribeStock } from "../services/stockService";
 import "../CSS/PopupList.css";
 
-export default function ProductList({ show, onClose, onSelect, mode = "sale" }) {
+export default function ProductList({ show, onClose, onSelect }) {
 
     const [products, setProducts] = useState([]);
     const [stocks, setStocks] = useState([]);
@@ -164,13 +164,12 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
             <div className="customer-popup" style={{ maxWidth: "750px" }}>
                 <div className="popup-header">
                     <h4>Select Product Stock</h4>
-                    <button
-                        className="btn-close"
-                        onClick={onClose}
-                    ></button>
+                    <button type="button" className="popup-close" onClick={onClose} aria-label="Close">
+                        ×
+                    </button>
                 </div>
 
-                <div className="popup-body">
+                <div className="popup-body py-2">
                     <input
                         ref={searchRef}
                         className="form-control mb-3"
