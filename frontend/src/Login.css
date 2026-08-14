@@ -135,7 +135,7 @@
 }
 
 .login-form-panel {
-	padding: 52px;
+	padding: 16px;
 	background: rgba(255, 255, 255, 0.54);
 	display: flex;
 	align-items: center;
@@ -163,6 +163,7 @@
 
 .form-heading h2 {
 	margin: 0;
+	margin-top: -30px;
 	font-size: 2.15rem;
 	color: #123026;
 }

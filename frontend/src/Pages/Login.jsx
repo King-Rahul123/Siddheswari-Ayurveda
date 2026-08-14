@@ -164,6 +164,23 @@ function Login() {
 
 				<section className="login-form-panel">
 					<form className="login-form" onSubmit={handleSubmit}>
+						<div 
+                            style={{ 
+                                width: '100%', 
+                                marginBottom: '1.5rem', 
+                                color: '#dc2626', // Bright red text
+                                fontWeight: 'bold',
+                                fontSize: '0.95rem'
+                            }}
+                            role="alert"
+                        >
+                            <marquee behavior="scroll" direction="left" scrollamount="8">
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                    <i className="bi bi-exclamation-triangle-fill"></i>
+                                    Important: Only authorized staff members can login here.
+                                </span>
+                            </marquee>
+                        </div>
 						<div className="form-heading">
 								<h2>Login</h2>
 								<p>Use your account username and password to continue.</p>
