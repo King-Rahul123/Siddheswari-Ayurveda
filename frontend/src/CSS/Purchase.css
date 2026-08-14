@@ -63,7 +63,7 @@
 }
 
 .purchase-export-modal .close-btn:hover{
-    background:#e5e5e5;
+    background:#2E7D32;
 }
 
 .purchase-export-modal .download-text{
@@ -114,4 +114,110 @@
 
 .purchase-export-modal .export-option small{
     color:#777;
+}
+
+.purchase-preview-modal {
+    width: 900px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 20px;
+    padding: 30px;
+    position: relative;
+    background-color: #ffffff;
+    box-shadow: 
+        0 10px 15px -3px rgba(46, 125, 50, 0.03), 
+        0 25px 40px -12px rgba(46, 125, 50, 0.12);
+    z-index: 1; 
+}
+
+.purchase-preview-modal::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('D:/VS Code/Siddheswari-Ayurveda/frontend/src/assets/logo.png');
+    background-size: contain;           
+    background-position: center;  
+    background-repeat: no-repeat;
+    opacity: 0.14; 
+    z-index: -1; 
+    border-radius: inherit; 
+    pointer-events: none; 
+}
+
+.purchase-preview-modal .close-btn {
+    position: absolute; 
+    top: 24px;          
+    right: 24px;        
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(46, 125, 50, 0.08); 
+    color: #2E7D32; 
+    backdrop-filter: blur(2px); 
+    transition: all 0.3s ease; 
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.purchase-preview-modal .close-btn:hover {
+    background-color: #2E7D32; 
+    color: #fff;              
+    transform: rotate(90deg) scale(1.1); 
+    box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);
+}
+
+@media print {
+    body * { 
+        visibility: hidden; 
+    }
+    
+    .purchase-preview-modal, .purchase-preview-modal * { 
+        visibility: visible; 
+    }
+    
+    .purchase-preview-modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        max-width: 100% !important;
+        background: #fff !important; 
+        box-shadow: none !important;
+        padding: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        z-index: 1 !important;
+    }
+    
+    .purchase-preview-modal::before {
+        content: "" !important;
+        display: block !important;
+        position: fixed !important; 
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background-position: center center !important; 
+        background-repeat: no-repeat !important;
+        background-size: 80% auto !important; 
+        opacity: 0.14 !important;
+        z-index: -1 !important; 
+        pointer-events: none !important;
+    }
+    
+    .purchase-preview-modal th {
+        color: #ffffff !important;
+        font-weight: bold !important;
+    }
+
+    .preview-footer, .close-btn { 
+        display: none !important; 
+    }
 }
