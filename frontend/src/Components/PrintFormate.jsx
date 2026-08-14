@@ -106,7 +106,7 @@ export default function PrintInvoice() {
               <th style={{ width: "75px" }}>Batch</th>
               <th style={{ width: "65px" }}>Exp</th>
               <th style={{ width: "45px" }}>Qty</th>
-              <th style={{ width: "70px", textAlign: "right" }}>Rate</th>
+              <th style={{ width: "70px", textAlign: "right" }}>MRP</th>
               <th style={{ width: "55px", textAlign: "right" }}>GST</th>
               <th style={{ width: "85px", textAlign: "right" }}>Amount</th>
             </tr>

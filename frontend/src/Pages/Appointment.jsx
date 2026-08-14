@@ -14,7 +14,7 @@ export default function Appointment() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
-    const [todayOnly, setTodayOnly] = useState(false);
+    const [selectedDate, setSelectedDate] = useState("");
 
     const [showAppointmentForm, setShowAppointmentForm] = useState(false);
     const [showDoctorPopup, setShowDoctorPopup] = useState(false);
@@ -35,11 +35,13 @@ export default function Appointment() {
         setShowExportPopup(false);
     };
 
+    const today = new Date().toISOString().split("T")[0];
+
     const filteredPatients = patients.filter((item) => {
         const keyword = searchTerm.toLowerCase();
 
         const matchesSearch =
-            (item.name || "").toLowerCase().includes(keyword) ||
+            (item.name || item.patientName || "").toLowerCase().includes(keyword) ||
             (item.phone || "").includes(searchTerm) ||
             (item.doctor || "").toLowerCase().includes(keyword);
 
@@ -47,10 +49,10 @@ export default function Appointment() {
             statusFilter === "" ||
             (item.status || "Pending") === statusFilter;
 
-        const matchesToday =
-            !todayOnly || item.appointmentDate === today;
+        const matchesDate =
+            selectedDate === "" || item.appointmentDate === selectedDate;
 
-        return matchesSearch && matchesStatus && matchesToday;
+        return matchesSearch && matchesStatus && matchesDate;
     });
 
     useEffect(() => {
@@ -62,8 +64,6 @@ export default function Appointment() {
 
         return () => unsubscribe();
     }, []);
-
-    const today = new Date().toISOString().split("T")[0];
 
     const todayCount = patients.filter(
         a => a.appointmentDate === today
@@ -154,16 +154,39 @@ export default function Appointment() {
                                     <option value="Cancelled">Cancelled</option>
                                 </select>
 
-                                <button className={`today-btn ${todayOnly ? "active" : ""}`} onClick={() => setTodayOnly(!todayOnly)}>
+                                <button
+                                    className={`today-btn ${selectedDate === today ? "active" : ""}`}
+                                    onClick={() => {
+                                        if (selectedDate === today) {
+                                            setSelectedDate("");
+                                        } else {
+                                            setSelectedDate(today);
+                                        }
+                                    }}
+                                    title={selectedDate === today ? "Click to clear Today filter" : "Filter today's appointments"}
+                                >
                                     <i className="bi bi-calendar-check"></i>
                                     Today
                                 </button>
 
-                                <button className="export-btn" onClick={() => setShowExportPopup(true)}>
-                                    <i className="bi bi-download"></i>
-                                    Export
-                                </button>
+                                <input
+                                    type="date"
+                                    value={selectedDate}
+                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                    className="appointment-filter"
+                                    title="Filter by specific appointment date"
+                                />
 
+                                {selectedDate && (
+                                    <button
+                                        type="button"
+                                        className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-2 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition flex items-center gap-1 h-[46px]"
+                                        onClick={() => setSelectedDate("")}
+                                        title="Clear date filter"
+                                    >
+                                        <i className="bi bi-x-circle-fill"></i> Clear
+                                    </button>
+                                )}
                             </div>
 
                         </div>

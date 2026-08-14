@@ -117,6 +117,15 @@
     background:#1565c0;
 }
 
+.today-btn.active{
+    background:#2e7d32;
+    box-shadow:0 0 0 3px rgba(46,125,50,.3);
+}
+
+.today-btn.active:hover{
+    background:#256d28;
+}
+
 .export-btn{
     height:46px;
     padding:0 20px;
