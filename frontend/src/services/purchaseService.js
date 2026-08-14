@@ -19,7 +19,17 @@ export const addPurchase = async (purchaseData, items) => {
   return data;
 };
 
-// Real-time Purchase List
+// Update Purchase with Stock Recalculations
+export const updatePurchase = async (id, purchaseData, items, originalItems) => {
+  const res = await apiFetch(`/purchases/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({ purchaseData, items, originalItems })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to update purchase");
+  return data;
+};
+
 export const subscribePurchases = (callback) => {
   let isMounted = true;
 

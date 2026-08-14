@@ -370,6 +370,17 @@ export default function Purchase() {
                                             >
                                                 <i className="bi bi-eye text-blue-500 text-base"></i>
                                             </button>
+
+                                            <button
+                                                className="edit-btn"
+                                                title="Edit Invoice Details"
+                                                onClick={() => {
+                                                    const billId = purchase.invoiceNo || purchase.purchaseId || purchase.id || "INV";
+                                                    navigate(`/dashboard/sales/edit/${billId}`, { state: purchase });
+                                                }}
+                                            >
+                                                <i className="bi bi-pencil-square"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 ))

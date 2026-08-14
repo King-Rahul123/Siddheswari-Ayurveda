@@ -173,12 +173,24 @@
     box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);
 }
 
+.edit-btn {
+    background-color: transparent !important;
+    border: none !important;
+    color: #14532d !important;
+    box-shadow: none !important;
+}
+
+.edit-btn i {
+    color: #14532d !important;
+}
+
 @media print {
-    body * { 
+    body:has(.purchase-preview-modal) * { 
         visibility: hidden; 
     }
     
-    .purchase-preview-modal, .purchase-preview-modal * { 
+    body:has(.purchase-preview-modal) .purchase-preview-modal, 
+    body:has(.purchase-preview-modal) .purchase-preview-modal * { 
         visibility: visible; 
     }
     
