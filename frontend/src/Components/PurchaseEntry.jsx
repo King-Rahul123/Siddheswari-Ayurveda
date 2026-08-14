@@ -597,12 +597,7 @@ export default function PurchaseEntry() {
         0
     );
 
-    const gstAmount = validItems.reduce((sum, item) => {
-        const qty = Number(item.qty || 0);
-        const rate = Number(item.rate || item.mrp || 0);
-        const itemSub = qty * rate;
-        return sum + (itemSub * Number(item.gst || 0)) / 100;
-    }, 0);
+    const gstAmount = 0;
 
     const grandTotal = subTotal + gstAmount;
     const netAmount = Math.round(grandTotal);
@@ -825,9 +820,9 @@ export default function PurchaseEntry() {
 
                                 <div className="flex flex-col items-end gap-3 w-full md:w-auto">
                                     <div className="invoice-summary">
-                                        <h4>Subtotal : <span>₹{subTotal.toFixed(2)}</span></h4>
-                                        <h4>GST : <span>₹{gstAmount.toFixed(2)}</span></h4>
-                                        <h4>Grand Total : <span>₹{grandTotal.toFixed(2)}</span></h4>
+                                        <h4>Grand Total : <span>₹{subTotal.toFixed(2)}</span></h4>
+                                        {/* <h4>GST : <span>₹{gstAmount.toFixed(2)}</span></h4>
+                                        <h4>Grand Total : <span>₹{grandTotal.toFixed(2)}</span></h4> */}
                                         <h4>Round Off : <span>{roundOff > 0 ? `+${roundOff.toFixed(2)}` : roundOff.toFixed(2)}</span></h4>
                                         <h3>Net Amount : <span>₹{netAmount.toFixed(2)}</span></h3>
                                     </div>
