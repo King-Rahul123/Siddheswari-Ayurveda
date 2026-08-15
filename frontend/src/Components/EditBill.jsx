@@ -7,7 +7,9 @@ import "../CSS/EditBill.css";
 
 export default function EditSale() {
   const navigate = useNavigate();
-  const { billNumber } = useParams();
+  const params = useParams();
+  const rawBillParam = params["*"] || params.billnumber || params.billNumber;
+  const billNumber = rawBillParam ? decodeURIComponent(rawBillParam) : "";
   const { state } = useLocation();
 
   const [billNo, setBillNo] = useState(billNumber || "");

@@ -43,7 +43,7 @@ export default function App() {
           <Route path="/dashboard/sale-report" element={<Sales />} />
           <Route path="/dashboard/sales/sale-invoice" element={<SaleInvoice />} />
           <Route path="/print-invoice" element={<PrintInvoice />} />
-          <Route path="/dashboard/sales/edit/:billnumber" element={<EditSale />} />
+          <Route path="/dashboard/sales/edit/*" element={<EditSale />} />
           <Route path="/dashboard/purchase" element={<Purchase />} />
           <Route path="/dashboard/purchase-report" element={<Purchase />} />
           <Route path="/dashboard/stock-report" element={<Stock />} />
