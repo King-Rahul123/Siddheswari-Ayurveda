@@ -10,7 +10,7 @@ import "../CSS/PurchaseEntry.css";
 import "../CSS/Card.css";
 import CompanyList from "../Popup/CompanyList";
 import ProductList from "../Popup/ProductList";
-
+import "bootstrap-icons/font/bootstrap-icons.css";
 import { addcompanies, getNextcompaniesCode, subscribecompanies } from "../services/companyService";
 import { addProduct, getNextProductCode } from "../services/productService";
 import { addPurchase, getNextPurchaseId } from "../services/purchaseService";
@@ -436,7 +436,50 @@ export default function PurchaseEntry() {
 
             await addPurchase(purchase, items);
 
-            toast.success("Purchase Saved Successfully!");
+            toast.success(
+                <div className="purchase-toast">
+
+                    <div className="purchase-toast-icon">
+                        <i className="bi bi-check-circle-fill"></i>
+                    </div>
+
+                    <div className="purchase-toast-content">
+
+                        <div className="purchase-toast-title">
+                            Purchase Saved <span>✦</span>
+                        </div>
+
+                        <div className="purchase-toast-subtitle">
+                            Successfully!
+                        </div>
+
+                        <div className="purchase-toast-divider" />
+
+                        <div className="purchase-toast-label">
+                            Purchase No:
+                        </div>
+
+                        <div className="purchase-no">
+                            {purchaseId}
+                        </div>
+
+                        <div className="purchase-toast-decoration">
+                            <span />
+                            <b>◇</b>
+                            <span />
+                        </div>
+
+                    </div>
+
+                </div>,
+                {
+                    autoClose: 10000,
+                    className: "purchase-success-toast",
+                    bodyClassName: "purchase-success-body",
+                    closeButton: true,
+                }
+            );
+
             setShowConfirmModal(false);
             setShowPreviewModal(false);
             clearForm();
