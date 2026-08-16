@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Header";
+import ProductList from "../Popup/ProductList";
 import { updatePurchase } from "../services/purchaseService";
 import "../CSS/EditBill.css";
 
@@ -36,9 +37,29 @@ export default function EditSale() {
   ]);
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showProductPopup, setShowProductPopup] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(0);
   const [isExpired, setIsExpired] = useState(false);
   const [elapsedDays, setElapsedDays] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+
+  const tableRefs = useRef([]);
+  const billNoRef = useRef(null);
+  const dateRef = useRef(null);
+  const companyRef = useRef(null);
+  const mobileRef = useRef(null);
+  const lastFocusedCell = useRef(null);
+
+  const columns = [
+    "productName",
+    "batch",
+    "expiry",
+    "qty",
+    "free",
+    "mrp",
+    "rate",
+    "gst",
+  ];
 
   // Initial Load & 2-Day Limit Validation
   useEffect(() => {
@@ -111,24 +132,35 @@ export default function EditSale() {
     }
   }, [billNumber, state]);
 
-  // Global Keyboard Controls (Esc to close, End to open confirm modal)
+  // Global Keyboard Controls (Esc to close/exit, End to open confirm modal)
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (showConfirmModal) {
-        if (e.key === "Escape") {
-          e.preventDefault();
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (showConfirmModal) {
           setShowConfirmModal(false);
-        } else if (e.key === "Enter") {
+          return;
+        }
+        if (showProductPopup) {
+          setShowProductPopup(false);
+          setTimeout(() => {
+            lastFocusedCell.current?.focus();
+          }, 50);
+          return;
+        }
+        navigate(-1);
+        return;
+      }
+
+      if (showConfirmModal) {
+        if (e.key === "Enter") {
           e.preventDefault();
           confirmSave();
         }
         return;
       }
 
-      if (e.key === "Escape") {
-        e.preventDefault();
-        navigate(-1);
-      } else if (e.key === "End") {
+      if (e.key === "End") {
         e.preventDefault();
         handleSaveClick();
       }
@@ -136,7 +168,7 @@ export default function EditSale() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [items, customerName, mobile, invoiceDate, billNo, showConfirmModal, isExpired]);
+  }, [items, customerName, mobile, invoiceDate, billNo, showConfirmModal, showProductPopup, isExpired]);
 
   // Update field in specific row
   const updateItem = (index, field, value) => {
@@ -191,6 +223,82 @@ export default function EditSale() {
     setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Table Navigation & Key Handlers
+  const moveNext = (row, col) => {
+    if (col < columns.length - 1) {
+      tableRefs.current[row]?.[col + 1]?.focus();
+    } else {
+      if (row === items.length - 1) {
+        if (!isExpired) {
+          addRow();
+          setTimeout(() => {
+            tableRefs.current[row + 1]?.[0]?.focus();
+          }, 50);
+        }
+      } else {
+        tableRefs.current[row + 1]?.[0]?.focus();
+      }
+    }
+  };
+
+  const movePrevious = (row, col) => {
+    if (col > 0) {
+      tableRefs.current[row]?.[col - 1]?.focus();
+    } else if (row > 0) {
+      tableRefs.current[row - 1]?.[columns.length - 1]?.focus();
+    }
+  };
+
+  const handleDeleteRow = (index) => {
+    if (isExpired) return;
+    deleteRow(index);
+
+    const targetRow = index < items.length - 1 ? index : Math.max(0, index - 1);
+    setTimeout(() => {
+      tableRefs.current[targetRow]?.[0]?.focus();
+    }, 50);
+  };
+
+  const handleTableKey = (e, row, col) => {
+    if (e.key === "Delete") {
+      e.preventDefault();
+      handleDeleteRow(row);
+      return;
+    }
+
+    switch (e.key) {
+      case "Enter":
+      case "ArrowRight":
+        e.preventDefault();
+        moveNext(row, col);
+        break;
+
+      case "ArrowLeft":
+        e.preventDefault();
+        movePrevious(row, col);
+        break;
+
+      case "ArrowDown": {
+        e.preventDefault();
+        if (row < items.length - 1) {
+          tableRefs.current[row + 1]?.[col]?.focus();
+        }
+        break;
+      }
+
+      case "ArrowUp": {
+        e.preventDefault();
+        if (row > 0) {
+          tableRefs.current[row - 1]?.[col]?.focus();
+        }
+        break;
+      }
+
+      default:
+        break;
+    }
+  };
+
   // Calculations (Discount removed for Purchase edit)
   const calculatedItems = items.map((item) => {
     const qty = Number(item.qty || 0);
@@ -201,7 +309,6 @@ export default function EditSale() {
 
     const sub = qty * rate;
     const discAmt = 0;
-    const afterDisc = sub;
     const gstAmt = 0;
     const amount = Number((sub).toFixed(2));
 
@@ -341,10 +448,17 @@ export default function EditSale() {
               <div className="edit-meta-group">
                 <label>Invoice / Bill No</label>
                 <input
+                  ref={billNoRef}
                   type="text"
                   className="edit-meta-input"
                   value={billNo}
                   onChange={(e) => !isExpired && setBillNo(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      dateRef.current?.focus();
+                    }
+                  }}
                   disabled={isExpired}
                   placeholder="e.g. SDA-0098"
                 />
@@ -353,10 +467,17 @@ export default function EditSale() {
               <div className="edit-meta-group">
                 <label>Invoice Date</label>
                 <input
+                  ref={dateRef}
                   type="date"
                   className="edit-meta-input"
                   value={invoiceDate}
                   onChange={(e) => !isExpired && setInvoiceDate(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      companyRef.current?.focus();
+                    }
+                  }}
                   disabled={isExpired}
                 />
               </div>
@@ -364,10 +485,17 @@ export default function EditSale() {
               <div className="edit-meta-group">
                 <label>Supplier / Company Name</label>
                 <input
+                  ref={companyRef}
                   type="text"
                   className="edit-meta-input"
                   value={customerName}
                   onChange={(e) => !isExpired && setCustomerName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      mobileRef.current?.focus();
+                    }
+                  }}
                   disabled={isExpired}
                   placeholder="Enter Supplier Name"
                 />
@@ -376,17 +504,24 @@ export default function EditSale() {
               <div className="edit-meta-group">
                 <label>Mobile / Contact No</label>
                 <input
+                  ref={mobileRef}
                   type="text"
                   className="edit-meta-input"
                   value={mobile}
                   onChange={(e) => !isExpired && setMobile(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      tableRefs.current[0]?.[0]?.focus();
+                    }
+                  }}
                   disabled={isExpired}
                   placeholder="Enter Phone / Mobile"
                 />
               </div>
             </div>
 
-            {/* Editable Products Table (HSN Removed, Free Added after Qty) */}
+            {/* Editable Products Table */}
             <div className="edit-items-table-wrapper">
               <table className="edit-items-table">
                 <thead>
@@ -412,83 +547,179 @@ export default function EditSale() {
                       </td>
                       <td>
                         <input
+                          ref={(el) => {
+                            if (!tableRefs.current[index]) tableRefs.current[index] = [];
+                            tableRefs.current[index][0] = el;
+                          }}
                           type="text"
                           className="edit-table-input"
                           value={item.productName}
-                          onChange={(e) => updateItem(index, "productName", e.target.value)}
+                          onFocus={() => {
+                            lastFocusedCell.current = tableRefs.current[index][0];
+                            setSelectedRow(index);
+                          }}
+                          onChange={(e) => {
+                            updateItem(index, "productName", e.target.value);
+                            setSelectedRow(index);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Delete") {
+                              e.preventDefault();
+                              handleDeleteRow(index);
+                              return;
+                            }
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              lastFocusedCell.current = e.target;
+                              setSelectedRow(index);
+                              setShowProductPopup(true);
+                              return;
+                            }
+                            handleTableKey(e, index, 0);
+                          }}
                           disabled={isExpired}
                           placeholder="Product Name"
                         />
                       </td>
                       <td>
                         <input
+                          ref={(el) => {
+                            if (!tableRefs.current[index]) tableRefs.current[index] = [];
+                            tableRefs.current[index][1] = el;
+                          }}
                           type="text"
                           className="edit-table-input"
                           value={item.batch}
+                          onFocus={() => {
+                            lastFocusedCell.current = tableRefs.current[index][1];
+                          }}
                           onChange={(e) => updateItem(index, "batch", e.target.value)}
+                          onKeyDown={(e) => handleTableKey(e, index, 1)}
                           disabled={isExpired}
                           placeholder="Batch"
                         />
                       </td>
                       <td>
                         <input
+                          ref={(el) => {
+                            if (!tableRefs.current[index]) tableRefs.current[index] = [];
+                            tableRefs.current[index][2] = el;
+                          }}
                           type="text"
                           className="edit-table-input"
                           value={item.expiry}
-                          onChange={(e) => updateItem(index, "expiry", e.target.value)}
+                          maxLength={5}
+                          onFocus={() => {
+                            lastFocusedCell.current = tableRefs.current[index][2];
+                          }}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/\D/g, "").slice(0, 4);
+                            if (value.length >= 2) {
+                              let month = parseInt(value.substring(0, 2), 10);
+                              if (month > 12) month = 12;
+                              if (month < 1 && value.length === 2) month = 1;
+                              value = month.toString().padStart(2, "0") + value.substring(2);
+                            }
+                            if (value.length > 2) {
+                              value = value.substring(0, 2) + "/" + value.substring(2);
+                            }
+                            updateItem(index, "expiry", value);
+                          }}
+                          onKeyDown={(e) => handleTableKey(e, index, 2)}
                           disabled={isExpired}
                           placeholder="MM/YY"
                         />
                       </td>
                       <td>
                         <input
+                          ref={(el) => {
+                            if (!tableRefs.current[index]) tableRefs.current[index] = [];
+                            tableRefs.current[index][3] = el;
+                          }}
                           type="number"
                           min="1"
                           className="edit-table-input num"
                           value={item.qty}
+                          onFocus={() => {
+                            lastFocusedCell.current = tableRefs.current[index][3];
+                          }}
                           onChange={(e) => updateItem(index, "qty", e.target.value)}
+                          onKeyDown={(e) => handleTableKey(e, index, 3)}
                           disabled={isExpired}
                         />
                       </td>
                       <td>
                         <input
+                          ref={(el) => {
+                            if (!tableRefs.current[index]) tableRefs.current[index] = [];
+                            tableRefs.current[index][4] = el;
+                          }}
                           type="number"
                           min="0"
                           className="edit-table-input num"
                           value={item.free}
+                          onFocus={() => {
+                            lastFocusedCell.current = tableRefs.current[index][4];
+                          }}
                           onChange={(e) => updateItem(index, "free", e.target.value)}
+                          onKeyDown={(e) => handleTableKey(e, index, 4)}
                           disabled={isExpired}
                         />
                       </td>
                       <td>
                         <input
+                          ref={(el) => {
+                            if (!tableRefs.current[index]) tableRefs.current[index] = [];
+                            tableRefs.current[index][5] = el;
+                          }}
                           type="number"
                           step="0.01"
                           className="edit-table-input num"
                           value={item.mrp}
+                          onFocus={() => {
+                            lastFocusedCell.current = tableRefs.current[index][5];
+                          }}
                           onChange={(e) => updateItem(index, "mrp", e.target.value)}
+                          onKeyDown={(e) => handleTableKey(e, index, 5)}
                           disabled={isExpired}
                           placeholder="0.00"
                         />
                       </td>
                       <td>
                         <input
+                          ref={(el) => {
+                            if (!tableRefs.current[index]) tableRefs.current[index] = [];
+                            tableRefs.current[index][6] = el;
+                          }}
                           type="number"
                           step="0.01"
                           className="edit-table-input num"
                           value={item.rate}
+                          onFocus={() => {
+                            lastFocusedCell.current = tableRefs.current[index][6];
+                          }}
                           onChange={(e) => updateItem(index, "rate", e.target.value)}
+                          onKeyDown={(e) => handleTableKey(e, index, 6)}
                           disabled={isExpired}
                           placeholder="0.00"
                         />
                       </td>
                       <td>
                         <input
+                          ref={(el) => {
+                            if (!tableRefs.current[index]) tableRefs.current[index] = [];
+                            tableRefs.current[index][7] = el;
+                          }}
                           type="number"
                           step="0.01"
                           className="edit-table-input num"
                           value={item.gst}
+                          onFocus={() => {
+                            lastFocusedCell.current = tableRefs.current[index][7];
+                          }}
                           onChange={(e) => updateItem(index, "gst", e.target.value)}
+                          onKeyDown={(e) => handleTableKey(e, index, 7)}
                           disabled={isExpired}
                         />
                       </td>
@@ -500,7 +731,7 @@ export default function EditSale() {
                           type="button"
                           className="btn-delete-row"
                           title="Delete row"
-                          onClick={() => deleteRow(index)}
+                          onClick={() => handleDeleteRow(index)}
                           disabled={isExpired}
                         >
                           <i className="bi bi-trash"></i>
@@ -528,12 +759,6 @@ export default function EditSale() {
                   <span>Subtotal</span>
                   <strong>₹{subTotal.toFixed(2)}</strong>
                 </div>
-                {/* {totalGst > 0 && (
-                  <div className="summary-row-item">
-                    <span>GST Amount</span>
-                    <strong>₹{totalGst.toFixed(2)}</strong>
-                  </div>
-                )} */}
                 <div className="summary-row-item">
                   <span>Round Off</span>
                   <strong>{roundOff > 0 ? `+${roundOff.toFixed(2)}` : roundOff.toFixed(2)}</strong>
@@ -547,6 +772,56 @@ export default function EditSale() {
           </div>
         </main>
       </div>
+
+      {/* Product List Search Popup Modal */}
+      <ProductList
+        show={showProductPopup}
+        mode="purchase"
+        onClose={() => {
+          setShowProductPopup(false);
+          setTimeout(() => {
+            lastFocusedCell.current?.focus();
+          }, 50);
+        }}
+        onSelect={(product) => {
+          if (!product) return;
+          const mrpVal = Array.isArray(product.mrp)
+            ? (product.mrp.length > 0 ? product.mrp[product.mrp.length - 1] : "")
+            : (product.mrp || product.price || "");
+          const rateVal = product.rate !== undefined && product.rate !== null && product.rate !== ""
+            ? product.rate
+            : mrpVal;
+          const batchVal = Array.isArray(product.batch)
+            ? (product.batch.length > 0 ? product.batch[product.batch.length - 1] : "")
+            : (product.batch || "");
+          const hsnVal = product.hsnCode || product.hsn || "";
+          const gstVal = product.gstRate !== undefined && product.gstRate !== null && product.gstRate !== ""
+            ? product.gstRate
+            : (product.gst !== undefined ? product.gst : "");
+
+          const updated = [...items];
+          updated[selectedRow] = {
+            ...updated[selectedRow],
+            productId: product.itemCode || "",
+            itemCode: product.itemCode || "",
+            productName: product.productName || "",
+            hsn: hsnVal,
+            gst: gstVal !== "" ? Number(gstVal) : 0,
+            batch: batchVal,
+            expiry: product.expiry || product.expiryDate || "",
+            mrp: mrpVal !== "" ? Number(mrpVal) : 0,
+            rate: rateVal !== "" ? Number(rateVal) : 0,
+            free: updated[selectedRow]?.free || 0,
+            qty: updated[selectedRow]?.qty || 1,
+            discount: product.discount || 0,
+          };
+          setItems(updated);
+          setShowProductPopup(false);
+          setTimeout(() => {
+            tableRefs.current[selectedRow]?.[1]?.focus();
+          }, 100);
+        }}
+      />
 
       {/* Confirmation Modal Popup */}
       {showConfirmModal && (
