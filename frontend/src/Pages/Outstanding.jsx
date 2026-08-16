@@ -605,6 +605,14 @@ export default function Outstanding() {
                         amount: e.target.value,
                       }))
                     }
+                    onWheel={(e) => {
+                      e.currentTarget.blur();
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                      }
+                    }}
                     placeholder="Enter payment amount"
                   />
                 </div>
