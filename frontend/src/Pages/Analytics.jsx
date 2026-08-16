@@ -30,11 +30,13 @@ export default function Analytics() {
         activeProducts: 0,
         netPurchase: 0,
         totalPurchase: 0,
+        grossSale: 0,
         revenue: 0,
         todaySales: 0,
         customers: 0,
         products: 0,
         stockAmount: 0,
+        closingStock: 0,
         performance: 0,
         appointments: 0,
         lowStock: 0,
@@ -42,19 +44,26 @@ export default function Analytics() {
         outOfStock: 0,
     });
 
+    const [timeframe, setTimeframe] = useState("monthly");
     const [salesData, setSalesData] = useState([]);
+    const [monthlySalesData, setMonthlySalesData] = useState([]);
+    const [weeklySalesData, setWeeklySalesData] = useState([]);
+    const [yearlySalesData, setYearlySalesData] = useState([]);
     const [paymentData, setPaymentData] = useState([]);
     const [topProducts, setTopProducts] = useState([]);
     const [activities, setActivities] = useState([]);
     const [lowStockProducts, setLowStockProducts] = useState([]);
     
-    const loadAnalytics = async () => {
+    const loadAnalytics = async (tf = timeframe) => {
         try {
-            const res = await apiFetch("/analytics/overview");
+            const res = await apiFetch(`/analytics/overview?timeframe=${tf}`);
             if (res.ok) {
                 const data = await res.json();
                 if (data.stats) setStats(data.stats);
                 if (data.salesData) setSalesData(data.salesData);
+                if (data.monthlySalesData) setMonthlySalesData(data.monthlySalesData);
+                if (data.weeklySalesData) setWeeklySalesData(data.weeklySalesData);
+                if (data.yearlySalesData) setYearlySalesData(data.yearlySalesData);
                 if (data.paymentData) setPaymentData(data.paymentData);
                 if (data.topProducts) setTopProducts(data.topProducts);
                 if (data.activities) setActivities(data.activities);
@@ -66,8 +75,14 @@ export default function Analytics() {
     };
 
     useEffect(() => {
-        loadAnalytics();
-    }, []);
+        loadAnalytics(timeframe);
+    }, [timeframe]);
+
+    const activeChartData = timeframe === "weekly" 
+        ? (weeklySalesData.length > 0 ? weeklySalesData : salesData)
+        : timeframe === "yearly"
+        ? (yearlySalesData.length > 0 ? yearlySalesData : salesData)
+        : (monthlySalesData.length > 0 ? monthlySalesData : salesData);
 
     return (
         <div className="dashboard">
@@ -96,6 +111,12 @@ export default function Analytics() {
                         </div>
 
                         <div className="analytics-card">
+                            <i className="bi bi-wallet2"></i>
+                            <h3>₹{Number(stats.grossSale || 0).toLocaleString("en-IN")}</h3>
+                            <p>Gross Sale</p>
+                        </div>
+
+                        <div className="analytics-card">
                             <i className="bi bi-currency-rupee"></i>
                             <h3>₹{Number(stats.revenue || 0).toLocaleString("en-IN")}</h3>
                             <p>Total Sale</p>
@@ -111,6 +132,12 @@ export default function Analytics() {
                             <i className="bi bi-bank"></i>
                             <h3>₹{Number(stats.stockAmount || 0).toLocaleString("en-IN")}</h3>
                             <p>Stock Amount</p>
+                        </div>
+
+                        <div className="analytics-card">
+                            <i className="bi bi-archive-fill"></i>
+                            <h3>₹{Number(stats.closingStock || 0).toLocaleString("en-IN")}</h3>
+                            <p>Closing Stock</p>
                         </div>
 
                         <div className="analytics-card">
@@ -146,11 +173,29 @@ export default function Analytics() {
         
                     <div className="analytics-grid">
                         <div className="chart-card large">
-                            <h3>Monthly Sales & Purchases</h3>
+                            <div className="chart-header flex justify-between items-center mb-4">
+                                <h3 className="m-0 text-emerald-800 font-bold text-lg">
+                                    {timeframe === "weekly" ? "Weekly" : timeframe === "yearly" ? "Yearly" : "Monthly"} Sales & Purchases
+                                </h3>
+                                <div className="flex items-center gap-2">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        View By:
+                                    </label>
+                                    <select
+                                        value={timeframe}
+                                        onChange={(e) => setTimeframe(e.target.value)}
+                                        className="px-3 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-sm"
+                                    >
+                                        <option value="monthly">Monthly</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="yearly">Yearly</option>
+                                    </select>
+                                </div>
+                            </div>
                             <ResponsiveContainer width="100%" height={300}>
-                                <AreaChart data={salesData}>
+                                <AreaChart data={activeChartData}>
                                 <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="month" />
+                                <XAxis dataKey="label" />
                                 <YAxis />
                                 <Tooltip />
                                 <Area

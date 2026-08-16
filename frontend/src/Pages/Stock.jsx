@@ -80,11 +80,27 @@ export default function Stock() {
     };
 
     const totalProducts = stockData.length;
+
+    const productsWithoutBatch = stockData.filter(
+        (item) =>
+            !item.batch ||
+            item.batch === "-" ||
+            item.batch.trim() === ""
+    ).length;
+
+    const productsWithBatch = totalProducts - productsWithoutBatch;
+
     const inStock = stockData.filter((x) => x.stock > getMinStockThreshold(x)).length;
     const lowStock = stockData.filter(
         (x) => x.stock > 0 && x.stock <= getMinStockThreshold(x)
     ).length;
-    const outOfStock = stockData.filter((x) => x.stock === 0).length;
+    const outOfStock = stockData.filter(
+        (x) =>
+            x.stock === 0 &&
+            x.batch &&
+            x.batch !== "-" &&
+            x.batch.trim() !== ""
+    ).length;
 
     return (
         <div className="dashboard">
@@ -101,7 +117,7 @@ export default function Stock() {
                     <div className="stock-cards">
                         <div className="stock-card">
                             <i className="bi bi-box-seam-fill"></i>
-                            <h3>{totalProducts}</h3>
+                            <h3>{productsWithBatch}</h3>
                             <p>Total Products</p>
                         </div>
 
