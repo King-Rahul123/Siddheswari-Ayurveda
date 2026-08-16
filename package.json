@@ -10,5 +10,8 @@
     "build": "npm --prefix frontend run build",
     "lint": "npm --prefix frontend run lint",
     "preview": "npm --prefix frontend run preview"
+  },
+  "dependencies": {
+    "bootstrap-icons": "^1.13.1"
   }
 }
