@@ -90,22 +90,26 @@ def get_analytics_overview(timeframe: str = "monthly"):
     
     monthly_sales = {}
     monthly_purchases = {}
+    monthly_profit = {}
     weekly_sales = {}
     weekly_purchases = {}
+    weekly_profit = {}
     yearly_sales = {}
     yearly_purchases = {}
+    yearly_profit = {}
     payment_methods = {}
     product_sales_qty = {}
     
     # Process Sales (MRP basis & Gross Sale as per Sale.jsx)
     for sale in sales:
-        gross_amt = float(sale.get("netAmount", sale.get("grandTotal", sale.get("totalAmount", sale.get("total", 0.0)))) or 0.0)
-        gross_sale += gross_amt
+        sale_gross = float(sale.get("netAmount", sale.get("grandTotal", sale.get("totalAmount", sale.get("total", 0.0)))) or 0.0)
+        gross_sale += sale_gross
 
         doc_amount = float(sale.get("grandTotal", sale.get("netAmount", sale.get("totalAmount", sale.get("total", 0.0)))) or 0.0)
         
         # Calculate MRP-based sale total = Σ(MRP × Quantity) and pur_rate = Σ(rate × Quantity)
         sale_mrp_total = 0.0
+        sale_pur_rate = 0.0
         s_items = sale.get("items", [])
         if isinstance(s_items, list) and len(s_items) > 0:
             for item in s_items:
@@ -121,12 +125,15 @@ def get_analytics_overview(timeframe: str = "monthly"):
 
                 qty_num = float(item.get("qty", item.get("quantity", 0.0)) or 0.0)
                 sale_mrp_total += mrp_num * qty_num
-                pur_rate += rate_num * qty_num
+                sale_pur_rate += rate_num * qty_num
+
+        pur_rate += sale_pur_rate
 
         if sale_mrp_total <= 0 and doc_amount > 0:
             sale_mrp_total = doc_amount
 
         revenue += sale_mrp_total
+        sale_profit = sale_gross - sale_pur_rate
         
         sale_date = get_doc_date(sale)
         if sale_date:
@@ -135,13 +142,16 @@ def get_analytics_overview(timeframe: str = "monthly"):
                 
             month_key = sale_date.strftime("%b")
             monthly_sales[month_key] = monthly_sales.get(month_key, 0.0) + sale_mrp_total
+            monthly_profit[month_key] = monthly_profit.get(month_key, 0.0) + sale_profit
 
             iso_year, iso_week, _ = sale_date.isocalendar()
             week_key = f"Week {iso_week}"
             weekly_sales[week_key] = weekly_sales.get(week_key, 0.0) + sale_mrp_total
+            weekly_profit[week_key] = weekly_profit.get(week_key, 0.0) + sale_profit
 
             year_key = str(sale_date.year)
             yearly_sales[year_key] = yearly_sales.get(year_key, 0.0) + sale_mrp_total
+            yearly_profit[year_key] = yearly_profit.get(year_key, 0.0) + sale_profit
         
         pm = sale.get("paymentMethod", "Cash") or "Cash"
         payment_methods[pm] = payment_methods.get(pm, 0.0) + sale_mrp_total
@@ -343,7 +353,8 @@ def get_analytics_overview(timeframe: str = "monthly"):
             "label": m,
             "month": m,
             "sales": round(monthly_sales.get(m, 0.0), 2),
-            "purchases": round(monthly_purchases.get(m, 0.0), 2)
+            "purchases": round(monthly_purchases.get(m, 0.0), 2),
+            "profit": round(monthly_profit.get(m, 0.0), 2)
         }
         for m in month_order
         if m in monthly_sales or m in monthly_purchases
@@ -358,7 +369,8 @@ def get_analytics_overview(timeframe: str = "monthly"):
             "label": w,
             "week": w,
             "sales": round(weekly_sales.get(w, 0.0), 2),
-            "purchases": round(weekly_purchases.get(w, 0.0), 2)
+            "purchases": round(weekly_purchases.get(w, 0.0), 2),
+            "profit": round(weekly_profit.get(w, 0.0), 2)
         }
         for w in all_week_keys
     ]
@@ -372,7 +384,8 @@ def get_analytics_overview(timeframe: str = "monthly"):
             "label": y,
             "year": y,
             "sales": round(yearly_sales.get(y, 0.0), 2),
-            "purchases": round(yearly_purchases.get(y, 0.0), 2)
+            "purchases": round(yearly_purchases.get(y, 0.0), 2),
+            "profit": round(yearly_profit.get(y, 0.0), 2)
         }
         for y in all_year_keys
     ]
@@ -416,6 +429,7 @@ def get_analytics_overview(timeframe: str = "monthly"):
             "appointments": appointments_count,
             "stockAmount": round(stock_amount, 2),
             "closingStock": round(closing_stock, 2),
+            "profit": round(profit, 2),
             "performance": performance,
             "lowStock": low_stock_count,
             "inStock": in_stock_count,

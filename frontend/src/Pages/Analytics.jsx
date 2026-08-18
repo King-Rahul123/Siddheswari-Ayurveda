@@ -12,15 +12,35 @@ import {
     Cell,
     BarChart,
     Bar,
+    ComposedChart,
+    Line
 } from "recharts";
 
 import { apiFetch } from "../api/apiClient";
-import { API_BASE_URL } from "../api/config";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import "../CSS/Analytics.css";
 
 const colors = ["#2e7d32", "#4caf50", "#81c784"];
+
+// Custom Tooltip component for Performance Modal Graph
+const CustomChartTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="custom-chart-tooltip">
+                <p className="tooltip-title">{label}</p>
+                {payload.map((entry, index) => (
+                    <div key={`item-${index}`} className="tooltip-row">
+                        <span className="tooltip-dot" style={{ backgroundColor: entry.color }}></span>
+                        <span className="tooltip-name">{entry.name}:</span>
+                        <span className="tooltip-value">₹{Number(entry.value || 0).toLocaleString("en-IN")}</span>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+    return null;
+};
 
 export default function Analytics() {
     const [stats, setStats] = useState({
@@ -37,6 +57,7 @@ export default function Analytics() {
         products: 0,
         stockAmount: 0,
         closingStock: 0,
+        profit: 0,
         performance: 0,
         appointments: 0,
         lowStock: 0,
@@ -54,6 +75,11 @@ export default function Analytics() {
     const [activities, setActivities] = useState([]);
     const [lowStockProducts, setLowStockProducts] = useState([]);
     
+    // State for Performance Popup Modal
+    const [showPerformanceModal, setShowPerformanceModal] = useState(false);
+    const [modalTimeframe, setModalTimeframe] = useState("monthly");
+    const [graphType, setGraphType] = useState("combination"); // "combination" | "clustered"
+
     const loadAnalytics = async (tf = timeframe) => {
         try {
             const res = await apiFetch(`/analytics/overview?timeframe=${tf}`);
@@ -84,6 +110,23 @@ export default function Analytics() {
         ? (yearlySalesData.length > 0 ? yearlySalesData : salesData)
         : (monthlySalesData.length > 0 ? monthlySalesData : salesData);
 
+    const modalChartData = modalTimeframe === "weekly"
+        ? (weeklySalesData.length > 0 ? weeklySalesData : salesData)
+        : modalTimeframe === "yearly"
+        ? (yearlySalesData.length > 0 ? yearlySalesData : salesData)
+        : (monthlySalesData.length > 0 ? monthlySalesData : salesData);
+
+    // Use Profit Margin data stored continuously in the backend response list
+    const performanceGraphData = modalChartData.map((d) => ({
+        label: d.label,
+        sales: Number(d.sales || 0),
+        purchases: Number(d.purchases || 0),
+        profit: Number(d.profit || 0)
+    }));
+
+    const performanceScore = Number(stats.performance || 0);
+    const netProfitVal = Number(stats.profit || 0);
+
     return (
         <div className="dashboard">
             <Sidebar />
@@ -101,46 +144,51 @@ export default function Analytics() {
                         <div className="analytics-card">
                             <i className="bi bi-cart-check-fill"></i>
                             <h3>₹{Number(stats.netPurchase || 0).toLocaleString("en-IN")}</h3>
-                            <p>Net Purchase</p>
+                            <p>Net Purchase (PTS)</p>
                         </div>
 
                         <div className="analytics-card">
                             <i className="bi bi-cart-plus-fill"></i>
                             <h3>₹{Number(stats.totalPurchase || 0).toLocaleString("en-IN")}</h3>
-                            <p>Total Purchase</p>
+                            <p>Total Purchase (MRP)</p>
                         </div>
 
                         <div className="analytics-card">
                             <i className="bi bi-wallet2"></i>
                             <h3>₹{Number(stats.grossSale || 0).toLocaleString("en-IN")}</h3>
-                            <p>Gross Sale</p>
+                            <p>Gross Sale (PTS)</p>
                         </div>
 
                         <div className="analytics-card">
                             <i className="bi bi-currency-rupee"></i>
                             <h3>₹{Number(stats.revenue || 0).toLocaleString("en-IN")}</h3>
-                            <p>Total Sale</p>
+                            <p>Total Sale (MRP)</p>
                         </div>
 
                         <div className="analytics-card">
                             <i className="bi bi-cash-stack"></i>
                             <h3>₹{Number(stats.todaySales || 0).toLocaleString("en-IN")}</h3>
-                            <p>Today's Sale</p>
+                            <p>Today's Sale (MRP)</p>
                         </div>
 
                         <div className="analytics-card">
                             <i className="bi bi-bank"></i>
                             <h3>₹{Number(stats.stockAmount || 0).toLocaleString("en-IN")}</h3>
-                            <p>Stock Amount</p>
+                            <p>Stock Amount (MRP)</p>
                         </div>
 
                         <div className="analytics-card">
                             <i className="bi bi-archive-fill"></i>
                             <h3>₹{Number(stats.closingStock || 0).toLocaleString("en-IN")}</h3>
-                            <p>Closing Stock</p>
+                            <p>Closing Stock (PTS)</p>
                         </div>
 
-                        <div className="analytics-card">
+                        {/* Performance Card - Behaves as interactive button */}
+                        <div 
+                            className="analytics-card performance-card-btn"
+                            onClick={() => setShowPerformanceModal(true)}
+                            title="Click to open performance graph modal"
+                        >
                             <i className="bi bi-graph-up-arrow"></i>
                             <h3>{stats.performance}%</h3>
                             <p>Performance</p>
@@ -239,7 +287,6 @@ export default function Analytics() {
                         </div>
 
                         <div className="chart-card">
-
                             <h3>Top Selling Products</h3>
 
                             <ResponsiveContainer width="100%" height={300}>
@@ -329,6 +376,122 @@ export default function Analytics() {
                     </div>
                 </main>
             </div>
+
+            {/* Performance Popup Modal */}
+            {showPerformanceModal && (
+                <div className="performance-modal-backdrop" onClick={() => setShowPerformanceModal(false)}>
+                    <div className="performance-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="performance-modal-header">
+                            <div className="modal-header-title">
+                                <div className="modal-header-icon">
+                                    <i className="bi bi-graph-up-arrow"></i>
+                                </div>
+                                <div>
+                                    <h3>Performance Analytics Visualization</h3>
+                                    <p>Siddheswari Ayurveda Business Intelligence</p>
+                                </div>
+                            </div>
+                            <button className="close-btn" onClick={() => setShowPerformanceModal(false)}>
+                                <i className="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
+                        <div className="performance-modal-body">
+                            {/* KPI Cards Grid */}
+                            <div className="perf-kpi-grid">
+                                <div className="perf-kpi-card score">
+                                    <small>Performance Score</small>
+                                    <div className="val">{performanceScore}%</div>
+                                </div>
+                                <div className="perf-kpi-card sales">
+                                    <small>Total Sales (Revenue)</small>
+                                    <div className="val">₹{stats.grossSale.toLocaleString("en-IN")}</div>
+                                </div>
+                                <div className="perf-kpi-card purchases">
+                                    <small>Total Purchases</small>
+                                    <div className="val">₹{stats.netPurchase.toLocaleString("en-IN")}</div>
+                                </div>
+                                <div className="perf-kpi-card margin">
+                                    <small>Profit Margin</small>
+                                    <div className="val">₹{netProfitVal.toLocaleString("en-IN")}</div>
+                                </div>
+                            </div>
+
+                            {/* Control Bar (Timeframe & Graph Visualization Type) */}
+                            <div className="perf-control-bar">
+                                <div className="flex items-center gap-2">
+                                    <span className="control-group-label">Timeframe:</span>
+                                    <div className="toggle-button-group">
+                                        <button 
+                                            className={`toggle-btn ${modalTimeframe === "weekly" ? "active green" : ""}`}
+                                            onClick={() => setModalTimeframe("weekly")}
+                                        >
+                                            Weekly
+                                        </button>
+                                        <button 
+                                            className={`toggle-btn ${modalTimeframe === "monthly" ? "active green" : ""}`}
+                                            onClick={() => setModalTimeframe("monthly")}
+                                        >
+                                            Monthly
+                                        </button>
+                                        <button 
+                                            className={`toggle-btn ${modalTimeframe === "yearly" ? "active green" : ""}`}
+                                            onClick={() => setModalTimeframe("yearly")}
+                                        >
+                                            Yearly
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <span className="control-group-label">Graph Visualization:</span>
+                                    <div className="toggle-button-group">
+                                        <button 
+                                            className={`toggle-btn ${graphType === "combination" ? "active" : ""}`}
+                                            onClick={() => setGraphType("combination")}
+                                        >
+                                            <i className="bi bi-bar-chart-line"></i> Combination (Line & Bar)
+                                        </button>
+                                        <button 
+                                            className={`toggle-btn ${graphType === "clustered" ? "active" : ""}`}
+                                            onClick={() => setGraphType("clustered")}
+                                        >
+                                            <i className="bi bi-bar-chart-steps"></i> Clustered Column
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Graph Display Area */}
+                            <div className="perf-graph-container">
+                                <ResponsiveContainer width="100%" height={340}>
+                                    {graphType === "combination" ? (
+                                        <ComposedChart data={performanceGraphData} margin={{ top: 20, right: 30, left: 15, bottom: 10 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                            <XAxis dataKey="label" stroke="#64748b" tick={{ fontSize: 12, fontWeight: 500 }} />
+                                            <YAxis stroke="#64748b" tick={{ fontSize: 12 }} tickFormatter={(val) => `₹${val >= 1000 ? (val/1000).toFixed(0) + 'k' : val}`} />
+                                            <Tooltip content={<CustomChartTooltip />} />
+                                            <Bar name="Sales (Revenue)" dataKey="sales" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={32} />
+                                            <Bar name="Purchases" dataKey="purchases" fill="#0284c7" radius={[6, 6, 0, 0]} maxBarSize={32} />
+                                            <Line name="Profit Margin" type="monotone" dataKey="profit" stroke="#8b5cf6" strokeWidth={3.5} dot={{ r: 5, fill: "#8b5cf6", strokeWidth: 2, stroke: "#ffffff" }} activeDot={{ r: 7 }} />
+                                        </ComposedChart>
+                                    ) : (
+                                        <BarChart data={performanceGraphData} margin={{ top: 20, right: 30, left: 15, bottom: 10 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                            <XAxis dataKey="label" stroke="#64748b" tick={{ fontSize: 12, fontWeight: 500 }} />
+                                            <YAxis stroke="#64748b" tick={{ fontSize: 12 }} tickFormatter={(val) => `₹${val >= 1000 ? (val/1000).toFixed(0) + 'k' : val}`} />
+                                            <Tooltip content={<CustomChartTooltip />} />
+                                            <Bar name="Sales (Revenue)" dataKey="sales" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                                            <Bar name="Purchases" dataKey="purchases" fill="#0284c7" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                                            <Bar name="Profit Margin" dataKey="profit" fill="#8b5cf6" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                                        </BarChart>
+                                    )}
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

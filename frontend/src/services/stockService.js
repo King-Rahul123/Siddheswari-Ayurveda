@@ -28,7 +28,7 @@ export const subscribeStock = (callback) => {
       const res = await apiFetch("/stock");
       if (res.ok) {
         const stockList = await res.json();
-        if (isMounted) {
+        if (isMounted && Array.isArray(stockList)) {
           callback(stockList.map((s) => ({ docId: s.stockId || s._id, ...s })));
         }
       }

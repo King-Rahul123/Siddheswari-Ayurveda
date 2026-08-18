@@ -23,9 +23,43 @@
 .stock-card {
     background: #fff;
     border-radius: 14px;
-    padding: 10px;
+    padding: 12px;
     text-align: center;
     box-shadow: 0 5px 15px rgba(0,0,0,.08);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    user-select: none;
+    border: 2px solid transparent;
+}
+
+.stock-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stock-card.active {
+    border-color: #d1e4de;
+    background: #f0fdf4;
+    box-shadow: 0 8px 20px rgba(11, 53, 40, 0.2);
+    transform: translateY(-3px);
+}
+
+.stock-card.green.active {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    box-shadow: 0 8px 20px rgba(22, 163, 74, 0.25);
+}
+
+.stock-card.yellow.active {
+    border-color: #f59e0b;
+    background: #fffbeb;
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.25);
+}
+
+.stock-card.red.active {
+    border-color: #dc2626;
+    background: #fef2f2;
+    box-shadow: 0 8px 20px rgba(220, 38, 38, 0.25);
 }
 
 .stock-card i{
@@ -56,6 +90,33 @@
     align-items: center;
     margin-bottom: 18px;
     gap: 15px;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.clear-filter-btn {
+    background: #e2e8f0;
+    color: #334155;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clear-filter-btn:hover {
+    background: #cbd5e1;
+    color: #0f172a;
 }
 
 .stock-table-card{
@@ -156,4 +217,207 @@
 
 .empty-state i{
     font-size:45px;
+}
+
+/* Export Button */
+.export-btn {
+    background: linear-gradient(135deg, #15803d, #16a34a);
+    color: #ffffff;
+    border: none;
+    padding: 9px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+    transition: all 0.3s ease;
+}
+
+.export-btn:hover {
+    background: linear-gradient(135deg, #166534, #15803d);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35);
+}
+
+/* Export Modal Overlay */
+.export-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    animation: fadeIn 0.25s ease-out;
+}
+
+.export-modal {
+    background: #ffffff;
+    width: 90%;
+    max-width: 520px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+.export-modal-header {
+    background: linear-gradient(135deg, #0b3528 0%, #14523a 100%);
+    color: #ffffff;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.export-modal-header h3 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffffff;
+}
+
+.export-modal-header .close-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: #ffffff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    transition: background 0.2s ease;
+}
+
+.export-modal-header .close-btn:hover {
+    background: rgba(239, 68, 68, 0.85);
+}
+
+.export-modal-body {
+    padding: 24px;
+}
+
+.export-info-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: #166534;
+    font-size: 14px;
+}
+
+.export-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.export-card {
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.export-card:hover {
+    border-color: #16a34a;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(22, 163, 74, 0.12);
+}
+
+.export-card.pdf:hover {
+    border-color: #ef4444;
+    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.12);
+}
+
+.export-card i {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.export-card.pdf i {
+    color: #dc2626;
+}
+
+.export-card.excel i {
+    color: #16a34a;
+}
+
+.export-card h4 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.export-card p {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0 0 16px;
+    line-height: 1.4;
+}
+
+.export-card-btn {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.export-card.pdf .export-card-btn {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.export-card.pdf:hover .export-card-btn {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.export-card.excel .export-card-btn {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.export-card.excel:hover .export-card-btn {
+    background: #16a34a;
+    color: #ffffff;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
