@@ -76,6 +76,283 @@
   font-size: 15px;
 }
 
+/* Performance Card - Behaves as interactive button */
+.analytics-card.performance-card-btn {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.analytics-card.performance-card-btn:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(46, 125, 50, 0.18);
+  border-right: 3px solid #2e7d32;
+}
+
+.analytics-card.performance-card-btn:active {
+  transform: translateY(-2px);
+}
+
+/* Performance Modal Overlay */
+.performance-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  animation: fadeIn 0.25s ease-out;
+  padding: 20px;
+}
+
+.performance-modal {
+  background: #ffffff;
+  width: 100%;
+  max-width: 960px;
+  max-height: 92vh;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.performance-modal-header {
+  background: linear-gradient(135deg, #041f18 0%, #0b3528 50%, #14523a 100%);
+  color: #ffffff;
+  padding: 20px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid rgba(212, 175, 55, 0.4);
+}
+
+.modal-header-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.modal-header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #86efac;
+}
+
+.modal-header-title h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.modal-header-title p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.performance-modal-header .close-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  color: #ffffff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.performance-modal-header .close-btn:hover {
+  background: #ef4444;
+  transform: rotate(90deg);
+}
+
+.performance-modal-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* KPI Summary Cards Grid */
+.perf-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.perf-kpi-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.perf-kpi-card.score {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-color: #bbf7d0;
+}
+
+.perf-kpi-card.sales {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.perf-kpi-card.purchases {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+}
+
+.perf-kpi-card.margin {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+
+.perf-kpi-card small {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.perf-kpi-card .val {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.perf-kpi-card.score .val { color: #16a34a; }
+.perf-kpi-card.sales .val { color: #16a34a; }
+.perf-kpi-card.purchases .val { color: #0284c7; }
+.perf-kpi-card.margin .val { color: #8b5cf6; }
+
+/* Control Bar (Timeframe & Graph Type Buttons) */
+.perf-control-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.control-group-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.toggle-button-group {
+  display: inline-flex;
+  background: #e2e8f0;
+  padding: 3px;
+  border-radius: 12px;
+  gap: 3px;
+}
+
+.toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 7px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggle-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-btn.active.green { color: #16a34a; }
+
+/* Graph Container & Custom Tooltip */
+.perf-graph-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 20px 16px 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.custom-chart-tooltip {
+  background: rgba(15, 23, 42, 0.94);
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  font-size: 13px;
+}
+
+.tooltip-title {
+  font-weight: 700;
+  margin: 0 0 8px;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 4px;
+}
+
+.tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.tooltip-row:last-child {
+  margin-bottom: 0;
+}
+
+.tooltip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.tooltip-name {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+}
+
+.tooltip-value {
+  font-weight: 700;
+  color: #ffffff;
+  margin-left: auto;
+}
+
 /* Charts */
 
 .analytics-grid {
