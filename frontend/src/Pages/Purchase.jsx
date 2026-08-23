@@ -17,6 +17,8 @@ export default function Purchase() {
     const [selectedPurchaseForExport, setSelectedPurchaseForExport] = useState(null);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
     const [selectedPurchaseForPreview, setSelectedPurchaseForPreview] = useState(null);
+    const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+    const [isClosingPreview, setIsClosingPreview] = useState(false);
 
     const [purchaseData, setPurchaseData] = useState([]);
 
@@ -28,6 +30,37 @@ export default function Purchase() {
     const handleAddProduct = () => {
         navigate("/dashboard/purchase/purchase-entry");
     };
+
+    const openPreviewModal = (purchase) => {
+        setSelectedPurchaseForPreview(purchase);
+        setShowPreviewModal(true);
+        setIsClosingPreview(false);
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                setIsPreviewVisible(true);
+            });
+        });
+    };
+
+    const closePreviewModal = () => {
+        setIsClosingPreview(true);
+        setIsPreviewVisible(false);
+        setTimeout(() => {
+            setShowPreviewModal(false);
+            setSelectedPurchaseForPreview(null);
+            setIsClosingPreview(false);
+        }, 250);
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape" && showPreviewModal) {
+                closePreviewModal();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [showPreviewModal]);
 
     const getNormalizedDateStr = (dateVal) => {
         if (!dateVal) return "";
@@ -326,14 +359,14 @@ export default function Purchase() {
                                     <th>Company Name</th>
                                     <th>Date</th>
                                     <th>Total Amount</th>
-                                    <th>Action</th>
+                                    <th className="action-header">Action</th>
                                 </tr>
                             </thead>
 
                             <tbody>
                                 {filteredPurchase.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="py-5">
+                                        <td colSpan={5} className="py-5">
                                             <div className="flex flex-col items-center justify-center text-gray-500">
                                                 <i className="bi bi-search text-3xl mb-2"></i>
                                                 <h6 className="m-0">No Bill Available</h6>
@@ -342,45 +375,47 @@ export default function Purchase() {
                                     </tr>
                                 ) : (
                                 filteredPurchase.map((purchase) => (
-                                    <tr key={purchase.purchaseId || purchase._id}>
-                                        <td>{purchase.purchaseId || "-"}</td>
-                                        <td className="font-bold">{purchase.companyName || purchase.supplier || "-"}</td>
-                                        <td>{formatPurchaseDate(purchase.invoiceDate || purchase.date || purchase.createdAt)}</td>
-                                        <td>₹{Number(purchase.totalAmount || purchase.totalamount || 0).toFixed(2)}</td>
+                                    <tr key={purchase.purchaseId || purchase._id} className="hover:bg-gray-50/80 transition">
+                                        <td className="font-mono text-gray-700">{purchase.purchaseId || "-"}</td>
+                                        <td className="font-bold text-gray-900">{purchase.companyName || purchase.supplier || "-"}</td>
+                                        <td className="text-gray-600">{formatPurchaseDate(purchase.invoiceDate || purchase.date || purchase.createdAt)}</td>
+                                        <td className="font-semibold text-emerald-800">₹{Number(purchase.totalAmount || purchase.totalamount || 0).toFixed(2)}</td>
 
-                                        <td className="gap-2 flex justify-center">
-                                            <button
-                                                className="download-btn"
-                                                title="Download Invoice (Excel / CSV)"
-                                                onClick={() => {
-                                                    setSelectedPurchaseForExport(purchase);
-                                                    setShowExportPopup(true);
-                                                }}
-                                            >
-                                                <i className="bi bi-download"></i>
-                                            </button>
+                                        <td className="action-cell">
+                                            <div className="action-buttons-group">
+                                                <button
+                                                    type="button"
+                                                    className="action-icon-btn download-btn"
+                                                    title="Download Invoice (Excel / CSV)"
+                                                    onClick={() => {
+                                                        setSelectedPurchaseForExport(purchase);
+                                                        setShowExportPopup(true);
+                                                    }}
+                                                >
+                                                    <i className="bi bi-download"></i>
+                                                </button>
 
-                                            <button
-                                                className="view-btn"
-                                                title="Preview Invoice Details"
-                                                onClick={() => {
-                                                    setSelectedPurchaseForPreview(purchase);
-                                                    setShowPreviewModal(true);
-                                                }}
-                                            >
-                                                <i className="bi bi-eye text-blue-500 text-base"></i>
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    className="action-icon-btn view-btn"
+                                                    title="Preview Invoice Details"
+                                                    onClick={() => openPreviewModal(purchase)}
+                                                >
+                                                    <i className="bi bi-eye"></i>
+                                                </button>
 
-                                            <button
-                                                className="edit-btn"
-                                                title="Edit Invoice Details"
-                                                onClick={() => {
-                                                    const billId = purchase.invoiceNo || purchase.purchaseId || purchase.id || "INV";
-                                                    navigate(`/dashboard/sales/edit/${encodeURIComponent(billId)}`, { state: purchase });
-                                                }}
-                                            >
-                                                <i className="bi bi-pencil-square"></i>
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    className="action-icon-btn edit-btn"
+                                                    title="Edit Invoice Details"
+                                                    onClick={() => {
+                                                        const billId = purchase.invoiceNo || purchase.purchaseId || purchase.id || "INV";
+                                                        navigate(`/dashboard/sales/edit/${encodeURIComponent(billId)}`, { state: purchase });
+                                                    }}
+                                                >
+                                                    <i className="bi bi-pencil-square"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -391,7 +426,7 @@ export default function Purchase() {
 
                     {showExportPopup && (
                         <div
-                            className="purchase-export-modal-overlay"
+                            className="purchase-export-modal-overlay overlay-active"
                             onClick={() => {
                                 setShowExportPopup(false);
                                 setSelectedPurchaseForExport(null);
@@ -404,6 +439,7 @@ export default function Purchase() {
                                         Export Purchase Invoice
                                     </h4>
                                     <button
+                                        type="button"
                                         className="close-btn"
                                         onClick={() => {
                                             setShowExportPopup(false);
@@ -425,7 +461,7 @@ export default function Purchase() {
                                 </p>
 
                                 <div className="export-options">
-                                    <button className="export-option excel" onClick={exportToExcel}>
+                                    <button type="button" className="export-option excel" onClick={exportToExcel}>
                                         <i className="bi bi-file-earmark-excel-fill"></i>
                                         <div>
                                             <strong>Excel</strong>
@@ -433,7 +469,7 @@ export default function Purchase() {
                                         </div>
                                     </button>
 
-                                    <button className="export-option csv" onClick={exportToCSV}>
+                                    <button type="button" className="export-option csv" onClick={exportToCSV}>
                                         <i className="bi bi-filetype-csv"></i>
                                         <div>
                                             <strong>CSV</strong>
@@ -447,71 +483,82 @@ export default function Purchase() {
 
                     {showPreviewModal && selectedPurchaseForPreview && (
                         <div
-                            className="purchase-export-modal-overlay"
-                            onClick={() => {
-                                setShowPreviewModal(false);
-                                setSelectedPurchaseForPreview(null);
-                            }}
+                            className={`purchase-export-modal-overlay ${isPreviewVisible && !isClosingPreview ? 'overlay-active' : 'overlay-closing'}`}
+                            onClick={closePreviewModal}
                         >
-                            <div className="purchase-preview-modal" onClick={(e) => e.stopPropagation()}>
-                                <div className="download-header border-b pb-3 mb-4">
-                                    <h4 className="flex items-center gap-2 text-emerald-800 font-bold text-xl m-0">
-                                        <i className="bi bi-eye-fill text-emerald-600"></i>
-                                        Purchase Invoice Preview
-                                    </h4>
+                            <div
+                                className={`purchase-preview-modal ${isPreviewVisible && !isClosingPreview ? 'modal-active' : 'modal-closing'}`}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="preview-modal-header">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xl shadow-xs">
+                                            <i className="bi bi-file-earmark-text-fill"></i>
+                                        </div>
+                                        <div>
+                                            <h4 className="flex items-center gap-2 text-emerald-900 font-bold text-lg m-0">
+                                                Purchase Invoice Preview
+                                            </h4>
+                                            <span className="text-xs text-gray-500 font-medium">
+                                                Invoice: <strong className="text-emerald-800 font-mono">{selectedPurchaseForPreview.purchaseId || selectedPurchaseForPreview.invoiceNo || "N/A"}</strong>
+                                            </span>
+                                        </div>
+                                    </div>
                                     <button
+                                        type="button"
                                         className="close-btn"
-                                        onClick={() => {
-                                            setShowPreviewModal(false);
-                                            setSelectedPurchaseForPreview(null);
-                                        }}
+                                        onClick={closePreviewModal}
+                                        title="Close Preview (Esc)"
                                     >
                                         <i className="bi bi-x-lg"></i>
                                     </button>
                                 </div>
 
                                 <div className="preview-body space-y-4">
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-emerald-50/70 p-4 rounded-xl border border-emerald-100 text-sm">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-gradient-to-r from-emerald-50/90 to-teal-50/50 p-4 rounded-xl border border-emerald-100 text-sm shadow-xs">
                                         <div>
-                                            <span className="text-gray-500 text-xs block">Purchase ID</span>
-                                            <strong className="text-emerald-900 font-semibold">{selectedPurchaseForPreview.purchaseId || "-"}</strong>
+                                            <span className="text-gray-500 text-xs block font-medium">Purchase ID</span>
+                                            <strong className="text-emerald-900 font-semibold font-mono text-base">{selectedPurchaseForPreview.purchaseId || "-"}</strong>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500 text-xs block">Invoice No</span>
-                                            <strong className="text-gray-800 font-semibold">{selectedPurchaseForPreview.invoiceNo || "-"}</strong>
+                                            <span className="text-gray-500 text-xs block font-medium">Supplier Invoice No</span>
+                                            <strong className="text-gray-800 font-semibold font-mono">{selectedPurchaseForPreview.invoiceNo || "-"}</strong>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500 text-xs block">Company / Supplier</span>
+                                            <span className="text-gray-500 text-xs block font-medium">Company / Supplier</span>
                                             <strong className="text-gray-800 font-semibold">{selectedPurchaseForPreview.companyName || selectedPurchaseForPreview.supplier || "-"}</strong>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500 text-xs block">Invoice Date</span>
+                                            <span className="text-gray-500 text-xs block font-medium">Invoice Date</span>
                                             <strong className="text-gray-800 font-semibold">{formatPurchaseDate(selectedPurchaseForPreview.invoiceDate || selectedPurchaseForPreview.date)}</strong>
                                         </div>
                                     </div>
 
-                                    <div className="overflow-x-auto border rounded-xl shadow-sm">
-                                        <table className="w-full text-left text-xs md:text-sm border-collapse">
+                                    <div className="preview-table-container">
+                                        <table className="preview-table">
                                             <thead>
-                                                <tr className="bg-emerald-700 text-white font-semibold">
-                                                    <th className="p-2.5 border-b">#</th>
-                                                    <th className="p-2.5 border-b">Item Code</th>
-                                                    <th className="p-2.5 border-b">Product Name</th>
-                                                    <th className="p-2.5 border-b">Batch</th>
-                                                    <th className="p-2.5 border-b text-center">Expiry</th>
-                                                    <th className="p-2.5 border-b text-right">Qty</th>
-                                                    <th className="p-2.5 border-b text-right">Free</th>
-                                                    <th className="p-2.5 border-b text-right">MRP (₹)</th>
-                                                    <th className="p-2.5 border-b text-right">Rate (₹)</th>
-                                                    <th className="p-2.5 border-b text-right">GST %</th>
-                                                    <th className="p-2.5 border-b text-right">Amount (₹)</th>
+                                                <tr>
+                                                    <th className="text-center" style={{ width: "4%" }}>#</th>
+                                                    <th className="text-center" style={{ width: "9%" }}>Item Code</th>
+                                                    <th className="text-left" style={{ width: "25%" }}>Product Name</th>
+                                                    <th className="text-center" style={{ width: "9%" }}>Batch</th>
+                                                    <th className="text-center" style={{ width: "8%" }}>Expiry</th>
+                                                    <th className="text-center" style={{ width: "6%" }}>Qty</th>
+                                                    <th className="text-center" style={{ width: "6%" }}>Free</th>
+                                                    <th className="text-right" style={{ width: "9%" }}>MRP (₹)</th>
+                                                    <th className="text-right" style={{ width: "9%" }}>Rate (₹)</th>
+                                                    <th className="text-center" style={{ width: "6%" }}>GST %</th>
+                                                    <th className="text-right" style={{ width: "9%" }}>Amount (₹)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {!selectedPurchaseForPreview.items || selectedPurchaseForPreview.items.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan={11} className="text-center py-6 text-gray-500">
-                                                            No product item details recorded for this purchase entry.
+                                                        <td colSpan={11} className="text-center py-10 text-gray-500">
+                                                            <div className="flex flex-col items-center justify-center gap-2">
+                                                                <i className="bi bi-inbox text-3xl text-gray-400"></i>
+                                                                <span className="font-medium text-sm">No product item details recorded for this purchase entry.</span>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ) : (
@@ -522,18 +569,36 @@ export default function Purchase() {
                                                             ? Number(item.amount)
                                                             : qty * rate;
                                                         return (
-                                                            <tr key={idx} className="border-b hover:bg-gray-50 transition">
-                                                                <td className="p-2.5 text-gray-500">{idx + 1}</td>
-                                                                <td className="p-2.5 font-mono text-gray-600">{item.itemCode || item.productId || "-"}</td>
-                                                                <td className="p-2.5 font-bold text-gray-800">{item.productName || "-"}</td>
-                                                                <td className="p-2.5 text-gray-700">{item.batch || "-"}</td>
-                                                                <td className="p-2.5 text-center text-gray-700">{item.expiry || item.expiryDate || "-"}</td>
-                                                                <td className="p-2.5 text-right font-medium">{qty}</td>
-                                                                <td className="p-2.5 text-right text-gray-500">{item.free || 0}</td>
-                                                                <td className="p-2.5 text-right text-gray-600">₹{Number(item.mrp || 0).toFixed(2)}</td>
-                                                                <td className="p-2.5 text-right font-medium">₹{rate.toFixed(2)}</td>
-                                                                <td className="p-2.5 text-right text-gray-600">{item.gst || 0}%</td>
-                                                                <td className="p-2.5 text-right font-bold text-emerald-800">
+                                                            <tr key={idx}>
+                                                                <td className="text-center text-slate-500 font-mono font-medium">{idx + 1}</td>
+                                                                <td className="text-center font-mono text-slate-700">
+                                                                    {item.itemCode || item.productId || "-"}
+                                                                </td>
+                                                                <td className="text-left font-semibold text-slate-800">
+                                                                    {item.productName || "-"}
+                                                                </td>
+                                                                <td className="text-center font-mono text-slate-700">
+                                                                    {item.batch || "-"}
+                                                                </td>
+                                                                <td className="text-center font-mono text-slate-700">
+                                                                    {item.expiry || item.expiryDate || "-"}
+                                                                </td>
+                                                                <td className="text-center font-semibold text-slate-800">
+                                                                    {qty}
+                                                                </td>
+                                                                <td className="text-center text-slate-600 font-mono">
+                                                                    {item.free || 0}
+                                                                </td>
+                                                                <td className="text-right text-slate-700 font-mono whitespace-nowrap">
+                                                                    ₹{Number(item.mrp || 0).toFixed(2)}
+                                                                </td>
+                                                                <td className="text-right text-slate-800 font-mono font-medium whitespace-nowrap">
+                                                                    ₹{rate.toFixed(2)}
+                                                                </td>
+                                                                <td className="text-center font-medium text-slate-700">
+                                                                    {item.gst || 0}%
+                                                                </td>
+                                                                <td className="text-right font-bold text-slate-900 font-mono whitespace-nowrap">
                                                                     ₹{amount.toFixed(2)}
                                                                 </td>
                                                             </tr>
@@ -544,41 +609,40 @@ export default function Purchase() {
                                         </table>
                                     </div>
 
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-gray-50 p-4 rounded-xl border text-sm">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm">
                                         <div>
-                                            <span className="text-xs text-gray-500 block">Total Items</span>
-                                            <span className="font-bold text-gray-800">{selectedPurchaseForPreview.totalItems || (selectedPurchaseForPreview.items?.length || 0)}</span>
+                                            <span className="text-xs text-gray-500 block font-medium">Total Items</span>
+                                            <span className="font-bold text-gray-800 text-base">{selectedPurchaseForPreview.totalItems || (selectedPurchaseForPreview.items?.length || 0)}</span>
                                         </div>
                                         <div>
-                                            <span className="text-xs text-gray-500 block">Total Qty</span>
-                                            <span className="font-bold text-gray-800">{selectedPurchaseForPreview.totalQty || 0}</span>
+                                            <span className="text-xs text-gray-500 block font-medium">Total Quantity</span>
+                                            <span className="font-bold text-gray-800 text-base">{selectedPurchaseForPreview.totalQty || 0}</span>
                                         </div>
                                         <div>
-                                            <span className="text-xs text-gray-500 block">Total Amount</span>
-                                            <span className="font-bold text-gray-800">₹{Number(selectedPurchaseForPreview.totalAmount || 0).toFixed(2)}</span>
+                                            <span className="text-xs text-gray-500 block font-medium">Total Amount</span>
+                                            <span className="font-bold text-gray-800 text-base">₹{Number(selectedPurchaseForPreview.totalAmount || 0).toFixed(2)}</span>
                                         </div>
                                         <div>
-                                            <span className="text-xs text-gray-500 block">Net Amount</span>
-                                            <span className="font-bold text-emerald-700 text-base">
+                                            <span className="text-xs text-gray-500 block font-medium">Net Amount</span>
+                                            <span className="font-bold text-emerald-700 text-lg">
                                                 ₹{Number(selectedPurchaseForPreview.netAmount || selectedPurchaseForPreview.grandTotal || selectedPurchaseForPreview.totalAmount || 0).toFixed(2)}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="preview-footer flex justify-end gap-3 pt-4 border-t mt-4">
+                                <div className="preview-footer flex justify-end gap-3 pt-4 border-t border-gray-200 mt-4">
                                     <button
-                                        className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-sm transition flex items-center gap-2"
+                                        type="button"
+                                        className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-semibold text-sm transition shadow-sm flex items-center gap-2 cursor-pointer"
                                         onClick={() => window.print()}
                                     >
-                                        <i className="bi bi-printer-fill"></i> Print
+                                        <i className="bi bi-printer-fill"></i> Print Invoice
                                     </button>
                                     <button
-                                        className="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-medium text-sm transition"
-                                        onClick={() => {
-                                            setShowPreviewModal(false);
-                                            setSelectedPurchaseForPreview(null);
-                                        }}
+                                        type="button"
+                                        className="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-semibold text-sm transition cursor-pointer"
+                                        onClick={closePreviewModal}
                                     >
                                         Close
                                     </button>
