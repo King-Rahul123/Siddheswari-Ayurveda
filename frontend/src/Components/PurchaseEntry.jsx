@@ -254,7 +254,7 @@ export default function PurchaseEntry() {
 
     useEffect(() => {
         if (showAddProductPopup) {
-            popupCompanyRef.current?.focus();
+            productNameRef.current?.focus();
         }
     }, [showAddProductPopup]);
 
@@ -263,6 +263,16 @@ export default function PurchaseEntry() {
             companyNamePopupRef.current?.focus();
         }
     }, [showAddCompanyPopup]);
+
+    useEffect(() => {
+        const setInitialFocus = () => {
+            if (companyRef.current) {
+                lastFocusedCell.current = companyRef.current;
+                companyRef.current.focus();
+            }
+        };
+        requestAnimationFrame(setInitialFocus);
+    }, []);
 
     const handleNewProductChange = (e) => {
         setNewProduct({

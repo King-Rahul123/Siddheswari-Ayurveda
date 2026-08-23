@@ -21,6 +21,8 @@ export default function Appointment() {
 
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [editMode, setEditMode] = useState(false);
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    const isAdmin = loggedInUser?.role?.toLowerCase() === "admin";
 
 
     const [showExportPopup, setShowExportPopup] = useState(false);
@@ -99,11 +101,25 @@ export default function Appointment() {
                             </p>
                         </div>
 
+
                         <div className="flex gap-3">
-                            <button className="add-doctor-btn" onClick={() => setShowDoctorPopup(true)}>
-                                <i className="bi bi-plus-circle-fill"></i>
-                                Add Doctor
-                            </button>
+                            {selectedDate && (
+                                <button
+                                    type="button"
+                                    className="text-xs text-red-500 font-bold px-3 py-2 transition flex items-center gap-1 h-10"
+                                    onClick={() => setSelectedDate("")}
+                                    title="Clear date filter"
+                                >
+                                    <i className="bi bi-arrow-clockwise"></i>
+                                </button>
+                            )}
+
+                            {isAdmin && (
+                                <button className="add-doctor-btn" onClick={() => setShowDoctorPopup(true)}>
+                                    <i className="bi bi-plus-circle-fill"></i>
+                                    Add Doctor
+                                </button>
+                            )}
 
                             <button
                                 className="add-appointment-btn"
@@ -176,17 +192,6 @@ export default function Appointment() {
                                     className="appointment-filter"
                                     title="Filter by specific appointment date"
                                 />
-
-                                {selectedDate && (
-                                    <button
-                                        type="button"
-                                        className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-2 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition flex items-center gap-1 h-[46px]"
-                                        onClick={() => setSelectedDate("")}
-                                        title="Clear date filter"
-                                    >
-                                        <i className="bi bi-x-circle-fill"></i> Clear
-                                    </button>
-                                )}
                             </div>
 
                         </div>
@@ -367,11 +372,13 @@ export default function Appointment() {
                         </>
                     )}
 
-                    <AddDoctor
-                        show={showDoctorPopup}
-                        onClose={() => setShowDoctorPopup(false)}
-                        // onSave={handleAddDoctor}
-                    />
+                    {isAdmin && (
+                        <AddDoctor
+                            show={showDoctorPopup}
+                            onClose={() => setShowDoctorPopup(false)}
+                            // onSave={handleAddDoctor}
+                        />
+                    )}
                 </main>
 
             </div>

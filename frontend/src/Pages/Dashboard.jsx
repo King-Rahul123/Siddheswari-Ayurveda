@@ -6,6 +6,7 @@ import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import AddPatient from "../Popup/TakeAppointment";
 import AddDoctor from "../Popup/AddDoctor";
+import AddRemedies from "../Popup/AddRemedies";
 import AddStaff from "../Popup/AddStaff";
 import AddCustomer from "../Popup/AddCustomer";
 import { changePassword, addStaff } from "../services/authService";
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [showAppointmentPopup, setShowAppointmentPopup] = useState(false);
   const [showDoctorPopup, setShowDoctorPopup] = useState(false);
+  const [showRemediesPopup, setShowRemediesPopup] = useState(false);
   const [showStaffPopup, setShowStaffPopup] = useState(false);
   const [showCustomerPopup, setShowCustomerPopup] = useState(false);
   const [appointments, setAppointments] = useState([]);
@@ -34,6 +36,10 @@ export default function Dashboard() {
   const loggedInUser = JSON.parse(
     localStorage.getItem("loggedInUser")
   );
+
+  const handleAddRemedy = (remedy) => {
+    toast.success(`${remedy.remedyName} added successfully.`);
+  };
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -54,9 +60,17 @@ export default function Dashboard() {
     });
 
     const unsubscribePatients = subscribePatients((patients) => {
-      // Sort by appointment date (latest first)
-      const sorted = [...patients].sort(
-        (a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)
+      const today = new Date().toISOString().split("T")[0];
+      const upcoming = patients.filter(
+        (appointment) =>
+          appointment.appointmentDate > today &&
+          (appointment.status || "Pending") !== "Completed" &&
+          (appointment.status || "Pending") !== "Cancelled"
+      );
+
+      // Sort upcoming appointments by date (soonest first)
+      const sorted = upcoming.sort(
+        (a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate)
       );
 
       setAppointments(sorted);
@@ -80,8 +94,14 @@ export default function Dashboard() {
       action: () => setShowAppointmentPopup(true),
     },
     {
+      title: "Add Remedies",
+      icon: "bi-capsule-pill",
+      color: "#2e7d32",
+      action: () => setShowRemediesPopup(true),
+    },
+    {
       title: "Add Staff",
-      icon: "bi-box-seam-fill",
+      icon: "bi-person-fill",
       color: "#1976d2",
       action: () => setShowStaffPopup(true),
     },
@@ -259,12 +279,21 @@ export default function Dashboard() {
               </div>
 
               <div className="shortcut-grid">
-                  {shortcuts.filter(
-                      (item) =>
-                        loggedInUser.role === "admin" ||
-                        (item.title !== "Add Staff" && item.title !== "Add Doctor")
-                    )
-                    .map((item, index) => (
+                  {shortcuts.filter((item) => {
+                    const role = loggedInUser?.role?.toLowerCase();
+                    // Admin should NOT see Take Appointment
+                    if (role === "admin") {
+                      return item.title !== "Take Appointment";
+                    }
+
+                    // Staff should NOT see Add Staff or Add Doctor
+                    if (role === "staff") {
+                      return item.title !== "Add Staff" && item.title !== "Add Doctor" && item.title !== "Add Remadies";
+                    }
+
+                    return false;
+                  })
+                  .map((item, index) => (
                       <div
                           key={index}
                           className="shortcut-card"
@@ -372,6 +401,12 @@ export default function Dashboard() {
         <AddDoctor
           show={showDoctorPopup}
           onClose={() => setShowDoctorPopup(false)}
+        />
+
+        <AddRemedies
+          show={showRemediesPopup}
+          onClose={() => setShowRemediesPopup(false)}
+          onSave={handleAddRemedy}
         />
 
         <AddStaff
