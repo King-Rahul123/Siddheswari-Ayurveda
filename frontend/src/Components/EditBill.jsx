@@ -78,7 +78,7 @@ export default function EditSale() {
           productName: item.productName || item.product || "",
           batch: item.batch || "",
           expiry: item.expiry || item.expiryDate || "",
-          qty: Number(item.qty || 1),
+          qty: item.qty !== undefined && item.qty !== null && item.qty !== "" ? Number(item.qty) : 0,
           free: Number(item.free || 0),
           mrp: item.mrp !== undefined && item.mrp !== null ? Number(item.mrp) : 0,
           rate: item.rate !== undefined && item.rate !== null && item.rate !== "" ? Number(item.rate) : Number(item.mrp || 0),
@@ -103,7 +103,7 @@ export default function EditSale() {
         if (Array.isArray(foundSale.items) && foundSale.items.length > 0) {
           const loadedItems = foundSale.items.map((item) => ({
             ...item,
-            qty: Number(item.qty || 1),
+            qty: item.qty !== undefined && item.qty !== null && item.qty !== "" ? Number(item.qty) : 0,
             free: Number(item.free || 0),
             mrp: item.mrp !== undefined && item.mrp !== null ? Number(item.mrp) : 0,
             rate: item.rate !== undefined && item.rate !== null && item.rate !== "" ? Number(item.rate) : Number(item.mrp || 0),
@@ -638,7 +638,7 @@ export default function EditSale() {
                             tableRefs.current[index][3] = el;
                           }}
                           type="number"
-                          min="1"
+                          min="0"
                           className="edit-table-input num"
                           value={item.qty}
                           onFocus={() => {
@@ -812,7 +812,7 @@ export default function EditSale() {
             mrp: mrpVal !== "" ? Number(mrpVal) : 0,
             rate: rateVal !== "" ? Number(rateVal) : 0,
             free: updated[selectedRow]?.free || 0,
-            qty: updated[selectedRow]?.qty || 1,
+            qty: updated[selectedRow]?.qty !== undefined && updated[selectedRow]?.qty !== null && updated[selectedRow]?.qty !== "" ? Number(updated[selectedRow]?.qty) : 0,
             discount: product.discount || 0,
           };
           setItems(updated);
