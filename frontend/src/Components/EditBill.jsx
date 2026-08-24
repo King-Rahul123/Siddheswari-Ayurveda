@@ -337,7 +337,7 @@ export default function EditSale() {
   // Trigger Confirmation Modal
   const handleSaveClick = () => {
     if (isExpired) {
-      alert(`Editing Restricted: This purchase invoice is ${elapsedDays} days old. Purchase invoices can only be edited within 2 days of purchase entry.`);
+      alert(`Editing Restricted: This purchase invoice is ${elapsedDays} days old. Purchase invoices can only be edited within 7 days of purchase entry.`);
       return;
     }
     setShowConfirmModal(true);
