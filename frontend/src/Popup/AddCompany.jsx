@@ -29,6 +29,7 @@ export default function AddCompany({
 								name="companyName"
 								value={newCompany.companyName}
 								onChange={onChange}
+								placeholder="Enter Company Name"
 								onKeyDown={(e) => onFieldKeyDown(e, mobileRef)}
 							/>
 						</div>
@@ -41,6 +42,7 @@ export default function AddCompany({
 									name="mobile"
 									value={newCompany.mobile || newCompany.phone || ""}
 									onChange={onChange}
+									placeholder="Enter Mobile Number"
 									onKeyDown={(e) => onFieldKeyDown(e, emailRef)}
 								/>
 							</div>
@@ -51,6 +53,7 @@ export default function AddCompany({
 									name="email"
 									value={newCompany.email}
 									onChange={onChange}
+									placeholder="Enter Email Address"
 									onKeyDown={(e) => onFieldKeyDown(e, gstRef)}
 								/>
 							</div>
@@ -63,6 +66,7 @@ export default function AddCompany({
 								name="gst"
 								value={newCompany.gst}
 								onChange={onChange}
+								placeholder="Enter GST Number"
 								onKeyDown={(e) => onFieldKeyDown(e, null, true)}
 							/>
 						</div>

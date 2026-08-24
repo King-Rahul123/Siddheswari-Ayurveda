@@ -16,5 +16,8 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "eslint": "^10.9.0"
   }
 }
