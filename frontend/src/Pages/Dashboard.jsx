@@ -13,6 +13,7 @@ import { changePassword, addStaff } from "../services/authService";
 import { subscribeCustomers } from "../services/customerService";
 import { subscribePatients } from "../services/patientService";
 import { apiFetch } from "../api/apiClient";
+import { addRemedy } from "../services/remedyService";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -37,8 +38,15 @@ export default function Dashboard() {
     localStorage.getItem("loggedInUser")
   );
 
-  const handleAddRemedy = (remedy) => {
-    toast.success(`${remedy.remedyName} added successfully.`);
+  const handleAddRemedy = async (remedyData) => {
+    try {
+      const res = await addRemedy(remedyData);
+      const name = res.remedy?.name || "Remedy";
+      toast.success(`${name} saved successfully.`);
+    } catch (err) {
+      console.error("Error adding remedy:", err);
+      toast.error(err.message || "Failed to save remedy.");
+    }
   };
 
   useEffect(() => {
