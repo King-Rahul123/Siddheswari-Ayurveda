@@ -98,7 +98,6 @@ export default function Sidebar() {
             </ul>
           )}
 
-
           {/* Report Menu */}
           <li className="menu-parent" onClick={handleReportToggle}>
             <div className="menu-item">
@@ -141,6 +140,11 @@ export default function Sidebar() {
               )}
             </ul>
           )}
+
+          <li className={ window.location.pathname === "/dashboard/offer" ? "active" : "" } onClick={() => navigate("/dashboard/offer")} >
+            <i className="bi bi-tag"></i>
+            Offer
+          </li>
         </ul>
       </div>
 

@@ -7,6 +7,7 @@ function Remedies() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Trigger animations on mount
   useEffect(() => {
@@ -1841,6 +1842,25 @@ function Remedies() {
     },
     {
       id: 97,
+      name: "Active Noni Juice",
+      category: "",
+      price: "₹882",
+      rating: 4.9,
+      reviews: 164,
+      image: "/images/Active_Noni_Juice.png",
+      tag: "",
+      badge: "",
+      specifications: {
+        weight: "",
+        dosage: "",
+        keyIngredients: "",
+        benefits: "",
+        certification: "",
+        expiry: ""
+      }
+    },
+    {
+      id: 98,
       name: "Nutrilong Tri Ginseng",
       category: "",
       price: "₹2070",
@@ -1859,7 +1879,7 @@ function Remedies() {
       }
     },
     {
-      id: 98,
+      id: 99,
       name: "Nutrilong A2 Colostrum Advance",
       category: "",
       price: "₹1116",
@@ -1878,7 +1898,7 @@ function Remedies() {
       }
     },
     {
-      id: 99,
+      id: 100,
       name: "Nutrilong Curcumin Max",
       category: "",
       price: "₹567",
@@ -1897,7 +1917,7 @@ function Remedies() {
       }
     },
     {
-      id: 100,
+      id: 101,
       name: "D Stress Capsule",
       category: "",
       price: "₹399",
@@ -1916,7 +1936,7 @@ function Remedies() {
       }
     },
     {
-      id: 101,
+      id: 102,
       name: "Deltas Neem Tablet",
       category: "",
       price: "₹279",
@@ -1934,11 +1954,8 @@ function Remedies() {
         expiry: ""
       }
     },
-    
-    
-    
     {
-      id: 102,
+      id: 103,
       name: "Skincare Ayurvedic Body Cleanser",
       category: "FMCG",
       price: "₹240",
@@ -1957,7 +1974,7 @@ function Remedies() {
       }
     },
     {
-      id: 103,
+      id: 104,
       name: "Skincare Fairness Body cleanser",
       category: "FMCG",
       price: "₹240",
@@ -1976,7 +1993,7 @@ function Remedies() {
       }
     },
     {
-      id: 104,
+      id: 105,
       name: "Nutrilong Stemcell",
       category: "Others",
       price: "₹9000",
@@ -1995,7 +2012,7 @@ function Remedies() {
       }
     },
     {
-      id: 105,
+      id: 106,
       name: "Dentacure Herbal Tooth Cleanser",
       category: "FMCG",
       price: "₹96",
@@ -2014,7 +2031,7 @@ function Remedies() {
       }
     },
     {
-      id: 106,
+      id: 107,
       name: "Top Dantunn Red Toothpaste",
       category: "FMCG",
       price: "₹135",
@@ -2033,7 +2050,7 @@ function Remedies() {
       }
     },
     {
-      id: 107,
+      id: 108,
       name: "Top Dantunn Green Toothpaste",
       category: "FMCG",
       price: "₹120",
@@ -2052,7 +2069,7 @@ function Remedies() {
       }
     },
     {
-      id: 108,
+      id: 109,
       name: "Potentia Antiseptic Hand Wash",
       category: "FMCG",
       price: "₹123",
@@ -2071,7 +2088,7 @@ function Remedies() {
       }
     },
     {
-      id: 109,
+      id: 110,
       name: "Topkleen Powermop Floor Cleaner",
       category: "FMCG",
       price: "₹150",
@@ -2090,7 +2107,7 @@ function Remedies() {
       }
     },
     {
-      id: 110,
+      id: 111,
       name: "Topkleen Supermatic Detergent Powder",
       category: "FMCG",
       price: "₹149",
@@ -2109,7 +2126,7 @@ function Remedies() {
       }
     },
     {
-      id: 111,
+      id: 112,
       name: "Topkleen Ultrashine Dishwash Gel",
       category: "FMCG",
       price: "₹175",
@@ -2128,7 +2145,7 @@ function Remedies() {
       }
     },
     {
-      id: 112,
+      id: 113,
       name: "Topkleen Toilet Cleaner",
       category: "FMCG",
       price: "₹255",
@@ -2147,7 +2164,7 @@ function Remedies() {
       }
     },
     {
-      id: 113,
+      id: 114,
       name: "Topkaa Nature Fresh Chai",
       category: "FMCG",
       price: "₹160",
@@ -2166,7 +2183,7 @@ function Remedies() {
       }
     },
     {
-      id: 114,
+      id: 115,
       name: "Topkaa Instant Coffee",
       category: "FMCG",
       price: "₹213",
@@ -2185,7 +2202,7 @@ function Remedies() {
       }
     },
     {
-      id: 115,
+      id: 116,
       name: "Topflora Liquid",
       category: "Agriculture & Veterinary",
       price: "₹1199",
@@ -2204,7 +2221,7 @@ function Remedies() {
       }
     },
     {
-      id: 116,
+      id: 117,
       name: "Topvet Powder",
       category: "Agriculture & Veterinary",
       price: "₹612",
@@ -2240,12 +2257,23 @@ function Remedies() {
     'Agriculture & Veterinary',
     'Others'];
 
-  // Filter products based on active category
-  const filteredProducts = activeCategory === "All"
-    ? products
-    : products.filter((product) =>
-        product.category?.includes(activeCategory)
-      );
+  // Filter products by both the selected category and the current search term.
+  const filteredProducts = products.filter((product) => {
+    const matchesCategory = activeCategory === "All"
+      || product.category?.includes(activeCategory);
+    const searchableText = [
+      product.name,
+      product.tag,
+      ...(Array.isArray(product.category) ? product.category : [product.category]),
+    ].join(' ').toLowerCase();
+    const matchesSearch = searchableText.includes(searchQuery.trim().toLowerCase());
+
+    return matchesCategory && matchesSearch;
+  });
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+  };
 
   return (
     <div className="remedies-page-layout light-theme">
@@ -2272,6 +2300,24 @@ function Remedies() {
           <div className="gold-divider"></div>
         </header>
 
+        {/* Product Search */}
+        <form className={`remedies-search-container ${isLoaded ? 'animate-in' : ''}`} onSubmit={handleSearch} style={{ animationDelay: '0.15s' }}>
+          <label className="visually-hidden" htmlFor="remedies-search">Search remedies</label>
+          <div className="remedies-search-box">
+            <i className="bi bi-search remedies-search-icon"></i>
+            <input
+              id="remedies-search"
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search remedies, benefits, or categories"
+            />
+            <button type="submit" className="remedies-search-btn" aria-label="Search remedies">
+              <i className="bi bi-arrow-right"></i>
+            </button>
+          </div>
+        </form>
+
         {/* Category Filter Tabs */}
         <div className={`category-filters-container ${isLoaded ? 'animate-in' : ''}`} style={{ animationDelay: '0.2s' }}>
           {filterTabs.map((cat) => (
@@ -2286,7 +2332,7 @@ function Remedies() {
         </div>
 
         {/* Single continuous grid for all filtered products */}
-        <div className="catalog-wrapper animate-in" key={activeCategory} style={{ animationDelay: '0.1s' }}>
+        <div className="catalog-wrapper animate-in" key={`${activeCategory}-${searchQuery}`} style={{ animationDelay: '0.1s' }}>
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {filteredProducts.map((prod) => (

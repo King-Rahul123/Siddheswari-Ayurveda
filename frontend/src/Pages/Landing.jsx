@@ -146,7 +146,7 @@ function Landing() {
         <div className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
           <a href="#about" onClick={() => setMobileMenuOpen(false)}>Philosophy</a>
           <a href="#doctor" onClick={() => setMobileMenuOpen(false)}>Chief Vaidya</a>
-          <a href="#timetable" onClick={() => setMobileMenuOpen(false)}>Visiting Hours</a>
+          <a href="#timetable" className="md:hidden" onClick={() => setMobileMenuOpen(false)}>Visiting Hours</a>
           <a href="#treatments" onClick={() => setMobileMenuOpen(false)}>Treatments</a>
           <a href="#shop" onClick={() => setMobileMenuOpen(false)}>Remedies</a>
           <a href="#location" onClick={() => setMobileMenuOpen(false)}>Ghatal Clinic</a>
