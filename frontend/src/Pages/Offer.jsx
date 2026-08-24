@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
-import "../Css/Offer.css";
+import "../CSS/Offer.css";
 
 const defaultOffers = [
   {
