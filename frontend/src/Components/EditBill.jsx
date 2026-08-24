@@ -115,7 +115,7 @@ export default function EditSale() {
       }
     }
 
-    // Calculate elapsed days for 2-day edit window
+    // Calculate elapsed days for 7-day edit window
     try {
       const pDate = new Date(pDateVal);
       if (!isNaN(pDate.getTime())) {
@@ -123,7 +123,7 @@ export default function EditSale() {
         const diffMs = now.getTime() - pDate.getTime();
         const days = diffMs / (1000 * 60 * 60 * 24);
         setElapsedDays(Number(days.toFixed(1)));
-        if (days > 2) {
+        if (days > 7) {
           setIsExpired(true);
         }
       }
