@@ -23,6 +23,7 @@ import ProtectedRoute from "./Components/ProtectedRoute";
 import Remedies from "./Pages/Remedies.jsx"
 import Outstanding from "./Pages/Outstanding.jsx";
 import ExpiryReturn from "./Pages/ExpiryReturn.jsx";
+import Offer from "./Pages/Offer";
 
 const PurchaseEntry = lazy(() => import("./Components/PurchaseEntry"));
 // import EditPurchase from "./Components/EditPurchase";
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="/dashboard/appointments" element={<Suspense fallback={<Loader />}><Appointment /></Suspense>} />
           <Route path="/dashboard/outstanding" element={<Suspense fallback={<Loader />}><Outstanding /></Suspense>} />
           <Route path="/dashboard/expiry-return" element={<Suspense fallback={<Loader />}><ExpiryReturn /></Suspense>} />
+          <Route path="/dashboard/offer" element={<Offer />} />
         </Route>
       </Routes>
       <ToastContainer

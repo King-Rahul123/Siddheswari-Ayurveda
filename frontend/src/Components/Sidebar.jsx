@@ -141,10 +141,12 @@ export default function Sidebar() {
             </ul>
           )}
 
-          <li className={ window.location.pathname === "/dashboard/offer" ? "active" : "" } onClick={() => navigate("/dashboard/offer")} >
-            <i className="bi bi-tag"></i>
-            Offer
-          </li>
+          {loggedInUser?.role?.toLowerCase() === "admin" && (
+            <li className={ window.location.pathname === "/dashboard/offer" ? "active" : "" } onClick={() => navigate("/dashboard/offer")}>
+              <i className="bi bi-tag"></i>
+              Offer
+            </li>
+          )}
         </ul>
       </div>
 
