@@ -43,6 +43,15 @@ const seedAdmin = async () => {
 
 seedAdmin();
 
+// Serve static uploaded remedies images
+const path = require("path");
+const fs = require("fs");
+const remediesUploadDir = "D:/Mongodb_Siddheswari/Remedies";
+if (!fs.existsSync(remediesUploadDir)) {
+  fs.mkdirSync(remediesUploadDir, { recursive: true });
+}
+app.use("/remedies-images", express.static(remediesUploadDir));
+
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/customers", require("./routes/customerRoutes"));
@@ -54,6 +63,7 @@ app.use("/api/stock", require("./routes/stockRoutes"));
 app.use("/api/purchases", require("./routes/purchaseRoutes"));
 app.use("/api/sales", require("./routes/saleRoutes"));
 app.use("/api/analytics", require("./routes/analyticsRoutes"));
+app.use("/api/remedies", require("./routes/remedyRoutes"));
 
 app.get("/", (req, res) => {
   res.send("Siddheswari Ayurveda Node.js + Express Server Running");
