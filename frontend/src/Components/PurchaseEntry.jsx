@@ -808,10 +808,28 @@ export default function PurchaseEntry() {
                                                                         setActiveField("product");
                                                                         setSelectedRow(rowIndex);
                                                                     }
+
+                                                                    if (column === "batch" && (row.batch === "-" || row.batch === "—")) {
+                                                                        updateCell(rowIndex, "batch", "");
+                                                                    }
+
+                                                                    if (column === "expiry" && (row.expiry === "-" || row.expiry === "—")) {
+                                                                        updateCell(rowIndex, "expiry", "");
+                                                                    }
                                                                 }}
 
                                                                 onChange={(e) => {
                                                                     let value = e.target.value;
+
+                                                                    if (column === "batch") {
+                                                                        if (value === "-" || value === "—") {
+                                                                            value = "";
+                                                                        } else if (row.batch === "-" || row.batch === "—") {
+                                                                            value = value.replace(/[-—]/g, "");
+                                                                        } else if (value.startsWith("-") || value.startsWith("—")) {
+                                                                            value = value.replace(/^[-—]+/, "");
+                                                                        }
+                                                                    }
 
                                                                     if (column === "expiry") {
                                                                         value = value.replace(/\D/g, "");
@@ -964,9 +982,13 @@ export default function PurchaseEntry() {
                             const rateVal = product.rate !== undefined && product.rate !== null && product.rate !== ""
                                 ? product.rate
                                 : mrpVal;
-                            const batchVal = Array.isArray(product.batch)
+                            const batchRaw = Array.isArray(product.batch)
                                 ? (product.batch.length > 0 ? product.batch[product.batch.length - 1] : "")
                                 : (product.batch || "");
+                            const batchVal = (batchRaw === "-" || batchRaw === "—" || batchRaw?.trim() === "-") ? "" : batchRaw;
+
+                            const expiryRaw = product.expiry || product.expiryDate || "";
+                            const expiryVal = (expiryRaw === "-" || expiryRaw === "—" || expiryRaw?.trim() === "-") ? "" : expiryRaw;
 
                             const hsnVal = product.hsnCode || product.hsn || "";
                             const gstVal = product.gstRate !== undefined && product.gstRate !== null && product.gstRate !== ""
@@ -980,7 +1002,7 @@ export default function PurchaseEntry() {
                                 hsn: hsnVal,
                                 gst: gstVal,
                                 batch: batchVal,
-                                expiry: product.expiry || product.expiryDate || "",
+                                expiry: expiryVal,
                                 mrp: mrpVal,
                                 rate: rateVal,
                                 free: "",
