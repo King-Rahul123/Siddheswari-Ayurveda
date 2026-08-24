@@ -115,7 +115,7 @@ export default function EditSale() {
       }
     }
 
-    // Calculate elapsed days for 2-day edit window
+    // Calculate elapsed days for 7-day edit window
     try {
       const pDate = new Date(pDateVal);
       if (!isNaN(pDate.getTime())) {
@@ -123,7 +123,7 @@ export default function EditSale() {
         const diffMs = now.getTime() - pDate.getTime();
         const days = diffMs / (1000 * 60 * 60 * 24);
         setElapsedDays(Number(days.toFixed(1)));
-        if (days > 2) {
+        if (days > 7) {
           setIsExpired(true);
         }
       }
@@ -337,7 +337,7 @@ export default function EditSale() {
   // Trigger Confirmation Modal
   const handleSaveClick = () => {
     if (isExpired) {
-      alert(`Editing Restricted: This purchase invoice is ${elapsedDays} days old. Purchase invoices can only be edited within 2 days of purchase entry.`);
+      alert(`Editing Restricted: This purchase invoice is ${elapsedDays} days old. Purchase invoices can only be edited within 7 days of purchase entry.`);
       return;
     }
     setShowConfirmModal(true);
