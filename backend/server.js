@@ -49,7 +49,6 @@ const fs = require("fs");
 const remediesUploadCandidates = [
   process.env.REMEDIES_UPLOAD_DIR,
   "E:/Mongodb_Siddheswari/Remedies",
-  "D:/Mongodb_Siddheswari/Remedies",
   path.join(__dirname, "uploads", "remedies"),
 ].filter(Boolean);
 
