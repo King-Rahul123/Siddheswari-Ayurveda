@@ -6,11 +6,26 @@ const fs = require("fs");
 const Remedy = require("../models/Remedy");
 const initialRemedies = require("../config/initialRemedies.json");
 
-// Ensure local directory exists for image storage
-const uploadDir = "E:/Mongodb_Siddheswari/Remedies";
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+const candidateUploadDirs = [
+  process.env.REMEDIES_UPLOAD_DIR,
+  "E:/Mongodb_Siddheswari/Remedies",
+  "D:/Mongodb_Siddheswari/Remedies",
+  path.join(__dirname, "..", "uploads", "remedies"),
+].filter(Boolean);
+
+const resolveUploadDir = () => {
+  for (const dir of candidateUploadDirs) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      return dir;
+    } catch (err) {
+      console.warn(`Unable to use upload dir: ${dir}`, err.message);
+    }
+  }
+  throw new Error("No valid remedies upload directory is available");
+};
+
+const uploadDir = resolveUploadDir();
 
 // Multer Storage Engine
 const storage = multer.diskStorage({
@@ -28,6 +43,34 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
+
+// Ensure multer errors are returned as JSON instead of HTML.
+const uploadRemedyImage = (req, res, next) => {
+  try {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  } catch (err) {
+    return res.status(500).json({
+      message: "Remedies image folder is not accessible",
+      error: err.message,
+    });
+  }
+
+  upload.single("imageFile")(req, res, (err) => {
+    if (!err) return next();
+
+    if (err instanceof multer.MulterError) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({ message: "Image size must be less than 10MB" });
+      }
+      return res.status(400).json({ message: "Image upload failed", error: err.message });
+    }
+
+    return res.status(500).json({
+      message: "Failed to save image file. Check remedies folder permissions/path.",
+      error: err.message,
+    });
+  });
+};
 
 // GET /api/remedies - Fetch all remedies from remedies collection (no auto-seeding)
 router.get("/", async (req, res) => {
@@ -62,7 +105,7 @@ router.post("/seed", async (req, res) => {
 });
 
 // POST /api/remedies - Create a new remedy with optional file upload
-router.post("/", upload.single("imageFile"), async (req, res) => {
+router.post("/", uploadRemedyImage, async (req, res) => {
   try {
     const {
       name,

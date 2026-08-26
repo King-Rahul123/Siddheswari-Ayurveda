@@ -46,10 +46,27 @@ seedAdmin();
 // Serve static uploaded remedies images
 const path = require("path");
 const fs = require("fs");
-const remediesUploadDir = "E:/Mongodb_Siddheswari/Remedies";
-if (!fs.existsSync(remediesUploadDir)) {
-  fs.mkdirSync(remediesUploadDir, { recursive: true });
-}
+const remediesUploadCandidates = [
+  process.env.REMEDIES_UPLOAD_DIR,
+  "E:/Mongodb_Siddheswari/Remedies",
+  "D:/Mongodb_Siddheswari/Remedies",
+  path.join(__dirname, "uploads", "remedies"),
+].filter(Boolean);
+
+const resolveRemediesUploadDir = () => {
+  for (const dir of remediesUploadCandidates) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      return dir;
+    } catch (err) {
+      console.warn(`Unable to use remedies static dir: ${dir}`, err.message);
+    }
+  }
+  throw new Error("No valid remedies static directory is available");
+};
+
+const remediesUploadDir = resolveRemediesUploadDir();
+console.log("Remedies upload directory:", remediesUploadDir);
 app.use("/remedies-images", express.static(remediesUploadDir));
 
 // Routes

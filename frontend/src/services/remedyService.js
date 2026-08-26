@@ -22,7 +22,14 @@ export const addRemedy = async (remedyData) => {
     body: body,
   });
 
-  const data = await res.json();
+  const raw = await res.text();
+  let data = {};
+  try {
+    data = raw ? JSON.parse(raw) : {};
+  } catch {
+    data = { message: raw || "Server returned an invalid response" };
+  }
+
   if (!res.ok) throw new Error(data.message || "Failed to save remedy");
   return data;
 };
