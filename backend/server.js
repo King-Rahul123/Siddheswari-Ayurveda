@@ -46,7 +46,7 @@ seedAdmin();
 // Serve static uploaded remedies images
 const path = require("path");
 const fs = require("fs");
-const remediesUploadDir = "D:/Mongodb_Siddheswari/Remedies";
+const remediesUploadDir = "E:/Mongodb_Siddheswari/Remedies";
 if (!fs.existsSync(remediesUploadDir)) {
   fs.mkdirSync(remediesUploadDir, { recursive: true });
 }
