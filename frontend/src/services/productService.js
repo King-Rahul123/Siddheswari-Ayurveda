@@ -19,6 +19,45 @@ export const addProduct = async (product) => {
   return data;
 };
 
+// Update Product
+export const updateProduct = async (productId, product) => {
+  if (!productId) {
+    throw new Error("Product ID is required for update");
+  }
+
+  const res = await apiFetch(`/products/${encodeURIComponent(productId)}`, {
+    method: "PUT",
+    body: JSON.stringify(product),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to update product");
+  }
+
+  return data;
+};
+
+// Delete Product
+export const deleteProduct = async (productId) => {
+  if (!productId) {
+    throw new Error("Product ID is required for deletion");
+  }
+
+  const res = await apiFetch(`/products/${encodeURIComponent(productId)}`, {
+    method: "DELETE",
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to delete product");
+  }
+
+  return data;
+};
+
 // Real-time Products
 export const subscribeProducts = (callback) => {
   let isMounted = true;

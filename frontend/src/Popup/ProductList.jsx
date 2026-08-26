@@ -1,17 +1,30 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { subscribeProducts } from "../services/productService";
 import { subscribeStock } from "../services/stockService";
 import "../CSS/PopupList.css";
+import EditProduct from "./EditProduct";
 
-export default function ProductList({ show, onClose, onSelect, mode = "sale" }) {
+export default function ProductList({ show, onClose, onSelect }) {
 
     const [products, setProducts] = useState([]);
     const [stocks, setStocks] = useState([]);
     const [search, setSearch] = useState("");
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const [editOpen, setEditOpen] = useState(false);
+    const [editProduct, setEditProduct] = useState(null);
 
     const searchRef = useRef(null);
     const rowRefs = useRef([]);
+
+    const handleClose = useCallback(() => {
+        if (editOpen) {
+            setEditOpen(false);
+            setEditProduct(null);
+            return;
+        }
+
+        onClose();
+    }, [editOpen, onClose]);
 
     useEffect(() => {
         if (!show) return;
@@ -19,9 +32,11 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
         const unsubscribeProd = subscribeProducts(setProducts);
         const unsubscribeStock = subscribeStock(setStocks);
 
-        setTimeout(() => {
-            searchRef.current?.focus();
-        }, 100);
+        const focusTimeout = editOpen
+            ? null
+            : setTimeout(() => {
+                  searchRef.current?.focus();
+              }, 100);
 
         const handleEscape = (e) => {
             if (e.key === "Escape") {
@@ -30,7 +45,7 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
                 if (typeof e.stopImmediatePropagation === "function") {
                     e.stopImmediatePropagation();
                 }
-                onClose();
+                handleClose();
             }
         };
 
@@ -39,9 +54,10 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
         return () => {
             unsubscribeProd();
             unsubscribeStock();
+            if (focusTimeout) clearTimeout(focusTimeout);
             window.removeEventListener("keydown", handleEscape, true);
         };
-    }, [show, onClose]);
+    }, [show, editOpen, handleClose]);
 
     // Create product details map (gstRate, hsnCode, discount, rate, mrp) from Products database
     const prodDetailsMap = new Map();
@@ -138,6 +154,102 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
     });
 
     useEffect(() => {
+    if (!show || editOpen) return;
+
+    const handleF7 = (e) => {
+        if (e.key !== "F7") return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const selectedItem =
+            filteredItems[selectedIndex];
+
+        if (!selectedItem) return;
+
+        const productRecord =
+            products.find(
+                (p) =>
+                    (p.itemCode || p.code || "")
+                        .toLowerCase() ===
+                    (selectedItem.itemCode || "")
+                        .toLowerCase()
+            ) ||
+            products.find(
+                (p) =>
+                    (p.productName || p.product || "")
+                        .toLowerCase() ===
+                    (selectedItem.productName || "")
+                        .toLowerCase()
+            ) ||
+            selectedItem;
+
+        setEditProduct({
+            ...productRecord,
+
+            productName:
+                productRecord.productName ||
+                productRecord.product ||
+                "",
+
+            itemCode:
+                productRecord.itemCode ||
+                productRecord.code ||
+                "",
+
+            hsn:
+                productRecord.hsn ??
+                productRecord.hsnCode ??
+                "",
+
+            mrp: Array.isArray(productRecord.mrp)
+                ? productRecord.mrp[
+                      productRecord.mrp.length - 1
+                  ] || ""
+                : productRecord.mrp ?? "",
+
+            rate:
+                productRecord.rate ?? "",
+
+            gst:
+                productRecord.gst ??
+                productRecord.gstRate ??
+                "",
+
+            minStock:
+                productRecord.minStock ??
+                "",
+
+            discount:
+                productRecord.discount ??
+                "",
+        });
+
+        setEditOpen(true);
+    };
+
+    window.addEventListener(
+        "keydown",
+        handleF7,
+        true
+    );
+
+    return () => {
+        window.removeEventListener(
+            "keydown",
+            handleF7,
+            true
+        );
+    };
+}, [
+    show,
+    editOpen,
+    selectedIndex,
+    products,
+    filteredItems,
+]);
+
+    useEffect(() => {
         const row = rowRefs.current[selectedIndex];
         if (row) {
             row.scrollIntoView({
@@ -154,7 +266,7 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
             if (typeof e.stopImmediatePropagation === "function") {
                 e.stopImmediatePropagation();
             }
-            onClose();
+            handleClose();
             return;
         }
 
@@ -200,11 +312,16 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
     if (!show) return null;
 
     return (
-        <div className="popup-overlay">
+        <>
+        <div
+            className="popup-overlay"
+            inert={editOpen ? "" : undefined}
+            aria-hidden={editOpen}
+        >
             <div className="customer-popup" style={{ maxWidth: "750px" }}>
                 <div className="popup-header">
                     <h4>Select Product Stock</h4>
-                    <button type="button" className="popup-close" onClick={onClose} aria-label="Close">×</button>
+                    <button type="button" className="popup-close" onClick={handleClose} aria-label="Close">×</button>
                 </div>
 
                 <div className="popup-body py-2">
@@ -273,5 +390,16 @@ export default function ProductList({ show, onClose, onSelect, mode = "sale" }) 
                 </div>
             </div>
         </div>
+
+        <EditProduct
+            key={editProduct?.itemCode || editProduct?._id || editProduct?.docId || "edit-product"}
+            show={editOpen}
+            product={editProduct}
+            onClose={() => {
+                setEditOpen(false);
+                setEditProduct(null);
+            }}
+        />
+    </>
     );
 }
