@@ -7,7 +7,7 @@ const Remedy = require("../models/Remedy");
 const initialRemedies = require("../config/initialRemedies.json");
 
 // Ensure local directory exists for image storage
-const uploadDir = "D:/Mongodb_Siddheswari/Remedies";
+const uploadDir = "E:/Mongodb_Siddheswari/Remedies";
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }

@@ -97,7 +97,7 @@ export default function AddRemedies({ show, onClose, onSave }) {
                     <div className="popup-body space-y-4 p-4">
                         <div className="section-title mt-0 flex items-center gap-2 text-emerald-800 font-bold border-b pb-2">
                             <i className="bi bi-image text-xl"></i>
-                            <span>Product Image Upload (Saved to D:\Mongodb_Siddheswari\Remedies)</span>
+                            <span>Product Image Upload (Saved to E:\Mongodb_Siddheswari\Remedies)</span>
                         </div>
 
                         <div className="flex flex-col sm:flex-row items-center gap-4 bg-gray-50 p-3 rounded-xl border">
@@ -122,7 +122,7 @@ export default function AddRemedies({ show, onClose, onSave }) {
                                     onChange={handleFileChange}
                                     className="w-full text-xs text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 cursor-pointer"
                                 />
-                                <p className="text-[11px] text-gray-500 mt-1">Image will be saved to <code className="bg-gray-200 px-1 rounded text-emerald-900 font-mono text-[10px]">D:\Mongodb_Siddheswari\Remedies</code></p>
+                                <p className="text-[11px] text-gray-500 mt-1">Image will be saved to <code className="bg-gray-200 px-1 rounded text-emerald-900 font-mono text-[10px]">E:\Mongodb_Siddheswari\Remedies</code></p>
                             </div>
                         </div>
 
