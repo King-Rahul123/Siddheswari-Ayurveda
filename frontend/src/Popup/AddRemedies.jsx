@@ -86,15 +86,15 @@ export default function AddRemedies({ show, onClose, onSave }) {
                     <div className="popup-title">
                         <div className="popup-icon"><i className="bi bi-capsule-pill"></i></div>
                         <div>
-                            <h5 className="font-bold text-lg m-0">Add New Remedy</h5>
-                            <p className="text-xs text-gray-500 m-0">Register a new product remedy to database</p>
+                            <h5 className="font-bold text-lg m-0 text-black">Add New Remedy</h5>
+                            <p className="text-xs text-black m-0">Register a new product remedy to database</p>
                         </div>
                     </div>
                     <button type="button" className="close-btn text-xl font-bold" onClick={handleCancel} aria-label="Close">&times;</button>
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    <div className="popup-body space-y-4 p-4">
+                    <div className="popup-body space-y-2 px-2 py-0">
                         <div className="section-title mt-0 flex items-center gap-2 text-emerald-800 font-bold border-b pb-2">
                             <i className="bi bi-image text-xl"></i>
                             <span>Product Image Upload (Preferred: E:\Mongodb_Siddheswari\Remedies)</span>

@@ -435,13 +435,14 @@
   width: 850px;
   max-width: 100%;
   max-height: calc(100vh - 40px);
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
   border: 2px solid #e8f5e9;
+  border-radius: 20px;
   box-shadow: 0 20px 50px rgba(46, 125, 50, 0.15);
   animation: popupFade 0.3s ease;
-  scroll-behavior: smooth;
-  overscroll-behavior: contain;
+  overflow: hidden;
 }
 
 /* Scrollbar */
@@ -466,6 +467,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.customer-popup form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
 }
 
 .customer-popup .popup-title {
@@ -501,7 +509,12 @@
 }
 
 .customer-popup .popup-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 0 32px;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
 }
 
 .customer-popup .section-title {
@@ -515,6 +528,23 @@
   margin-top: 20px;
 }
 
+.customer-popup .popup-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.customer-popup .popup-body::-webkit-scrollbar-track {
+  background: #f1f8f2;
+  border-radius: 10px;
+}
+
+.customer-popup .popup-body::-webkit-scrollbar-thumb {
+  background: #81c784;
+  border-radius: 10px;
+}
+
+.customer-popup .popup-body::-webkit-scrollbar-thumb:hover {
+  background: #66bb6a;
+}
 
 .customer-popup .popup-grid {
   display: grid;
