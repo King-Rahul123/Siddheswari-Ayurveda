@@ -825,9 +825,11 @@ export default function PurchaseEntry() {
                                                                         if (value === "-" || value === "—") {
                                                                             value = "";
                                                                         } else if (row.batch === "-" || row.batch === "—") {
-                                                                            value = value.replace(/[-—]/g, "");
+                                                                            value = value.replace(/[-—]/g, "").toUpperCase();
                                                                         } else if (value.startsWith("-") || value.startsWith("—")) {
-                                                                            value = value.replace(/^[-—]+/, "");
+                                                                            value = value.replace(/^[-—]+/, "").toUpperCase();
+                                                                        }else {
+                                                                            value = value.toUpperCase();
                                                                         }
                                                                     }
 
