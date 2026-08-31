@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addPatient } from '../services/patientService';
 
@@ -12,6 +12,11 @@ function Landing() {
   const [bookingForm, setBookingForm] = useState({ patientName: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState('');
+  const [showOffer, setShowOffer] = useState(false);
+
+  useEffect(() => {
+    setShowOffer(true);
+  }, []);
 
   // Comprehensive Product Catalog with detailed specifications
   const products = [
@@ -150,6 +155,7 @@ function Landing() {
           <a href="#treatments" onClick={() => setMobileMenuOpen(false)}>Treatments</a>
           <a href="#shop" onClick={() => setMobileMenuOpen(false)}>Remedies</a>
           <a href="#location" onClick={() => setMobileMenuOpen(false)}>Ghatal Clinic</a>
+          <a href="shop" onClick={() => setMobileMenuOpen(false)}>Shop</a>
           <button className="gold-portal-btn block md:hidden" onClick={() => navigate('/login')}>
             <i className="bi bi-person-circle"></i> Log In
           </button>
@@ -255,7 +261,7 @@ function Landing() {
       {/* Doctor & Timetable Section */}
       <section className="doctor-section" id="doctor">
         <div className="container">
-          <div className="glass-card-large grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 p-5 sm:p-6 md:p-8 lg:p-12 items-center">
+          <div className="doctor-main-card glass-card-large grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-14 p-5 sm:p-6 md:p-8 lg:p-12 items-center">
             <div className="relative overflow-hidden rounded-2xl border-2 border-yellow-600 shadow-xl">
               <img 
                 src="/images/doctor.png" 
@@ -372,7 +378,7 @@ function Landing() {
             <div className="gold-divider"></div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          <div className="treatments-responsive-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             {treatmentsList.map((item) => (
               <div key={item.id} className="treatment-card-small">
                 <div className="icon-box">
@@ -396,7 +402,7 @@ function Landing() {
           </div>
 
           {/* Product Grid (Filtered to top 3) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          <div className="products-responsive-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             {displayedProducts.map((prod) => (
               <div key={prod.id} className="product-card-modern">
                 <div className="product-image-wrap">
@@ -504,7 +510,7 @@ function Landing() {
       {/* Location & Contact Section */}
       <section className="location-section" id="location">
         <div className="container">
-          <div className="location-card glass-card-large grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 p-5 sm:p-6 lg:p-10 items-center">
+          <div className="location-card glass-card-large grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 p-5 sm:p-6 md:p-8 lg:p-10 items-center">
             <div className="location-info">
               <span className="section-kicker">Visit Our Authentic Clinic</span>
               <h2 className='text-black'>Siddheswari Ayurveda Clinic & Pharmacy</h2>
@@ -596,6 +602,58 @@ function Landing() {
           </div>
         </div>
       </footer>
+    
+      {showOffer && (
+        <div className="offer-popup-overlay">
+          <div className="offer-popup">
+
+            <button
+              className="offer-popup-close"
+              onClick={() => setShowOffer(false)}
+              aria-label="Close offer"
+            >
+              <i className="bi bi-x-lg"></i>
+            </button>
+
+            <div className="offer-popup-icon">
+              <i className="bi bi-gift-fill"></i>
+            </div>
+
+            <span className="offer-popup-kicker">
+              🌿 CURRENT OFFER 🌿
+            </span>
+
+            <h2>Special Ayurvedic Offer</h2>
+
+            <div className="offer-discount">
+              <span>15%</span> OFF
+            </div>
+
+            <p>
+              Enjoy <strong>15% OFF</strong> on selected Ayurvedic
+              products from Siddheswari Ayurveda.
+            </p>
+
+            <span className="offer-limited">
+              ✨ Limited Time Offer ✨
+            </span>
+
+            <button
+              className="btn-gold-primary offer-shop-btn"
+              onClick={() => {
+                setShowOffer(false);
+                document.getElementById('shop')?.scrollIntoView({
+                  behavior: 'smooth'
+                });
+              }}
+            >
+              <i className="bi bi-bag-heart-fill"></i>
+              Shop Now
+            </button>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }
