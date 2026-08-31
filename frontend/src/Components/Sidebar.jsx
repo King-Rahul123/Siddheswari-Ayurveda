@@ -91,6 +91,11 @@ export default function Sidebar() {
                 Purchase invoice
               </li>
 
+              <li className={ window.location.pathname === "/dashboard/expiry-return" ? "active" : "" } onClick={() => navigate("/dashboard/expiry-return")} >
+                <i className="bi bi-arrow-repeat"></i>
+                Expiry & Return
+              </li>
+
               <li className={ window.location.pathname === "/dashboard/outstanding" ? "active" : "" } onClick={() => navigate("/dashboard/outstanding")} >
                 <i className="bi bi-cash-stack"></i>
                 Outstanding
@@ -119,11 +124,6 @@ export default function Sidebar() {
               <li className={ window.location.pathname === "/dashboard/stock-report" ? "active" : "" } onClick={() => navigate("/dashboard/stock-report")} >
                 <i className="bi bi-box-seam"></i>
                 Stock Report
-              </li>
-
-              <li className={ window.location.pathname === "/dashboard/expiry-return" ? "active" : "" } onClick={() => navigate("/dashboard/expiry-return")} >
-                <i className="bi bi-cart-check"></i>
-                Expiry Return
               </li>
 
               {loggedInUser?.role?.toLowerCase() === "admin" && (
