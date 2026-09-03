@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "../CSS/Shop.css";
 import "../CSS/Landing.css";
 import { subscribeRemedies } from "../services/remedyService";
+import { getImageUrl } from "../api/config";
 
 export default function Shop() {
   const navigate = useNavigate();
@@ -51,26 +52,6 @@ export default function Shop() {
       unsubscribe();
     };
   }, []);
-
-  // =========================================================
-  // IMAGE URL
-  // =========================================================
-
-  const getImageUrl = (img) => {
-    if (!img) {
-      return "/images/placeholder.png";
-    }
-
-    if (typeof img !== "string") {
-      return "/images/placeholder.png";
-    }
-
-    if (img.startsWith("/remedies-images")) {
-      return `http://localhost:5000${img}`;
-    }
-
-    return img;
-  };
 
   // =========================================================
   // CATEGORIES
