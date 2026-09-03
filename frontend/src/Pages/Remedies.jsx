@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../CSS/Remedies.css';
 import { subscribeRemedies } from '../services/remedyService';
+import { getImageUrl } from '../api/config';
 
 function Remedies() {
   const navigate = useNavigate();
@@ -17,12 +18,6 @@ function Remedies() {
     const unsubscribe = subscribeRemedies(setProducts);
     return () => unsubscribe();
   }, []);
-
-  const getImageUrl = (img) => {
-    if (!img) return "/images/placeholder.png";
-    if (img.startsWith("/remedies-images")) return `http://localhost:5000${img}`;
-    return img;
-  };
 
   // Filter Tabs definition
   const filterTabs = [
