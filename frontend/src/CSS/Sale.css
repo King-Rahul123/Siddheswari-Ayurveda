@@ -120,8 +120,8 @@
     }
 }
 
-/* Maintenance Popup Modal */
-.maintenance-popup-overlay {
+/* Sale bill popup */
+.bill-popup-overlay {
     position: fixed;
     inset: 0;
     background: rgba(15, 23, 42, 0.55);
@@ -133,15 +133,127 @@
     animation: fadeIn 0.2s ease-out;
 }
 
-.maintenance-popup-card {
+.bill-popup-card {
     position: relative;
     background: #ffffff;
-    width: 440px;
-    max-width: 90%;
-    border-radius: 20px;
+    width: min(720px, 92vw);
+    max-height: 88vh;
+    border-radius: 14px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    padding: 28px 24px 20px 24px;
-    text-align: center;
+    padding: 24px;
+    overflow-y: auto;
+    animation: slideUp 0.25s ease-out;
+}
+
+.bill-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-right: 36px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 16px;
+}
+
+.bill-popup-eyebrow {
+    color: #15803d;
+    font-size: 12px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    text-transform: uppercase;
+}
+
+.bill-popup-header h3 {
+    color: #0f172a;
+    font-size: 22px;
+    margin: 0;
+}
+
+.bill-popup-header > span {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.bill-popup-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    border: 0;
+    background: #f1f5f9;
+    color: #64748b;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.bill-popup-meta {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    padding: 18px 0;
+}
+
+.bill-popup-meta div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bill-popup-meta span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.bill-popup-meta strong {
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.bill-popup-items {
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.bill-popup-items table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 480px;
+}
+
+.bill-popup-items th,
+.bill-popup-items td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.bill-popup-items th {
+    background: #f0fdf4;
+    color: #166534;
+    font-size: 12px;
+}
+
+.bill-popup-items td {
+    color: #334155;
+    font-size: 13px;
+}
+
+.bill-popup-total {
+    display: flex;
+    justify-content: flex-end;
+    gap: 24px;
+    padding-top: 18px;
+    color: #334155;
+}
+
+.bill-popup-total strong {
+    color: #15803d;
+    font-size: 18px;
+}
+
+/* Legacy maintenance styles retained for other callers. */
+.maintenance-popup-overlay {
     overflow: hidden;
     animation: slideUp 0.25s ease-out;
 }
@@ -224,4 +336,14 @@
 @keyframes slideUp {
     from { transform: translateY(20px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 600px) {
+    .bill-popup-card {
+        padding: 18px;
+    }
+
+    .bill-popup-meta {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

@@ -1,18 +1,21 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import "../CSS/Card.css";
 import "../CSS/SaleInvoice.css";
 import CustomerList from "../Popup/CustomerList";
 import ProductList from "../Popup/ProductList";
-import { addSale, getNextSaleId, getCurrentSaleId } from "../services/saleService";
+import { addSale, updateSale, getNextSaleId, getCurrentSaleId } from "../services/saleService";
 
 export default function SaleInvoice() {
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const editingSale = state?.sale || null;
+  const isEditMode = Boolean(editingSale?.saleId);
   const [customer, setCustomer] = useState({
-    customerCode: "",
-    customerName: "",
-    phone: "",
+    customerCode: editingSale?.customerCode || "",
+    customerName: editingSale?.customerName || "",
+    phone: editingSale?.customerPhone || "",
   });
 
   const [showCustomerPopup, setShowCustomerPopup] = useState(false);
@@ -20,9 +23,9 @@ export default function SaleInvoice() {
   const [showEndConfirmModal, setShowEndConfirmModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState(0);
 
-  const [saleId, setSaleId] = useState("");
+  const [saleId, setSaleId] = useState(editingSale?.saleId || "");
   const [invoiceDate, setInvoiceDate] = useState(
-    new Date().toISOString().split("T")[0]
+    editingSale?.date || new Date().toISOString().split("T")[0]
   );
 
   const [toast, setToast] = useState({
@@ -39,8 +42,18 @@ export default function SaleInvoice() {
   const invoiceRef = useRef(null);
   const lastFocusedElement = useRef(null);
 
-  const [items, setItems] = useState([
-    {
+  const [items, setItems] = useState(() => {
+    if (Array.isArray(editingSale?.items) && editingSale.items.length > 0) {
+      return editingSale.items.map((item) => ({
+        ...item,
+        hsn: item.hsn || item.hsnCode || "",
+        qty: item.qty ?? "",
+        discount: item.discount ?? "",
+        amount: Number(item.amount || 0),
+      }));
+    }
+
+    return [{
       itemCode: "",
       productName: "",
       hsn: "",
@@ -52,10 +65,12 @@ export default function SaleInvoice() {
       discount: "",
       gst: "",
       amount: 0,
-    },
-  ]);
+    }];
+  });
 
   useEffect(() => {
+    if (isEditMode) return;
+
     async function loadBillNo() {
       try {
         const id = await getCurrentSaleId();
@@ -65,7 +80,7 @@ export default function SaleInvoice() {
       }
     }
     loadBillNo();
-  }, []);
+  }, [isEditMode]);
 
   // Global listener for End key shortcut
   useEffect(() => {
@@ -81,29 +96,6 @@ export default function SaleInvoice() {
       window.removeEventListener("keydown", handleGlobalKeyDown);
     };
   }, []);
-
-  // Modal key controls for End key confirmation modal
-  useEffect(() => {
-    if (!showEndConfirmModal) return;
-
-    const handleModalKeyDown = (e) => {
-      if (e.key === "Escape" || e.key.toLowerCase() === "c") {
-        e.preventDefault();
-        setShowEndConfirmModal(false);
-      } else if (e.key.toLowerCase() === "s") {
-        e.preventDefault();
-        setShowEndConfirmModal(false);
-        saveInvoice();
-      } else if (e.key.toLowerCase() === "p") {
-        e.preventDefault();
-        setShowEndConfirmModal(false);
-        handlePrint();
-      }
-    };
-
-    window.addEventListener("keydown", handleModalKeyDown);
-    return () => window.removeEventListener("keydown", handleModalKeyDown);
-  }, [showEndConfirmModal, items, customer, invoiceDate]);
 
   const addRow = () => {
     setItems((prev) => [
@@ -161,8 +153,6 @@ export default function SaleInvoice() {
 
       const qty = Number(current.qty || 0);
       const mrp = Number(current.mrp || 0);
-      const discount = Number(current.discount || 0);
-
       // Warn if user enters qty greater than available stock
       if (field === "qty" && current.availableStock !== undefined && qty > current.availableStock) {
         setToast({
@@ -322,7 +312,7 @@ export default function SaleInvoice() {
           });
           return false;
         }
-        if (item.availableStock !== undefined && qtyNum > item.availableStock) {
+        if (!isEditMode && item.availableStock !== undefined && qtyNum > item.availableStock) {
           setToast({
             show: true,
             message: `Cannot save bill: Quantity (${qtyNum}) exceeds available stock (${item.availableStock}) for "${item.productName}"`,
@@ -337,7 +327,7 @@ export default function SaleInvoice() {
         0
       );
 
-      const generatedSaleId = await getNextSaleId();
+      const generatedSaleId = isEditMode ? saleId : await getNextSaleId();
 
       const saleData = {
         saleId: generatedSaleId,
@@ -355,7 +345,21 @@ export default function SaleInvoice() {
         createdBy: loggedInUser?.username || "Admin",
       };
 
-      await addSale(saleData, validItems);
+      if (isEditMode) {
+        await updateSale(saleId, saleData, validItems);
+      } else {
+        await addSale(saleData, validItems);
+      }
+
+      if (isEditMode) {
+        setToast({
+          show: true,
+          message: `${saleId} updated successfully`,
+          type: "success",
+        });
+        setTimeout(() => navigate("/dashboard/sales"), 700);
+        return true;
+      }
 
       const nextDisplayId = await getCurrentSaleId();
       setSaleId(nextDisplayId);
@@ -438,6 +442,28 @@ export default function SaleInvoice() {
     });
   };
 
+  useEffect(() => {
+    if (!showEndConfirmModal) return;
+
+    const handleModalKeyDown = (e) => {
+      if (e.key === "Escape" || e.key.toLowerCase() === "c") {
+        e.preventDefault();
+        setShowEndConfirmModal(false);
+      } else if (e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        setShowEndConfirmModal(false);
+        saveInvoice();
+      } else if (e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        setShowEndConfirmModal(false);
+        handlePrint();
+      }
+    };
+
+    window.addEventListener("keydown", handleModalKeyDown);
+    return () => window.removeEventListener("keydown", handleModalKeyDown);
+  }, [showEndConfirmModal, items, customer, invoiceDate]);
+
   return (
     <div className="dashboard">
       <Sidebar />
@@ -467,7 +493,7 @@ export default function SaleInvoice() {
                 className="bi bi-arrow-left bg-gray-500 py-1 px-2 text-white rounded-lg cursor-pointer"
                 onClick={() => window.history.back()}
               ></i>
-              <h2>Sales Invoice</h2>
+              <h2>{isEditMode ? "Edit Sales Invoice" : "Sales Invoice"}</h2>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -475,14 +501,14 @@ export default function SaleInvoice() {
                 className="print-btn"
                 onClick={handlePrint}
               >
-                Save & Print
+                {isEditMode ? "Update & Print" : "Save & Print"}
               </button>
               <button
                 type="button"
                 className="save-btn"
                 onClick={saveInvoice}
               >
-                Save
+                {isEditMode ? "Update" : "Save"}
               </button>
             </div>
           </div>

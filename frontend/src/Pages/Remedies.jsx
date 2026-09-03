@@ -128,7 +128,7 @@ function Remedies() {
         {/* Single continuous grid for all filtered products */}
         <div className="catalog-wrapper animate-in" key={`${activeCategory}-${searchQuery}`} style={{ animationDelay: '0.1s' }}>
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {filteredProducts.map((prod) => (
                 <div key={prod._id || prod.remedyId || prod.id} className="product-card-modern">
                   <div className="product-image-wrap">

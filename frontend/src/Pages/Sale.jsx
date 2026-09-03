@@ -14,7 +14,6 @@ export default function Sales() {
 
     const [salesData, setSalesData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showMaintenancePopup, setShowMaintenancePopup] = useState(false);
 
     useEffect(() => {
         const unsubscribe = subscribeSales((data) => {
@@ -25,18 +24,9 @@ export default function Sales() {
         return () => unsubscribe();
     }, []);
 
-    // Auto-close maintenance popup after 5 seconds
-    useEffect(() => {
-        if (!showMaintenancePopup) return;
-        const timer = setTimeout(() => {
-            setShowMaintenancePopup(false);
-        }, 5000);
-        return () => clearTimeout(timer);
-    }, [showMaintenancePopup]);
-
-    const handleEditClick = (e) => {
+    const handleEditClick = (e, sale) => {
         e.preventDefault();
-        setShowMaintenancePopup(true);
+        navigate("/dashboard/sales/sale-invoice", { state: { sale } });
     };
 
     const filteredSales = salesData.filter((sale) => {
@@ -159,8 +149,8 @@ export default function Sales() {
                                             <td className="gap-2 flex justify-center">
                                                 <button
                                                     className="edit-btn"
-                                                    title="Edit Sale (Under Maintenance)"
-                                                    onClick={handleEditClick}
+                                                    title="Open Sale Bill"
+                                                    onClick={(e) => handleEditClick(e, sale)}
                                                 >
                                                     <i className="bi bi-pencil-square text-gray-500"></i>
                                                 </button>
@@ -184,30 +174,6 @@ export default function Sales() {
                 </main>
             </div>
 
-            {/* Maintenance Popup Modal (Auto Closes in 5 Seconds) */}
-            {showMaintenancePopup && (
-                <div className="maintenance-popup-overlay" onClick={() => setShowMaintenancePopup(false)}>
-                    <div className="maintenance-popup-card" onClick={(e) => e.stopPropagation()}>
-                        <button
-                            className="maintenance-close-btn"
-                            onClick={() => setShowMaintenancePopup(false)}
-                            title="Close"
-                        >
-                            <i className="bi bi-x-lg"></i>
-                        </button>
-                        <div className="maintenance-icon">
-                            <i className="bi bi-tools"></i>
-                        </div>
-                        <h4 className="maintenance-title">Notice</h4>
-                        <p className="maintenance-message">
-                            This feature is currently under maintenance. We’ll be back shortly with an enhanced experience. Thank you for your patience!
-                        </p>
-                        <div className="maintenance-timer-bar">
-                            <div className="maintenance-timer-progress"></div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

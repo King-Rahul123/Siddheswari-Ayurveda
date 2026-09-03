@@ -113,6 +113,135 @@ router.get("/unpaid-bills", async (req, res) => {
   }
 });
 
+const findStockForItem = async (item) => {
+  const code = (item.itemCode || item.productId || "").toString().trim();
+  const name = (item.productName || "").toString().trim();
+  const targetStockId = item.stockId || item._id;
+
+  if (targetStockId) {
+    const stockOrConditions = [{ stockId: targetStockId }];
+    if (mongoose.Types.ObjectId.isValid(targetStockId)) {
+      stockOrConditions.push({ _id: targetStockId });
+    }
+    const stock = await Stock.findOne({ $or: stockOrConditions });
+    if (stock) return stock;
+  }
+
+  if (code && item.batch) {
+    const stock = await Stock.findOne({ itemCode: code, batch: item.batch });
+    if (stock) return stock;
+  }
+  if (code) {
+    const stock = await Stock.findOne({ itemCode: code });
+    if (stock) return stock;
+  }
+  if (name) {
+    const nameRegex = new RegExp("^" + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "$", "i");
+    return Stock.findOne(item.batch
+      ? { productName: nameRegex, batch: item.batch }
+      : { productName: nameRegex });
+  }
+  return null;
+};
+
+const adjustSaleStock = async (items, amount) => {
+  for (const item of items || []) {
+    const qty = Number(item.qty || 0);
+    if (qty <= 0) continue;
+
+    const code = item.itemCode || item.productId;
+    if (code) {
+      await Product.findOneAndUpdate({ itemCode: code }, { $inc: { stock: amount * qty } });
+    }
+
+    const stock = await findStockForItem(item);
+    if (stock) {
+      await Stock.findByIdAndUpdate(stock._id, { $inc: { qty: amount * qty } });
+    }
+  }
+};
+
+router.put("/:saleId", async (req, res) => {
+  let stockRestored = false;
+  let stockApplied = false;
+
+  try {
+    const { saleId } = req.params;
+    const { saleData, items } = req.body;
+    const sale = await Sale.findOne({
+      $or: [{ saleId }, { _id: mongoose.Types.ObjectId.isValid(saleId) ? saleId : null }]
+    });
+
+    if (!sale) return res.status(404).json({ message: "Sale invoice not found" });
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "Sale must contain at least one item." });
+    }
+
+    await adjustSaleStock(sale.items, 1);
+    stockRestored = true;
+
+    for (const item of items) {
+      const qty = Number(item.qty || 0);
+      if (qty <= 0) {
+        const error = new Error(`Invalid quantity for ${item.productName || "item"}.`);
+        error.statusCode = 400;
+        throw error;
+      }
+      const stock = await findStockForItem(item);
+      const product = !stock && item.itemCode
+        ? await Product.findOne({ itemCode: item.itemCode })
+        : null;
+      const available = Number(stock?.qty ?? product?.stock ?? 0);
+      if (qty > available) {
+        const error = new Error(`Insufficient stock for ${item.productName || item.itemCode || "item"}. Available stock: ${available}.`);
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
+    const processedItems = items.map((item) => {
+      const mrp = Number(item.mrp || item.rate || 0);
+      return {
+        ...item,
+        mrp,
+        rate: Number(item.rate || mrp),
+        amount: Number(item.qty || 0) * mrp,
+        hsn: item.hsn || item.hsnCode || ""
+      };
+    });
+
+    await adjustSaleStock(processedItems, -1);
+    stockApplied = true;
+
+    const paidAmount = Number(sale.paidAmount || 0);
+    const grandTotal = Number(saleData?.grandTotal || saleData?.netAmount || 0);
+    const dueAmount = Math.max(0, grandTotal - paidAmount);
+    sale.set({
+      ...saleData,
+      saleId: sale.saleId,
+      paidAmount,
+      dueAmount,
+      status: dueAmount <= 0 ? "Paid" : paidAmount > 0 ? "Partial" : "Due",
+      paymentMethod: sale.paymentMethod,
+      items: processedItems
+    });
+    await sale.save();
+
+    try {
+      sale.pdfPath = await generateSalePDF(sale.toObject(), processedItems);
+      await sale.save();
+    } catch (pdfErr) {
+      console.error("Error regenerating PDF invoice:", pdfErr);
+    }
+
+    res.json(sale);
+  } catch (error) {
+    if (stockApplied) await adjustSaleStock(req.body.items, 1);
+    if (stockRestored) await adjustSaleStock((await Sale.findOne({ saleId: req.params.saleId }))?.items || [], -1);
+    res.status(error.statusCode || 500).json({ message: error.message });
+  }
+});
+
 // Update payment for a specific sale
 router.patch("/:saleId/payment", async (req, res) => {
   try {

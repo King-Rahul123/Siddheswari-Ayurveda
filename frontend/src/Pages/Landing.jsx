@@ -155,7 +155,7 @@ function Landing() {
           <a href="#treatments" onClick={() => setMobileMenuOpen(false)}>Treatments</a>
           <a href="#shop" onClick={() => setMobileMenuOpen(false)}>Remedies</a>
           <a href="#location" onClick={() => setMobileMenuOpen(false)}>Ghatal Clinic</a>
-          <a href="shop" onClick={() => setMobileMenuOpen(false)}>Shop</a>
+          <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Shop</a>
           <button className="gold-portal-btn block md:hidden" onClick={() => navigate('/login')}>
             <i className="bi bi-person-circle"></i> Log In
           </button>
@@ -319,7 +319,7 @@ function Landing() {
                 ) : (
                   <form className="quick-booking-form" onSubmit={handleBookConsultation}>
                     <div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid md:grid-cols-2 gap-2">
                         <input 
                           type="text" 
                           placeholder="Your Name" 
@@ -341,7 +341,7 @@ function Landing() {
                         type="text"
                         placeholder="Problem / Notes"
                         required={false}
-                        className="booking-input mt-3"
+                        className="booking-input mt-2"
                         value={bookingForm.notes || ''}
                         onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
                       />

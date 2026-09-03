@@ -25,6 +25,7 @@ import Outstanding from "./Pages/Outstanding.jsx";
 import ExpiryReturn from "./Pages/ExpiryReturn.jsx";
 import Offer from "./Pages/Offer";
 import SalesReturn from "./Components/SalesReturn.jsx";
+import Shop from "./Pages/Shop.jsx";
 
 const PurchaseEntry = lazy(() => import("./Components/PurchaseEntry"));
 // import EditPurchase from "./Components/EditPurchase";
@@ -36,6 +37,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/remedies" element={<Remedies />} />
+        <Route path="/shop" element={<Suspense fallback={<Loader />}><Shop /></Suspense>} />
         <Route path="/login" element={<Login />} />
         <Route element={<ProtectedRoute />}>
           {/* Dashboard */}

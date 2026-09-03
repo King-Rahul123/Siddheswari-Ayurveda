@@ -27,6 +27,16 @@ export const addSale = async (saleData, items) => {
   return data;
 };
 
+export const updateSale = async (saleId, saleData, items) => {
+  const res = await apiFetch(`/sales/${encodeURIComponent(saleId)}`, {
+    method: "PUT",
+    body: JSON.stringify({ saleData, items })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to update sale");
+  return data;
+};
+
 // Real-time Sales
 export const subscribeSales = (callback) => {
   let isMounted = true;
