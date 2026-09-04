@@ -221,11 +221,9 @@ router.put("/:id", async (req, res) => {
 
     if (diffInDays > 7) {
       return res.status(400).json({
-        message: "This purchase invoice is more than 2 days old and cannot be edited."
+        message: "This purchase invoice is more than 7 days old and cannot be edited."
       });
     }
-
-    // --- REPLACE EVERYTHING FROM "// Map old item quantities" DOWN TO res.json ---
 
     // Capture the old items before we overwrite the purchase document
     const oldItemsList = (originalItems && originalItems.length > 0) ? originalItems : (existingPurchase.items || []);
