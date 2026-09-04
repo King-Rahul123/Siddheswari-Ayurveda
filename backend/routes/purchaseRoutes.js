@@ -219,7 +219,7 @@ router.put("/:id", async (req, res) => {
     const now = new Date();
     const diffInDays = (now - pDate) / (1000 * 60 * 60 * 24);
 
-    if (diffInDays > 2) {
+    if (diffInDays > 7) {
       return res.status(400).json({
         message: "This purchase invoice is more than 2 days old and cannot be edited."
       });
