@@ -115,7 +115,7 @@ export default function EditSale() {
       }
     }
 
-    // Calculate elapsed days for 7-day edit window
+    // Calculate elapsed days for 15-day edit window
     try {
       const pDate = new Date(pDateVal);
       if (!isNaN(pDate.getTime())) {
@@ -123,7 +123,7 @@ export default function EditSale() {
         const diffMs = now.getTime() - pDate.getTime();
         const days = diffMs / (1000 * 60 * 60 * 24);
         setElapsedDays(Number(days.toFixed(1)));
-        if (days > 7) {
+        if (days > 15) {
           setIsExpired(true);
         }
       }
@@ -337,7 +337,7 @@ export default function EditSale() {
   // Trigger Confirmation Modal
   const handleSaveClick = () => {
     if (isExpired) {
-      alert(`Editing Restricted: This purchase invoice is ${elapsedDays} days old. Purchase invoices can only be edited within 7 days of purchase entry.`);
+      alert(`Editing Restricted: This purchase invoice is ${elapsedDays} days old. Purchase invoices can only be edited within 15 days of purchase entry.`);
       return;
     }
     setShowConfirmModal(true);
@@ -403,12 +403,12 @@ export default function EditSale() {
         <Header />
         <main className="edit-bill-wrapper">
           <div className="edit-bill-card">
-            {/* 2-Day Limit Warning Banner if Expired */}
+            {/* 15-Day Limit Warning Banner if Expired */}
             {isExpired && (
               <div className="expired-alert-banner">
                 <i className="bi bi-exclamation-triangle-fill text-xl"></i>
                 <span>
-                  <strong>Editing Restricted:</strong> This purchase invoice was entered {elapsedDays} days ago. Purchase invoices can only be edited within 2 days of purchase entry.
+                  <strong>Editing Restricted:</strong> This purchase invoice was entered {elapsedDays} days ago. Purchase invoices can only be edited within 15 days of purchase entry.
                 </span>
               </div>
             )}

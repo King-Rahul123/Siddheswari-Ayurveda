@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import "../CSS/Sale.css";
 import { subscribeSales } from "../services/saleService";
 import { API_BASE_URL } from "../api/config";
+import { apiFetch } from "../api/apiClient";
 
 export default function Sales() {
 
@@ -14,6 +16,7 @@ export default function Sales() {
 
     const [salesData, setSalesData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [returnedBillNumbers, setReturnedBillNumbers] = useState(new Set());
 
     useEffect(() => {
         const unsubscribe = subscribeSales((data) => {
@@ -24,15 +27,72 @@ export default function Sales() {
         return () => unsubscribe();
     }, []);
 
+    useEffect(() => {
+        const fetchReturnedBills = async () => {
+            try {
+                const res = await apiFetch("/sales/returns");
+                if (res.ok) {
+                    const data = await res.json();
+                    const returns = Array.isArray(data)
+                        ? data
+                        : data.returns || data.salesReturns || [];
+                    const billSet = new Set();
+                    returns.forEach((ret) => {
+                        if (ret.billNumber) billSet.add(String(ret.billNumber).trim().toLowerCase());
+                        if (ret.saleId) billSet.add(String(ret.saleId).trim().toLowerCase());
+                        if (ret.invoiceNumber) billSet.add(String(ret.invoiceNumber).trim().toLowerCase());
+                        if (ret.returnId) billSet.add(String(ret.returnId).trim().toLowerCase());
+                    });
+                    setReturnedBillNumbers(billSet);
+                }
+            } catch (err) {
+                console.error("Error fetching sales returns in Sales:", err);
+            }
+        };
+
+        fetchReturnedBills();
+    }, []);
+
+    const isBillReturned = (sale) => {
+        if (!sale) return false;
+        const keys = [
+            sale.saleId,
+            sale.billNumber,
+            sale.billnumber,
+            sale.invoiceNumber,
+            sale.id,
+            sale._id
+        ].filter(Boolean);
+
+        return keys.some((k) => returnedBillNumbers.has(String(k).trim().toLowerCase()));
+    };
+
     const handleEditClick = (e, sale) => {
         e.preventDefault();
+        if (isBillReturned(sale)) {
+            toast.warning("This bill cannot be edited because it is present in Expiry & Return (Original Return).");
+            return;
+        }
         navigate("/dashboard/sales/sale-invoice", { state: { sale } });
     };
 
+    const handleReturnRedirect = (sale) => {
+        const targetBill = sale.saleId || sale.billNumber || sale.id || "";
+        navigate("/dashboard/expiry-return", {
+            state: {
+                tab: "sales",
+                search: targetBill,
+                billNumber: targetBill
+            }
+        });
+    };
+
     const filteredSales = salesData.filter((sale) => {
-        const matchesSearch = (sale.customerName || "")
-            .toLowerCase()
-            .includes(search.toLowerCase());
+        const query = search.toLowerCase();
+        const matchesSearch =
+            (sale.customerName || "").toLowerCase().includes(query) ||
+            (sale.saleId || "").toLowerCase().includes(query) ||
+            (sale.billNumber || "").toLowerCase().includes(query);
 
         const matchesDate =
             selectedDate === "" || sale.date === selectedDate;
@@ -64,9 +124,9 @@ export default function Sales() {
 
     return (
         <div className="dashboard">
-        <Sidebar />
+            <Sidebar />
             <div className="dashboard-wrapper">
-            <Header />
+                <Header />
                 <main className="dashboard-content">
                     <div className="sales-header">
                         <div>
@@ -105,7 +165,7 @@ export default function Sales() {
                     <div className="sales-toolbar">
                         <div className="search-box">
                             <i className="bi bi-search"></i>
-                            <input type="text" placeholder="Search customer..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                            <input type="text" placeholder="Search customer or bill..." value={search} onChange={(e) => setSearch(e.target.value)} />
                         </div>
                         <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="border-gray-300 border-2 p-2 h-9 rounded-xl" />
                         <p className="text-gray-500 text-sm">Total Bills: {filteredSales.length}</p>
@@ -139,34 +199,61 @@ export default function Sales() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredSales.map((sale) => (
-                                        <tr key={sale.saleId}>
-                                            <td>{sale.saleId}</td>
-                                            <td>{sale.date}</td>
-                                            <td>{sale.customerName}</td>
-                                            <td>₹{Number(sale.totalAmount || sale.total || 0).toFixed(2)}</td>
-                                            <td>₹{Number(sale.netAmount || sale.grandTotal || sale.totalAmount || 0).toFixed(2)}</td>
-                                            <td className="gap-2 flex justify-center">
-                                                <button
-                                                    className="edit-btn"
-                                                    title="Open Sale Bill"
-                                                    onClick={(e) => handleEditClick(e, sale)}
-                                                >
-                                                    <i className="bi bi-pencil-square text-gray-500"></i>
-                                                </button>
-                                                <button
-                                                    className="view-btn"
-                                                    title="View / Download PDF Invoice"
-                                                    onClick={() => {
-                                                        const token = localStorage.getItem("token");
-                                                        window.open(`${API_BASE_URL}/sales/pdf/${encodeURIComponent(sale.saleId)}?token=${encodeURIComponent(token || "")}`, "_blank");
-                                                    }}
-                                                >
-                                                    <i className="bi bi-file-earmark-pdf text-blue-500 text-base"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
+                                    filteredSales.map((sale) => {
+                                        const hasReturn = isBillReturned(sale);
+
+                                        return (
+                                            <tr key={sale.saleId}>
+                                                <td>{sale.saleId}</td>
+                                                <td>{sale.date}</td>
+                                                <td>{sale.customerName}</td>
+                                                <td>₹{Number(sale.totalAmount || sale.total || 0).toFixed(2)}</td>
+                                                <td>₹{Number(sale.netAmount || sale.grandTotal || sale.totalAmount || 0).toFixed(2)}</td>
+                                                <td className="gap-2 flex justify-center items-center">
+                                                    {hasReturn ? (
+                                                        <button
+                                                            className="edit-btn locked"
+                                                            title="This bill cannot be edited because it is present in Expiry & Return (Original Return)"
+                                                            disabled
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                toast.warning("This bill cannot be edited because items have been returned.");
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-lock-fill text-gray-400"></i>
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            className="edit-btn"
+                                                            title="Open Sale Bill"
+                                                            onClick={(e) => handleEditClick(e, sale)}
+                                                        >
+                                                            <i className="bi bi-pencil-square text-gray-500"></i>
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        className="view-btn"
+                                                        title="View / Download PDF Invoice"
+                                                        onClick={() => {
+                                                            const token = localStorage.getItem("token");
+                                                            window.open(`${API_BASE_URL}/sales/pdf/${encodeURIComponent(sale.saleId)}?token=${encodeURIComponent(token || "")}`, "_blank");
+                                                        }}
+                                                    >
+                                                        <i className="bi bi-file-earmark-pdf text-blue-500 text-base"></i>
+                                                    </button>
+                                                    {hasReturn && (
+                                                        <button
+                                                            className="return-btn"
+                                                            title="View Sales Return in Expiry & Return"
+                                                            onClick={() => handleReturnRedirect(sale)}
+                                                        >
+                                                            <i className="bi bi-arrow-return-left text-orange-600 font-bold"></i>
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                                 )}
                             </tbody>
                         </table>

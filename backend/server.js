@@ -77,7 +77,10 @@ app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/companies", require("./routes/companyRoutes"));
 app.use("/api/stock", require("./routes/stockRoutes"));
 app.use("/api/purchases", require("./routes/purchaseRoutes"));
+app.use("/api/sales/returns", require("./routes/salesReturnRoutes"));
+app.use("/api/sales-returns", require("./routes/salesReturnRoutes"));
 app.use("/api/sales", require("./routes/saleRoutes"));
+app.use("/api/expiry-return", require("./routes/expiryReturnRoutes"));
 app.use("/api/analytics", require("./routes/analyticsRoutes"));
 app.use("/api/remedies", require("./routes/remedyRoutes"));
 

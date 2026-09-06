@@ -214,14 +214,14 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ message: "Purchase record not found" });
     }
 
-    // 2-day limit check
+    // 15-day limit check
     const pDate = new Date(existingPurchase.createdAt || existingPurchase.invoiceDate || existingPurchase.date);
     const now = new Date();
     const diffInDays = (now - pDate) / (1000 * 60 * 60 * 24);
 
-    if (diffInDays > 7) {
+    if (diffInDays > 15) {
       return res.status(400).json({
-        message: "This purchase invoice is more than 7 days old and cannot be edited."
+        message: "This purchase invoice is more than 15 days old and cannot be edited."
       });
     }
 
