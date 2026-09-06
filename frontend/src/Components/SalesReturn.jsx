@@ -1,8 +1,10 @@
 /* eslint-disable react-hooks/refs */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
+import { apiFetch } from "../api/apiClient";
 import "../CSS/Dashboard.css";
 import "../CSS/PurchaseEntry.css";
 import "../CSS/Card.css";
@@ -45,6 +47,7 @@ const calculatePrice = (mrp, discount) => {
 };
 
 export default function SalesReturn() {
+    const navigate = useNavigate();
     const tableRefs = useRef([]);
     const productListRefs = useRef([]);
     const [rows, setRows] = useState(createRows);
@@ -61,6 +64,7 @@ export default function SalesReturn() {
     const [selectedProductIndex, setSelectedProductIndex] = useState(0);
     const [selectedRow, setSelectedRow] = useState(null);
     const [loadingBill, setLoadingBill] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const [showCancelPopup, setShowCancelPopup] = useState(false);
 
@@ -566,7 +570,7 @@ export default function SalesReturn() {
     const netAmount = Math.round(subTotal);
     const roundOff = Number((netAmount - subTotal).toFixed(2));
 
-    const handleSave = (e) => {
+    const handleSave = async (e) => {
         e.preventDefault();
 
         if (!selectedSale) {
@@ -580,15 +584,53 @@ export default function SalesReturn() {
             return;
         }
 
-        console.log("Sales return:", {
-            billNumber: invoiceNo,
-            billingDate: invoiceDate,
-            customerName,
-            customerPhone,
-            items: validItems,
-        });
+        setSaving(true);
+        try {
+            const payload = {
+                saleId: selectedSale.saleId || selectedSale._id || "",
+                billNumber: invoiceNo,
+                customerName,
+                customerPhone,
+                billingDate: invoiceDate,
+                items: validItems.map((item) => ({
+                    productId: item.productId || item.itemCode || "",
+                    itemCode: item.itemCode || item.productId || "",
+                    productName: item.productName || item.name || "",
+                    batch: item.batch || "",
+                    qty: Number(item.qty || 0),
+                    expiry: item.expiry || "",
+                    mrp: Number(item.mrp || 0),
+                    price: Number(item.price || item.rate || 0),
+                    discount: Number(item.discount || 0),
+                    gst: Number(item.gst || 0),
+                    hsn: item.hsn || "",
+                    amount: Number(item.qty || 0) * Number(item.price || 0),
+                })),
+                totalQty,
+                subTotal,
+                roundOff,
+                netAmount,
+            };
 
-        toast.success("Return entry saved successfully.");
+            const res = await apiFetch("/sales/returns", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.message || "Failed to save return entry");
+            }
+
+            toast.success("Return entry saved successfully!");
+            navigate("/dashboard/expiry-return");
+        } catch (error) {
+            console.error("Sales return save error:", error);
+            toast.error(error.message || "Failed to save return entry");
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -843,9 +885,10 @@ export default function SalesReturn() {
 
                                         <button
                                             type="submit"
+                                            disabled={saving}
                                             className="save-btn bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-1 font-bold transition text-base shadow-lg"
                                         >
-                                            Save Return
+                                            {saving ? "Saving..." : "Save Return"}
                                         </button>
                                     </div>
                                 </div>

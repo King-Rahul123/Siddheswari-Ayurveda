@@ -143,7 +143,7 @@ const generateSalePDF = (saleData, items = []) => {
         { name: "Batch", x: startX + 235, w: 65, align: "center" },
         { name: "Exp", x: startX + 300, w: 55, align: "center" },
         { name: "Qty", x: startX + 355, w: 40, align: "center" },
-        { name: "Rate", x: startX + 395, w: 50, align: "right" },
+        { name: "MRP", x: startX + 395, w: 50, align: "right" },
         { name: "GST", x: startX + 445, w: 40, align: "right" },
         { name: "Amount", x: startX + 485, w: 45, align: "right" }
       ];

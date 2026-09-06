@@ -90,7 +90,7 @@ export default function Purchase() {
             invNo.toLowerCase().includes(query) ||
             pId.toLowerCase().includes(query);
 
-        const pDateStr = getNormalizedDateStr(purchase.invoiceDate || purchase.date || purchase.createdAt);
+        const pDateStr = getNormalizedDateStr(purchase.createdAt || purchase.invoiceDate || purchase.date);
 
         const matchesFrom = !fromDate || (pDateStr && pDateStr >= fromDate);
         const matchesTo = !toDate || (pDateStr && pDateStr <= toDate);
@@ -116,7 +116,7 @@ export default function Purchase() {
             "Purchase No": purchase.purchaseId || "-",
             "Invoice No": purchase.invoiceNo || "-",
             "Company Name": purchase.companyName || purchase.supplier || "-",
-            "Date": formatPurchaseDate(purchase.invoiceDate || purchase.date || purchase.createdAt),
+            "Date": formatPurchaseDate(purchase.createdAt || purchase.invoiceDate || purchase.date),
             "Total Items": purchase.totalItems || (purchase.items?.length || 0),
             "Total Qty": purchase.totalQty || 0,
             "Total Amount (₹)": Number(purchase.totalAmount || purchase.totalamount || 0).toFixed(2),
@@ -378,7 +378,7 @@ export default function Purchase() {
                                     <tr key={purchase.purchaseId || purchase._id} className="hover:bg-gray-50/80 transition">
                                         <td className="font-mono text-gray-700">{purchase.purchaseId || "-"}</td>
                                         <td className="font-bold text-gray-900">{purchase.companyName || purchase.supplier || "-"}</td>
-                                        <td className="text-gray-600">{formatPurchaseDate(purchase.invoiceDate || purchase.date || purchase.createdAt)}</td>
+                                        <td className="text-gray-600">{formatPurchaseDate(purchase.createdAt || purchase.invoiceDate || purchase.date)}</td>
                                         <td className="font-semibold text-emerald-800">₹{Number(purchase.totalAmount || purchase.totalamount || 0).toFixed(2)}</td>
 
                                         <td className="action-cell">

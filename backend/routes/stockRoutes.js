@@ -29,33 +29,61 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get expiry stock (combines actual Stock and Product collections from MongoDB)
+const ExpiryReturn = require("../models/ExpiryReturn");
+
+// Get expiry stock (combines ExpiryReturn collection, actual Stock, and Product collections)
 router.get("/expiry", async (req, res) => {
   try {
+    const expiryReturnList = await ExpiryReturn.find().sort({ createdAt: -1 });
     const stockList = await Stock.find().sort({ createdAt: -1 });
     const productList = await Product.find().sort({ createdAt: -1 });
 
     const combinedMap = new Map();
 
-    // 1. Process items from Stock collection
-    stockList.forEach((s) => {
-      const obj = s.toObject();
-      const key = `${obj.itemCode || obj._id}_${obj.batch || 'default'}`;
+    // 1. Process items from ExpiryReturn collection (Saved / Actioned items)
+    expiryReturnList.forEach((e) => {
+      const obj = e.toObject();
+      const key = `${obj.itemCode || obj.productName}_${obj.batch || "default"}`;
       combinedMap.set(key, {
         id: obj._id,
         _id: obj._id,
-        stockId: obj.stockId || obj._id,
+        stockId: obj.stockId || obj.returnId || obj._id,
+        returnId: obj.returnId || "",
         itemCode: obj.itemCode || "",
         productName: obj.productName || "Unknown Product",
         batch: obj.batch || "—",
-        expiryDate: obj.expiryDate || obj.expiry || "",
-        mrp: Number(obj.mrp || obj.rate || 0),
+        expiryDate: obj.expiryDate || "",
+        mrp: Number(obj.mrp || 0),
+        rate: Number(obj.rate || 0),
         qty: Number(obj.qty || 0),
-        actionStatus: obj.actionStatus || ""
+        actionStatus: obj.actionStatus || "Returned",
+        actionDate: obj.actionDate || obj.createdAt,
+        isExpiryReturn: true
       });
     });
 
-    // 2. Process items from Product collection (if not already added by batch)
+    // 2. Process items from Stock collection (Active expiring stock)
+    stockList.forEach((s) => {
+      const obj = s.toObject();
+      const key = `${obj.itemCode || obj.productName}_${obj.batch || "default"}`;
+      if (!combinedMap.has(key)) {
+        combinedMap.set(key, {
+          id: obj._id,
+          _id: obj._id,
+          stockId: obj.stockId || obj._id,
+          itemCode: obj.itemCode || "",
+          productName: obj.productName || "Unknown Product",
+          batch: obj.batch || "—",
+          expiryDate: obj.expiryDate || obj.expiry || "",
+          mrp: Number(obj.mrp || obj.rate || 0),
+          rate: Number(obj.rate || 0),
+          qty: Number(obj.qty || 0),
+          actionStatus: obj.actionStatus || ""
+        });
+      }
+    });
+
+    // 3. Process items from Product collection (if not already added by batch)
     productList.forEach((p) => {
       const obj = p.toObject();
       const batches = Array.isArray(obj.batch) && obj.batch.length > 0
@@ -66,7 +94,7 @@ router.get("/expiry", async (req, res) => {
         : Number(obj.mrp || 0);
 
       batches.forEach((b) => {
-        const key = `${obj.itemCode || obj._id}_${b || 'default'}`;
+        const key = `${obj.itemCode || obj.productName}_${b || "default"}`;
         if (!combinedMap.has(key)) {
           combinedMap.set(key, {
             id: obj._id,
@@ -77,6 +105,7 @@ router.get("/expiry", async (req, res) => {
             batch: b || "—",
             expiryDate: obj.expiry || obj.expiryDate || "",
             mrp: mrpVal,
+            rate: Number(obj.rate || 0),
             qty: Number(obj.stock || 0),
             actionStatus: obj.actionStatus || ""
           });
@@ -91,11 +120,27 @@ router.get("/expiry", async (req, res) => {
   }
 });
 
-// Update stock/product action status (Returned / No Stock)
+// Update stock/product action status (Saves to ExpiryReturn and removes from Stock)
 router.patch("/:id/action", async (req, res) => {
   try {
     const { id } = req.params;
-    const { actionStatus } = req.body;
+    const {
+      actionStatus,
+      itemCode,
+      productName,
+      batch,
+      expiryDate,
+      qty,
+      mrp,
+      rate,
+      amount,
+      reason,
+      remarks
+    } = req.body;
+
+    if (!actionStatus) {
+      return res.status(400).json({ message: "actionStatus is required" });
+    }
 
     const mongoose = require("mongoose");
     const filter = mongoose.Types.ObjectId.isValid(id)
@@ -103,21 +148,99 @@ router.patch("/:id/action", async (req, res) => {
       : { $or: [{ stockId: id }, { itemCode: id }] };
 
     let stockItem = await Stock.findOne(filter);
-    if (stockItem) {
-      stockItem.actionStatus = actionStatus || "";
-      await stockItem.save();
-      return res.json({ success: true, message: "Action updated successfully", stock: stockItem });
+    let prodItem = !stockItem ? await Product.findOne(filter) : null;
+    let existingExpiry = mongoose.Types.ObjectId.isValid(id) ? await ExpiryReturn.findById(id) : null;
+
+    const resolvedItemCode = itemCode || stockItem?.itemCode || prodItem?.itemCode || existingExpiry?.itemCode || "";
+    const resolvedName = productName || stockItem?.productName || prodItem?.productName || existingExpiry?.productName || "Unknown Product";
+    const resolvedBatch = batch || stockItem?.batch || (Array.isArray(prodItem?.batch) ? prodItem.batch[0] : prodItem?.batch) || existingExpiry?.batch || "—";
+    const resolvedExpiry = expiryDate || stockItem?.expiryDate || prodItem?.expiry || existingExpiry?.expiryDate || "";
+    const resolvedQty = Number(qty || stockItem?.qty || prodItem?.stock || existingExpiry?.qty || 1);
+    const resolvedMrp = Number(mrp || stockItem?.mrp || (Array.isArray(prodItem?.mrp) ? prodItem.mrp[0] : prodItem?.mrp) || existingExpiry?.mrp || 0);
+    const resolvedRate = Number(rate || stockItem?.rate || prodItem?.rate || existingExpiry?.rate || resolvedMrp);
+    const resolvedAmount = Number(amount || resolvedQty * resolvedMrp);
+
+    let savedExpiry = null;
+
+    if (existingExpiry) {
+      existingExpiry.actionStatus = actionStatus;
+      existingExpiry.actionDate = new Date();
+      if (reason) existingExpiry.reason = reason;
+      if (remarks) existingExpiry.remarks = remarks;
+      await existingExpiry.save();
+      savedExpiry = existingExpiry;
+    } else {
+      // Check if already in ExpiryReturn by name + batch
+      const nameRegex = new RegExp("^" + resolvedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i");
+      let match = await ExpiryReturn.findOne({
+        productName: nameRegex,
+        ...(resolvedBatch && resolvedBatch !== "—" ? { batch: resolvedBatch } : {})
+      });
+
+      if (match) {
+        match.actionStatus = actionStatus;
+        match.actionDate = new Date();
+        if (reason) match.reason = reason;
+        if (remarks) match.remarks = remarks;
+        await match.save();
+        savedExpiry = match;
+      } else {
+        const seq = await getNextSequence("expiryreturn");
+        const returnId = `EXP${seq.toString().padStart(6, "0")}`;
+
+        savedExpiry = new ExpiryReturn({
+          returnId,
+          stockId: (id || "").toString(),
+          itemCode: resolvedItemCode,
+          productName: resolvedName,
+          batch: resolvedBatch,
+          expiryDate: resolvedExpiry,
+          qty: resolvedQty,
+          mrp: resolvedMrp,
+          rate: resolvedRate,
+          amount: resolvedAmount,
+          actionStatus,
+          actionDate: new Date(),
+          reason: reason || "",
+          remarks: remarks || "",
+          type: "expiry"
+        });
+        await savedExpiry.save();
+      }
     }
 
-    let prodItem = await Product.findOne(filter);
+    // Remove from Stock collection
+    const stockConditions = [];
+    if (mongoose.Types.ObjectId.isValid(id)) stockConditions.push({ _id: id });
+    stockConditions.push({ stockId: id });
+    if (resolvedItemCode) {
+      stockConditions.push(resolvedBatch && resolvedBatch !== "—" ? { itemCode: resolvedItemCode, batch: resolvedBatch } : { itemCode: resolvedItemCode });
+    }
+    if (resolvedName) {
+      const nameRegex = new RegExp("^" + resolvedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i");
+      stockConditions.push(resolvedBatch && resolvedBatch !== "—" ? { productName: nameRegex, batch: resolvedBatch } : { productName: nameRegex });
+    }
+    if (stockConditions.length > 0) {
+      await Stock.deleteMany({ $or: stockConditions });
+    }
+
+    // Deduct / remove batch from Product if present
     if (prodItem) {
-      prodItem.actionStatus = actionStatus || "";
+      if (Array.isArray(prodItem.batch) && resolvedBatch && resolvedBatch !== "—") {
+        prodItem.batch = prodItem.batch.filter((b) => b !== resolvedBatch);
+      }
+      prodItem.stock = Math.max(0, Number(prodItem.stock || 0) - resolvedQty);
+      prodItem.actionStatus = actionStatus;
       await prodItem.save();
-      return res.json({ success: true, message: "Action updated successfully", stock: prodItem });
     }
 
-    return res.status(404).json({ message: "Stock item not found in database" });
+    return res.json({
+      success: true,
+      message: `Action updated to "${actionStatus}" and product removed from active stock`,
+      stock: savedExpiry
+    });
   } catch (error) {
+    console.error("Error in patch stock action:", error);
     res.status(500).json({ message: error.message });
   }
 });

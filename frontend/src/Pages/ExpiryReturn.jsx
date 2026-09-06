@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { apiFetch } from "../api/apiClient";
 import { subscribeSales } from "../services/saleService";
@@ -13,7 +13,8 @@ import Sidebar from "../Components/Sidebar";
 
 const ExpiryReturn = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("sales");
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.tab || "sales");
 
   const [products, setProducts] = useState([]);
   const [salesData, setSalesData] = useState([]);
@@ -24,7 +25,18 @@ const ExpiryReturn = () => {
   const [loading, setLoading] = useState(true);
   const [salesLoading, setSalesLoading] = useState(true);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(
+    location.state?.search || location.state?.billNumber || ""
+  );
+
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    }
+    if (location.state?.search || location.state?.billNumber) {
+      setSearchTerm(location.state.search || location.state.billNumber);
+    }
+  }, [location.state]);
   const [expiryFilter, setExpiryFilter] = useState("All");
   const [actionFilter, setActionFilter] = useState("All");
   const [salesStatusFilter, setSalesStatusFilter] = useState("All");
@@ -39,6 +51,14 @@ const ExpiryReturn = () => {
   const [returnQty, setReturnQty] = useState("");
   const [returnReason, setReturnReason] = useState("");
   const [returnSaving, setReturnSaving] = useState(false);
+
+  const [selectedSaleForView, setSelectedSaleForView] = useState(null);
+  const [showViewReturnModal, setShowViewReturnModal] = useState(false);
+
+  const [selectedSaleForProcess, setSelectedSaleForProcess] = useState(null);
+  const [showProcessReturnModal, setShowProcessReturnModal] = useState(false);
+  const [processReturnReason, setProcessReturnReason] = useState("");
+  const [isProcessingReturn, setIsProcessingReturn] = useState(false);
 
   // =========================================================
   // LOAD EXPIRY STOCK
@@ -114,8 +134,8 @@ const ExpiryReturn = () => {
         Array.isArray(data)
           ? data
           : data.returns ||
-            data.salesReturns ||
-            []
+          data.salesReturns ||
+          []
       );
     } catch (error) {
       console.error(
@@ -381,52 +401,85 @@ const ExpiryReturn = () => {
     sale.mobile ||
     "—";
 
-  const getSaleDate = (sale) =>
-    sale.date ||
-    sale.saleDate ||
-    sale.invoiceDate ||
-    sale.createdAt ||
-    null;
+  const getSaleDate = (sale) => {
+    const raw =
+      sale.returnDate ||
+      sale.billingDate ||
+      sale.date ||
+      sale.saleDate ||
+      sale.invoiceDate ||
+      sale.createdAt ||
+      null;
+    return formatDate(raw);
+  };
 
   const getSaleItems = (sale) => {
-    if (Array.isArray(sale.items)) {
+    if (Array.isArray(sale.items) && sale.items.length > 0) {
       return sale.items;
     }
 
-    if (Array.isArray(sale.saleItems)) {
+    if (Array.isArray(sale.saleItems) && sale.saleItems.length > 0) {
       return sale.saleItems;
     }
 
     return [];
   };
 
-  const getSaleQuantity = (sale) =>
-    Number(
+  const getSaleQuantity = (sale) => {
+    const items = getSaleItems(sale);
+    const itemsQty = items.reduce(
+      (sum, item) => sum + Number(item.qty || 0),
+      0
+    );
+    return Number(
       sale.totalQty ??
-        sale.quantity ??
-        sale.qty ??
-        getSaleItems(sale).reduce(
-          (sum, item) =>
-            sum + Number(item.qty || 0),
-          0
-        ) ??
-        0
+      sale.quantity ??
+      sale.qty ??
+      (itemsQty > 0 ? itemsQty : 0) ??
+      0
     );
+  };
 
-  const getReturnQuantity = (sale) =>
-    Number(
+  const getReturnQuantity = (sale) => {
+    const items = getSaleItems(sale);
+    const itemsQty = items.reduce(
+      (sum, item) => sum + Number(item.qty || 0),
+      0
+    );
+    return Number(
       sale.returnQuantity ??
-        sale.returnQty ??
-        sale.totalReturnedQty ??
-        0
+      sale.returnQty ??
+      sale.totalReturnedQty ??
+      sale.totalQty ??
+      sale.quantity ??
+      sale.qty ??
+      (itemsQty > 0 ? itemsQty : 0) ??
+      0
     );
+  };
 
-  const getReturnedAmount = (sale) =>
-    Number(
-      sale.returnAmount ??
-        sale.totalReturnAmount ??
-        0
+  const getReturnedAmount = (sale) => {
+    const items = getSaleItems(sale);
+    const itemsAmount = items.reduce(
+      (sum, item) =>
+        sum +
+        Number(
+          item.amount ||
+          Number(item.qty || 0) *
+          Number(item.price || item.rate || item.mrp || 0)
+        ),
+      0
     );
+    return Number(
+      sale.returnAmount ??
+      sale.totalReturnAmount ??
+      sale.netAmount ??
+      sale.subTotal ??
+      sale.grandTotal ??
+      (itemsAmount > 0 ? itemsAmount : 0) ??
+      0
+    );
+  };
 
   const filteredSales = useMemo(() => {
     const keyword = searchTerm.trim().toLowerCase();
@@ -436,11 +489,19 @@ const ExpiryReturn = () => {
         item.billNumber ||
         item.billnumber ||
         item.invoiceNumber ||
+        item.saleId ||
+        item.returnId ||
         "";
 
       const customerName =
         item.customerName ||
         item.customer ||
+        "";
+
+      const customerPhone =
+        item.customerPhone ||
+        item.phone ||
+        item.mobile ||
         "";
 
       const productName =
@@ -455,6 +516,9 @@ const ExpiryReturn = () => {
           .toLowerCase()
           .includes(keyword) ||
         String(customerName)
+          .toLowerCase()
+          .includes(keyword) ||
+        String(customerPhone)
           .toLowerCase()
           .includes(keyword) ||
         String(productName)
@@ -485,16 +549,16 @@ const ExpiryReturn = () => {
 
       const quantity = Number(
         product.quantity ??
-          product.qty ??
-          product.stockQuantity ??
-          product.currentStock ??
-          1
+        product.qty ??
+        product.stockQuantity ??
+        product.currentStock ??
+        1
       );
 
       const mrp = Number(
         product.mrp ??
-          product.rate ??
-          0
+        product.rate ??
+        0
       );
 
       expiryAmount += quantity * mrp;
@@ -567,6 +631,42 @@ const ExpiryReturn = () => {
         );
       }
 
+      const itemQty = Number(
+        selectedProduct.quantity ??
+        selectedProduct.qty ??
+        selectedProduct.stockQuantity ??
+        selectedProduct.currentStock ??
+        1
+      );
+      const itemMrp = Number(selectedProduct.mrp ?? selectedProduct.rate ?? 0);
+      const itemRate = Number(selectedProduct.rate ?? selectedProduct.mrp ?? 0);
+
+      const payload = {
+        targetId,
+        id: selectedProduct._id || selectedProduct.id,
+        stockId: selectedProduct.stockId || selectedProduct._id,
+        itemCode: selectedProduct.itemCode || "",
+        productName:
+          selectedProduct.productName ||
+          selectedProduct.name ||
+          "Unknown Product",
+        batch:
+          selectedProduct.batchNumber ||
+          selectedProduct.batch ||
+          selectedProduct.batchNo ||
+          "—",
+        expiryDate:
+          selectedProduct.expiryDate ||
+          selectedProduct.expiry ||
+          selectedProduct.batchExpiry ||
+          "",
+        qty: itemQty,
+        mrp: itemMrp,
+        rate: itemRate,
+        amount: Number(selectedProduct.amount || itemQty * itemMrp),
+        actionStatus: selectedAction,
+      };
+
       const res = await apiFetch(
         `/stock/${targetId}/action`,
         {
@@ -574,9 +674,7 @@ const ExpiryReturn = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            actionStatus: selectedAction,
-          }),
+          body: JSON.stringify(payload),
         }
       );
 
@@ -587,12 +685,12 @@ const ExpiryReturn = () => {
 
         throw new Error(
           err.message ||
-            "Failed to update action status"
+          "Failed to update action status"
         );
       }
 
       toast.success(
-        `Action updated to "${selectedAction}"`
+        `Action updated to "${selectedAction}" and removed from active stock`
       );
 
       closeActionModal();
@@ -605,10 +703,75 @@ const ExpiryReturn = () => {
 
       toast.error(
         error.message ||
-          "Unable to save action status"
+        "Unable to save action status"
       );
     } finally {
       setSaving(false);
+    }
+  };
+
+  // =========================================================
+  // VIEW AND PROCESS SALES RETURN
+  // =========================================================
+
+  const openViewReturnModal = (sale) => {
+    setSelectedSaleForView(sale);
+    setShowViewReturnModal(true);
+  };
+
+  const closeViewReturnModal = () => {
+    setShowViewReturnModal(false);
+    setSelectedSaleForView(null);
+  };
+
+  const openProcessReturnModal = (sale) => {
+    setSelectedSaleForProcess(sale);
+    setProcessReturnReason(sale.returnReason || "");
+    setShowProcessReturnModal(true);
+  };
+
+  const closeProcessReturnModal = () => {
+    if (isProcessingReturn) return;
+    setShowProcessReturnModal(false);
+    setSelectedSaleForProcess(null);
+    setProcessReturnReason("");
+  };
+
+  const confirmProcessReturn = async () => {
+    if (!selectedSaleForProcess) return;
+
+    setIsProcessingReturn(true);
+    try {
+      const targetId =
+        selectedSaleForProcess._id ||
+        selectedSaleForProcess.id ||
+        selectedSaleForProcess.returnId ||
+        selectedSaleForProcess.billNumber;
+
+      const res = await apiFetch(`/sales/returns/${targetId}/process`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          returnReason: processReturnReason,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to process sales return");
+      }
+
+      toast.success("Sales return processed successfully! Products have been restocked.");
+      closeProcessReturnModal();
+      await loadSalesReturns();
+      await loadExpiryStock();
+    } catch (error) {
+      console.error("Error processing sales return:", error);
+      toast.error(error.message || "Unable to process sales return");
+    } finally {
+      setIsProcessingReturn(false);
     }
   };
 
@@ -622,7 +785,7 @@ const ExpiryReturn = () => {
     const availableQty = Math.max(
       0,
       getSaleQuantity(sale) -
-        getReturnQuantity(sale)
+      getReturnQuantity(sale)
     );
 
     setReturnQty(
@@ -686,22 +849,84 @@ const ExpiryReturn = () => {
       return;
     }
 
-    /*
-     * The existing project source exposes sales through
-     * subscribeSales, but no sales-return persistence
-     * endpoint/service was found in the supplied project
-     * sources. Do not silently pretend a return was saved.
-     *
-     * This handler intentionally reports that the backend
-     * return operation must be connected before changing
-     * the database.
-     */
     setReturnSaving(true);
 
     try {
-      throw new Error(
-        "Sales return API is not available in the current project"
-      );
+      const saleItems = getSaleItems(selectedSale);
+      const returnItems =
+        saleItems.length > 0
+          ? saleItems.map((item) => ({
+            ...item,
+            qty: Math.min(quantity, Number(item.qty || quantity)),
+            reason: returnReason,
+          }))
+          : [
+            {
+              productName: selectedSale.productName || "Returned Item",
+              qty: quantity,
+              mrp:
+                Number(
+                  selectedSale.netAmount ||
+                  selectedSale.totalAmount ||
+                  0
+                ) / (quantity || 1),
+              price:
+                Number(
+                  selectedSale.netAmount ||
+                  selectedSale.totalAmount ||
+                  0
+                ) / (quantity || 1),
+              amount: Number(
+                selectedSale.netAmount ||
+                selectedSale.totalAmount ||
+                0
+              ),
+              reason: returnReason,
+            },
+          ];
+
+      const res = await apiFetch("/sales/returns", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          saleId: getSaleId(selectedSale),
+          billNumber: getBillNumber(selectedSale),
+          customerName: getCustomerName(selectedSale),
+          customerPhone: getCustomerPhone(selectedSale),
+          billingDate: getSaleDate(selectedSale),
+          items: returnItems,
+          totalQty: quantity,
+          subTotal: returnItems.reduce(
+            (acc, curr) =>
+              acc +
+              Number(curr.price || curr.mrp || 0) *
+              Number(curr.qty || 1),
+            0
+          ),
+          netAmount: returnItems.reduce(
+            (acc, curr) =>
+              acc +
+              Number(
+                curr.amount ||
+                Number(curr.price || curr.mrp || 0) *
+                Number(curr.qty || 1)
+              ),
+            0
+          ),
+          returnReason,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to process sales return");
+      }
+
+      toast.success("Sales return processed successfully!");
+      closeSalesReturnModal();
+      await loadSalesReturns();
     } catch (error) {
       console.error(
         "Sales return error:",
@@ -709,7 +934,8 @@ const ExpiryReturn = () => {
       );
 
       toast.error(
-        "Sales Return screen is ready, but the sales-return API/service is not connected yet."
+        error.message ||
+        "Unable to process sales return"
       );
     } finally {
       setReturnSaving(false);
@@ -881,11 +1107,10 @@ const ExpiryReturn = () => {
 
                 <button
                   type="button"
-                  className={`return-tab ${
-                    activeTab === "sales"
+                  className={`return-tab ${activeTab === "sales"
                       ? "active"
                       : ""
-                  }`}
+                    }`}
                   onClick={() => {
                     setActiveTab("sales");
                     setSearchTerm("");
@@ -897,11 +1122,10 @@ const ExpiryReturn = () => {
 
                 <button
                   type="button"
-                  className={`return-tab ${
-                    activeTab === "expiry"
+                  className={`return-tab ${activeTab === "expiry"
                       ? "active"
                       : ""
-                  }`}
+                    }`}
                   onClick={() => {
                     setActiveTab("expiry");
                     setSearchTerm("");
@@ -1066,14 +1290,41 @@ const ExpiryReturn = () => {
                               </td>
 
                               <td>
-                                <button
-                                  type="button"
-                                  className="return-action-btn"
-                                  onClick={() => openSalesReturnModal(sale)}
-                                >
-                                  <i className="bi bi-arrow-return-left"></i>
-                                  Return
-                                </button>
+                                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                  <button
+                                    type="button"
+                                    className="return-action-btn"
+                                    title="View Returned Items"
+                                    onClick={() => openViewReturnModal(sale)}
+                                    style={{
+                                      padding: "6px 10px",
+                                      background: "#eef8f0",
+                                      color: "#1b5e20",
+                                      border: "1px solid #c8e6c9"
+                                    }}
+                                  >
+                                    <i className="bi bi-eye"></i>
+                                  </button>
+
+                                  {sale.status === "Processed" ? (
+                                    <span
+                                      className="return-badge returned"
+                                      title={sale.processedAt ? `Restocked on ${formatDate(sale.processedAt)}` : "Restocked"}
+                                    >
+                                      <i className="bi bi-check-circle-fill"></i> Restocked
+                                    </span>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="return-action-btn"
+                                      title="Process Return & Restock Items"
+                                      onClick={() => openProcessReturnModal(sale)}
+                                    >
+                                      <i className="bi bi-arrow-return-left"></i>
+                                      Process Return
+                                    </button>
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           );
@@ -1274,17 +1525,17 @@ const ExpiryReturn = () => {
                             const quantity =
                               Number(
                                 product.quantity ??
-                                  product.qty ??
-                                  product.stockQuantity ??
-                                  product.currentStock ??
-                                  1
+                                product.qty ??
+                                product.stockQuantity ??
+                                product.currentStock ??
+                                1
                               );
 
                             const mrp =
                               Number(
                                 product.mrp ??
-                                  product.rate ??
-                                  0
+                                product.rate ??
+                                0
                               );
 
                             const amount =
@@ -1370,12 +1621,11 @@ const ExpiryReturn = () => {
 
                                 <td>
                                   <span
-                                    className={`return-badge ${
-                                      expiryInfo?.days <=
-                                      0
+                                    className={`return-badge ${expiryInfo?.days <=
+                                        0
                                         ? "expired"
                                         : "upcoming"
-                                    }`}
+                                      }`}
                                   >
                                     <i className="bi bi-circle-fill"></i>
 
@@ -1540,8 +1790,8 @@ const ExpiryReturn = () => {
                         <strong>
                           {formatDate(
                             selectedProduct.expiryDate ||
-                              selectedProduct.expiry ||
-                              selectedProduct.batchExpiry
+                            selectedProduct.expiry ||
+                            selectedProduct.batchExpiry
                           )}
                         </strong>
                       </div>
@@ -1693,9 +1943,9 @@ const ExpiryReturn = () => {
                             getSaleQuantity(
                               selectedSale
                             ) -
-                              getReturnQuantity(
-                                selectedSale
-                              )
+                            getReturnQuantity(
+                              selectedSale
+                            )
                           )}
                         </strong>
                       </div>
@@ -1715,9 +1965,9 @@ const ExpiryReturn = () => {
                         getSaleQuantity(
                           selectedSale
                         ) -
-                          getReturnQuantity(
-                            selectedSale
-                          )
+                        getReturnQuantity(
+                          selectedSale
+                        )
                       )}
                       value={returnQty}
                       onChange={(e) =>
@@ -1804,6 +2054,219 @@ const ExpiryReturn = () => {
                 </div>
               </div>
             )}
+
+          {/* =================================================
+              VIEW RETURNED ITEMS MODAL
+              ================================================= */}
+
+          {showViewReturnModal && selectedSaleForView && (
+            <div className="return-modal-overlay" onClick={closeViewReturnModal}>
+              <div
+                className="return-modal"
+                style={{ width: "min(780px, 95vw)" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="return-modal-head">
+                  <div>
+                    <h3>
+                      <i className="bi bi-receipt" style={{ marginRight: "8px" }}></i>
+                      Return Details — {getBillNumber(selectedSaleForView)}
+                    </h3>
+                    <small>Customer: {getCustomerName(selectedSaleForView)}</small>
+                  </div>
+                  <button type="button" onClick={closeViewReturnModal}>
+                    <i className="bi bi-x-lg"></i>
+                  </button>
+                </div>
+
+                <div className="return-modal-body" style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                  <div className="return-detail-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+                    <div className="return-detail">
+                      <small>Bill Number</small>
+                      <strong>{getBillNumber(selectedSaleForView)}</strong>
+                    </div>
+                    <div className="return-detail">
+                      <small>Customer Name</small>
+                      <strong>{getCustomerName(selectedSaleForView)}</strong>
+                    </div>
+                    <div className="return-detail">
+                      <small>Phone</small>
+                      <strong>{getCustomerPhone(selectedSaleForView)}</strong>
+                    </div>
+                    <div className="return-detail">
+                      <small>Status</small>
+                      <strong style={{ color: selectedSaleForView.status === "Processed" ? "#2e7d32" : "#f57c00" }}>
+                        {selectedSaleForView.status === "Processed" ? "Restocked" : "Pending Return"}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <h5 style={{ margin: "16px 0 8px", fontSize: "14px", fontWeight: "700", color: "#25332a" }}>
+                    Returned Products List
+                  </h5>
+
+                  <div className="return-table-wrap" style={{ border: "1px solid #e2ece4", borderRadius: "10px", overflow: "hidden" }}>
+                    <table className="return-table" style={{ margin: 0 }}>
+                      <thead>
+                        <tr>
+                          <th style={{ width: "40px" }}>#</th>
+                          <th>Product Name</th>
+                          <th>Batch</th>
+                          <th style={{ textAlign: "center" }}>Qty</th>
+                          <th style={{ textAlign: "right" }}>Price</th>
+                          <th style={{ textAlign: "right" }}>Amount</th>
+                          <th>Reason</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.isArray(selectedSaleForView.items) && selectedSaleForView.items.length > 0 ? (
+                          selectedSaleForView.items.map((item, idx) => (
+                            <tr key={idx}>
+                              <td>{idx + 1}</td>
+                              <td>
+                                <strong>{item.productName || item.name || "Unknown Product"}</strong>
+                                {item.itemCode && <small style={{ display: "block", color: "#718078" }}>{item.itemCode}</small>}
+                              </td>
+                              <td>{item.batch || "—"}</td>
+                              <td style={{ textAlign: "center", fontWeight: "bold" }}>{item.qty || 0}</td>
+                              <td style={{ textAlign: "right" }}>₹{Number(item.price || item.rate || item.mrp || 0).toFixed(2)}</td>
+                              <td style={{ textAlign: "right", fontWeight: "bold", color: "#14532d" }}>
+                                ₹{Number(item.amount || (Number(item.qty || 0) * Number(item.price || item.rate || item.mrp || 0))).toFixed(2)}
+                              </td>
+                              <td><small>{item.reason || selectedSaleForView.returnReason || "—"}</small></td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="7" style={{ textAlign: "center", padding: "16px", color: "#718078" }}>
+                              No individual items detailed. Total Qty: {getReturnQuantity(selectedSaleForView)}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div style={{ marginTop: "16px", padding: "12px 16px", background: "#f7faf7", border: "1px solid #e7eee8", borderRadius: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <span style={{ fontSize: "12px", color: "#718078", fontWeight: "600" }}>Total Returned Quantity: </span>
+                      <strong style={{ fontSize: "14px", color: "#1b5e20" }}>{getReturnQuantity(selectedSaleForView)}</strong>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: "12px", color: "#718078", fontWeight: "600" }}>Net Return Amount: </span>
+                      <strong style={{ fontSize: "16px", color: "#1b5e20" }}>{formatCurrency(getReturnedAmount(selectedSaleForView))}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="return-modal-foot">
+                  <button type="button" className="return-cancel" onClick={closeViewReturnModal}>
+                    Close
+                  </button>
+                  {selectedSaleForView.status !== "Processed" && (
+                    <button
+                      type="button"
+                      className="return-save"
+                      onClick={() => {
+                        const s = selectedSaleForView;
+                        closeViewReturnModal();
+                        openProcessReturnModal(s);
+                      }}
+                    >
+                      <i className="bi bi-arrow-return-left"></i> Process & Restock
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* =================================================
+              PROCESS & RESTOCK RETURN MODAL
+              ================================================= */}
+
+          {showProcessReturnModal && selectedSaleForProcess && (
+            <div className="return-modal-overlay" onClick={closeProcessReturnModal}>
+              <div className="return-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="return-modal-head">
+                  <div>
+                    <h3>
+                      <i className="bi bi-arrow-return-left" style={{ marginRight: "8px" }}></i>
+                      Process & Restock Return
+                    </h3>
+                    <small>Return items will be restored into inventory stock.</small>
+                  </div>
+                  <button type="button" onClick={closeProcessReturnModal} disabled={isProcessingReturn}>
+                    <i className="bi bi-x-lg"></i>
+                  </button>
+                </div>
+
+                <div className="return-modal-body">
+                  <div className="return-detail-grid">
+                    <div className="return-detail">
+                      <small>Bill Number</small>
+                      <strong>{getBillNumber(selectedSaleForProcess)}</strong>
+                    </div>
+                    <div className="return-detail">
+                      <small>Customer</small>
+                      <strong>{getCustomerName(selectedSaleForProcess)}</strong>
+                    </div>
+                    <div className="return-detail">
+                      <small>Return Qty</small>
+                      <strong style={{ color: "#1b5e20" }}>{getReturnQuantity(selectedSaleForProcess)}</strong>
+                    </div>
+                  </div>
+
+                  <div style={{ margin: "12px 0 16px", padding: "12px", background: "#f7faf7", border: "1px solid #e2ece4", borderRadius: "10px" }}>
+                    <small style={{ display: "block", color: "#718078", marginBottom: "4px" }}>Total Return Amount</small>
+                    <strong style={{ fontSize: "16px", color: "#1b5e20" }}>{formatCurrency(getReturnedAmount(selectedSaleForProcess))}</strong>
+                  </div>
+
+                  <label className="return-form-label">
+                    Confirm Return Reason / Condition
+                  </label>
+                  <select
+                    className="return-form-select"
+                    value={processReturnReason}
+                    onChange={(e) => setProcessReturnReason(e.target.value)}
+                  >
+                    <option value="">Select Reason</option>
+                    <option value="Damaged Product">Damaged Product</option>
+                    <option value="Wrong Product">Wrong Product</option>
+                    <option value="Customer Request">Customer Request</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div className="return-modal-foot">
+                  <button
+                    type="button"
+                    className="return-cancel"
+                    onClick={closeProcessReturnModal}
+                    disabled={isProcessingReturn}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="return-save"
+                    onClick={confirmProcessReturn}
+                    disabled={isProcessingReturn}
+                  >
+                    {isProcessingReturn ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm"></span> Processing...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-check2-circle"></i> Confirm & Restock
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
