@@ -5,10 +5,7 @@ export default function Header() {
 
   const capitalize = (text) => text ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase() : "";
 
-  const displayName =
-    loggedInUser?.role?.toLowerCase() === "admin"
-      ? capitalize(loggedInUser.role)
-      : capitalize(loggedInUser?.username);
+  const displayName = capitalize(loggedInUser?.username);
 
   // Get first letter of full name
   const avatarLetter =
