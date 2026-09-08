@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addPatient } from '../services/patientService';
+import { subscribeRemedies } from '../services/remedyService';
+import { getImageUrl } from '../api/config';
 
 import '../CSS/Landing.css';
 
@@ -13,71 +15,34 @@ function Landing() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState('');
   const [showOffer, setShowOffer] = useState(false);
+  const [displayedProducts, setDisplayedProducts] = useState([]);
+  const hasSelectedProducts = useRef(false);
 
   useEffect(() => {
     setShowOffer(true);
   }, []);
 
-  // Comprehensive Product Catalog with detailed specifications
-  const products = [
-    {
-      id: 1,
-      name: "Agefyte Fresh Under Eye Cream",
-      category: "Skincare",
-      price: "₹184",
-      rating: 4.9,
-      reviews: 142,
-      image: "/images/Fresh_Under_Eye_Cream.jpg",
-      tag: "Bright Eyes",
-      badge: "Pure & Organic",
-      specifications: {
-        weight: "500g Glass Jar",
-        dosage: "1-2 teaspoons twice daily with warm milk or water",
-        keyIngredients: "Fresh Organic Amla, Kashmiri Saffron, Wild Honey, Bramhi, Shankhpushpi, 48 Classical Ayurvedic Herbs",
-        benefits: "Boosts immune system, enhances memory and stamina, supports respiratory wellness, anti-aging properties.",
-        certification: "100% Ayurvedic Formulation, GMP & ISO Certified",
-        expiry: "24 months from MFD"
+  useEffect(() => {
+    const unsubscribe = subscribeRemedies((remedies) => {
+      const remedyList = Array.isArray(remedies) ? remedies : [];
+
+      if (!hasSelectedProducts.current && remedyList.length > 0) {
+        const shuffledRemedies = [...remedyList];
+        for (let index = shuffledRemedies.length - 1; index > 0; index -= 1) {
+          const randomIndex = Math.floor(Math.random() * (index + 1));
+          [shuffledRemedies[index], shuffledRemedies[randomIndex]] = [
+            shuffledRemedies[randomIndex],
+            shuffledRemedies[index],
+          ];
+        }
+
+        setDisplayedProducts(shuffledRemedies.slice(0, 3));
+        hasSelectedProducts.current = true;
       }
-    },
-    {
-      id: 2,
-      name: "Neem Face Cleanser",
-      category: "Skincare",
-      price: "₹190",
-      rating: 5.0,
-      reviews: 98,
-      image: "/images/Neem_FaceCleanser.png",
-      tag: "Clear Skin",
-      badge: "Pure Neem",
-      specifications: {
-        weight: "30ml Dropper Bottle",
-        dosage: "3-4 drops gently massaged onto clean face at bedtime",
-        keyIngredients: "Pure Saffron (Kesar), Chandana (Sandalwood), Manjistha, Padma (Lotus), Goat Milk, Sesame Oil",
-        benefits: "Illuminates skin complexion, reduces hyperpigmentation, smooths fine lines, deep nighttime skin nourishment.",
-        certification: "Dermatologically Tested, 100% Chemical-Free",
-        expiry: "18 months from MFD"
-      }
-    },
-    {
-      id: 3,
-      name: "Vatsal Memory Syrup",
-      category: "Memory",
-      price: "₹152",
-      rating: 4.8,
-      reviews: 185,
-      image: "/images/Vatsal.jpg",
-      tag: "Brain Booster",
-      badge: "Vatsal Memory Syrup",
-      specifications: {
-        weight: "60 Vegetarian Capsules",
-        dosage: "1 capsule twice daily after meals with milk or water",
-        keyIngredients: "High Potency KSM-66 Ashwagandha Root Extract (500mg), Swarna Bhasma (Purified Gold ash traces)",
-        benefits: "Reduces cortisol and anxiety, elevates muscle strength, improves sleep quality, boosts stamina.",
-        certification: "Non-GMO, Vegetarian, Ayush Approved",
-        expiry: "24 months from MFD"
-      }
-    },
-  ];
+    });
+
+    return unsubscribe;
+  }, []);
 
   // Extracted treatments from doctor liflet.jpg
   const treatmentsList = [
@@ -99,9 +64,6 @@ function Landing() {
     { id: "t16", title: "Insomnia & Stroke", icon: "bi-moon-stars" },
     { id: "t17", title: "Low Sperm Count", icon: "bi-gender-male" },
   ];
-
-  // Limit products on the landing page to a curated selection
-  const displayedProducts = products.slice(0, 3);
 
   const handleBookConsultation = async (e) => {
     e.preventDefault();
@@ -404,10 +366,10 @@ function Landing() {
           {/* Product Grid (Filtered to top 3) */}
           <div className="products-responsive-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             {displayedProducts.map((prod) => (
-              <div key={prod.id} className="product-card-modern">
+              <div key={prod._id || prod.remedyId || prod.id} className="product-card-modern">
                 <div className="product-image-wrap">
-                  <img src={prod.image} alt={prod.name} className="product-img" loading="lazy" />
-                  <span className="product-tag">{prod.tag}</span>
+                  <img src={getImageUrl(prod.image)} alt={prod.name} className="product-img" loading="lazy" />
+                  {prod.tag && <span className="product-tag">{prod.tag}</span>}
                   <button className="quick-spec-btn" onClick={() => setSelectedProduct(prod)}>
                     <i className="bi bi-eye"></i> View Specifications
                   </button>
@@ -415,9 +377,11 @@ function Landing() {
 
                 <div className="product-info">
                   <div className="product-header-meta">
-                    <span className="product-category-badge">{prod.category}</span>
+                    <span className="product-category-badge">
+                      {Array.isArray(prod.category) ? prod.category.join(', ') : prod.category}
+                    </span>
                     <span className="product-rating">
-                      <i className="bi bi-star-fill gold-icon"></i> {prod.rating} ({prod.reviews})
+                      <i className="bi bi-star-fill gold-icon"></i> {prod.rating || 4.9} ({prod.reviews || 120})
                     </span>
                   </div>
 
@@ -425,7 +389,7 @@ function Landing() {
 
                   <div className="product-footer-meta">
                     <div className="price-container">
-                      <span className="product-price">{prod.price}</span>
+                        <span className="product-price">{prod.price || `₹${prod.mrp || 0}`}</span>
                       <span className="tax-inclusive">Incl. all taxes</span>
                     </div>
 
@@ -457,39 +421,43 @@ function Landing() {
 
             <div className="modal-grid">
               <div className="modal-image-col">
-                <img src={selectedProduct.image} alt={selectedProduct.name} className="modal-product-img" />
-                <span className="modal-badge">{selectedProduct.badge}</span>
+                <img src={getImageUrl(selectedProduct.image)} alt={selectedProduct.name} className="modal-product-img" />
+                {selectedProduct.badge && <span className="modal-badge">{selectedProduct.badge}</span>}
               </div>
 
               <div className="modal-info-col">
-                <span className="product-category-badge">{selectedProduct.category}</span>
+                <span className="product-category-badge">
+                  {Array.isArray(selectedProduct.category)
+                    ? selectedProduct.category.join(', ')
+                    : selectedProduct.category}
+                </span>
                 <h2>{selectedProduct.name}</h2>
-                <div className="modal-price">{selectedProduct.price}</div>
+                <div className="modal-price">{selectedProduct.price || `₹${selectedProduct.mrp || 0}`}</div>
 
                 <div className="specs-detail-list">
                   <div className="spec-item">
                     <strong><i className="bi bi-box-seam gold-icon"></i> Packaging & Weight:</strong>
-                    <span>{selectedProduct.specifications.weight}</span>
+                    <span>{selectedProduct.specifications?.weight || 'Standard Pack'}</span>
                   </div>
 
                   <div className="spec-item">
                     <strong><i className="bi bi-capsule gold-icon"></i> Recommended Dosage:</strong>
-                    <span>{selectedProduct.specifications.dosage}</span>
+                    <span>{selectedProduct.specifications?.dosage || 'As directed by Vaidya / Physician'}</span>
                   </div>
 
                   <div className="spec-item">
                     <strong><i className="bi bi-droplet-half gold-icon"></i> Key Ingredients:</strong>
-                    <span>{selectedProduct.specifications.keyIngredients}</span>
+                    <span>{selectedProduct.specifications?.keyIngredients || 'Authentic Ayurvedic Extracts'}</span>
                   </div>
 
                   <div className="spec-item">
                     <strong><i className="bi bi-heart-pulse gold-icon"></i> Primary Benefits:</strong>
-                    <span>{selectedProduct.specifications.benefits}</span>
+                    <span>{selectedProduct.specifications?.benefits || 'Promotes overall health and vitality'}</span>
                   </div>
 
                   <div className="spec-item">
                     <strong><i className="bi bi-shield-check gold-icon"></i> Certification & Purity:</strong>
-                    <span>{selectedProduct.specifications.certification}</span>
+                    <span>{selectedProduct.specifications?.certification || 'Ayush Certified / ISO 9001'}</span>
                   </div>
                 </div>
 
