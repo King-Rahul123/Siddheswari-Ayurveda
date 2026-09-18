@@ -4,44 +4,18 @@ import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import "../CSS/Offer.css";
 
-const defaultOffers = [
-  {
-    id: 1,
-    title: "Summer Wellness Pack",
-    description: "Save up to 20% on Ayurvedic immunity and digestive care bundles.",
-    discount: "20% OFF",
-    validUntil: "2026-09-30",
-    image: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: 2,
-    title: "Herbal Care Combo",
-    description: "Special pricing on Panchakarma and herbal supplements this month.",
-    discount: "15% OFF",
-    validUntil: "2026-08-31",
-    image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: 3,
-    title: "Free Consultation Day",
-    description: "Complimentary Ayurvedic consultation for new patients this week.",
-    discount: "FREE",
-    validUntil: "2026-08-26",
-    image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=900&q=80",
-  },
-];
-
-const STORAGE_KEY = "ayurveda-offers";
+const STORAGE_KEY = "ayurveda-user-offers";
 
 export default function Offer() {
   const [offers, setOffers] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return defaultOffers;
+    if (!saved) return [];
 
     try {
-      return JSON.parse(saved);
+      const parsedOffers = JSON.parse(saved);
+      return Array.isArray(parsedOffers) ? parsedOffers : [];
     } catch {
-      return defaultOffers;
+      return [];
     }
   });
 
@@ -49,17 +23,18 @@ export default function Offer() {
     title: "",
     description: "",
     discount: "",
+    startDate: "",
     validUntil: "",
     image: "",
   });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(offers));
+    window.dispatchEvent(new Event("ayurveda-offer-updated"));
   }, [offers]);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleImageUpload = (event) => {
@@ -89,17 +64,18 @@ export default function Offer() {
       title: formData.title.trim(),
       description: formData.description.trim(),
       discount: formData.discount.trim(),
+      startDate: formData.startDate || "No start date",
       validUntil: formData.validUntil || "No expiry",
-      image:
-        formData.image ||
-        "https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=900&q=80",
+      image: formData.image,
     };
 
     setOffers((prev) => [newOffer, ...prev]);
+    window.dispatchEvent(new Event("ayurveda-offer-updated"));
     setFormData({
       title: "",
       description: "",
       discount: "",
+      startDate: "",
       validUntil: "",
       image: "",
     });
@@ -137,21 +113,6 @@ export default function Offer() {
                     <div className="offer-form-column">
                         <div className="form-group">
                             <label>
-                                <i className="bi bi-tag-fill"></i>
-                                Offer Title
-                            </label>
-
-                            <input
-                                type="text"
-                                name="title"
-                                value={formData.title}
-                                onChange={handleInputChange}
-                                placeholder="e.g. Ayurveda Wellness Weekend"
-                            />
-                        </div>
-
-                        {/* <div className="form-group">
-                            <label>
                                 <i className="bi bi-percent"></i>
                                 Discount
                             </label>
@@ -163,7 +124,7 @@ export default function Offer() {
                                 onChange={handleInputChange}
                                 placeholder="e.g. 20% OFF"
                             />
-                        </div> */}
+                        </div>
 
                         <div className="form-group">
                             <label>
@@ -172,8 +133,8 @@ export default function Offer() {
                             </label>
                             <input
                                 type="date"
-                                name="validUntil"
-                                value={formData.validUntil}
+                              name="startDate"
+                              value={formData.startDate}
                                 onChange={handleInputChange}
                             />
                         </div>
@@ -194,6 +155,21 @@ export default function Offer() {
                     </div>
 
                     <div className="offer-form-column offer-description-column">
+                        <div className="form-group">
+                            <label>
+                                <i className="bi bi-tag-fill"></i>
+                                Offer Title
+                            </label>
+
+                            <input
+                                type="text"
+                                name="title"
+                                value={formData.title}
+                                onChange={handleInputChange}
+                                placeholder="e.g. Ayurveda Wellness Weekend"
+                            />
+                        </div>
+                        
                         <div className="form-group description-group">
                             <label>
                                 <i className="bi bi-text-paragraph"></i>
@@ -286,10 +262,13 @@ export default function Offer() {
 
                         <div className="offer-image-wrap">
 
-                            <img
-                            src={offer.image}
-                            alt={offer.title}
-                            />
+                            {offer.image ? (
+                              <img src={offer.image} alt={offer.title} />
+                            ) : (
+                              <div className="offer-image-placeholder" aria-label="No offer image">
+                                <i className="bi bi-image"></i>
+                              </div>
+                            )}
 
                             <span className="offer-badge">
                             {offer.discount}
@@ -316,6 +295,9 @@ export default function Offer() {
                             <span>
                                 <i className="bi bi-calendar-event"></i>
 
+                                {offer.startDate !== "No start date" && (
+                                  <>Starts: {offer.startDate} | </>
+                                )}
                                 Valid until:{" "}
                                 {offer.validUntil}
                             </span>

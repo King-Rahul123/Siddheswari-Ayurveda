@@ -1,9 +1,59 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../CSS/Shop.css";
 import "../CSS/Landing.css";
 import { subscribeRemedies } from "../services/remedyService";
 import { getImageUrl } from "../api/config";
+
+function getActiveOffers() {
+  try {
+    const parseOffers = (storageKey) => {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    };
+
+    const savedOffers = [
+      ...parseOffers("ayurveda-user-offers"),
+      ...parseOffers("ayurveda-offers"),
+    ];
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const validOffers = savedOffers.filter(
+      (offer) => offer?.title && offer.description && offer.discount
+    );
+
+    const activeOffers = validOffers.filter((offer) => {
+        if (!offer?.title || !offer.description || !offer.discount) return false;
+
+        if (
+          offer.startDate &&
+          String(offer.startDate).toLowerCase() !== "no start date"
+        ) {
+          const startDate = new Date(`${offer.startDate}T00:00:00`);
+          if (Number.isNaN(startDate.getTime()) || startDate > today) return false;
+        }
+
+        if (!offer.validUntil || String(offer.validUntil).toLowerCase() === "no expiry") {
+          return true;
+        }
+
+        const expiryDate = new Date(`${offer.validUntil}T23:59:59.999`);
+        return !Number.isNaN(expiryDate.getTime()) && expiryDate >= today;
+      });
+
+    return [...(activeOffers.length ? activeOffers : validOffers)].sort(
+      (first, second) => Number(second.id || 0) - Number(first.id || 0)
+    );
+  } catch {
+    return [];
+  }
+}
 
 export default function Shop() {
   const navigate = useNavigate();
@@ -20,17 +70,91 @@ export default function Shop() {
   const [error, setError] = useState("");
 
   const [cart, setCart] = useState([]);
-  const [showOffer, setShowOffer] = useState(false);
+  const [offerSlides, setOfferSlides] = useState(getActiveOffers);
+  const [activeOfferIndex, setActiveOfferIndex] = useState(0);
+  const currentOffer = offerSlides[activeOfferIndex] || null;
+  const [showOffer, setShowOffer] = useState(Boolean(offerSlides.length));
 
+  // =========================================================
+  // HERO IMAGES
+  // =========================================================
+
+  const HARD_CODED_HERO_IMAGES = [
+    "/images/hero-ayurveda-1.jpg",
+    "/images/hero-ayurveda-2.jpg",
+    "/images/hero-ayurveda-3.jpg",
+    "/images/hero-ayurveda-4.jpg",
+  ];
+
+  const heroImages = useMemo(() => {
+    const staticImages = HARD_CODED_HERO_IMAGES.map((image) => ({
+      src: image,
+      alt: "Siddheswari Ayurveda",
+      type: "static",
+    }));
+
+    const offerImages = offerSlides
+      .map((offer) => offer?.image)
+      .filter(Boolean)
+      .map((image) => ({
+        src: image,
+        alt: "Siddheswari Ayurveda offer",
+        type: "offer",
+      }));
+
+    return [...staticImages, ...offerImages].slice(0, 10);
+  }, [offerSlides]);
+
+  const [failedHeroImages, setFailedHeroImages] = useState(
+    new Set()
+  );
+
+  const visibleHeroImages = useMemo(
+    () =>
+      heroImages.filter(
+        (item) => !failedHeroImages.has(item.src)
+      ),
+    [heroImages, failedHeroImages]
+  );
+
+  const hasHeroImages = visibleHeroImages.length > 0;
+  
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  useEffect(() => {
+    const refreshOffers = () => {
+      const nextOffers = getActiveOffers();
+      setOfferSlides(nextOffers);
+      setActiveOfferIndex((currentIndex) =>
+        nextOffers.length ? Math.min(currentIndex, nextOffers.length - 1) : 0
+      );
+      setShowOffer(Boolean(nextOffers.length));
+    };
+
+    window.addEventListener("storage", refreshOffers);
+    window.addEventListener("ayurveda-offer-updated", refreshOffers);
+
+    return () => {
+      window.removeEventListener("storage", refreshOffers);
+      window.removeEventListener("ayurveda-offer-updated", refreshOffers);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (offerSlides.length < 2) return undefined;
+
+    const offerSlider = window.setInterval(() => {
+      setActiveOfferIndex((currentIndex) =>
+        (currentIndex + 1) % offerSlides.length
+      );
+    }, 5000);
+
+    return () => window.clearInterval(offerSlider);
+  }, [offerSlides.length]);
 
   // =========================================================
   // LOAD PRODUCTS FROM DATABASE
   // =========================================================
-
-  useEffect(() => {
-    setShowOffer(true);
-  }, []);
 
   useEffect(() => {
     setIsLoading(true);
@@ -478,11 +602,68 @@ export default function Shop() {
       {/* ===================================================
           HERO
       =================================================== */}
+      <section
+        className={`shop-hero ${
+          hasHeroImages
+            ? "has-hero-images"
+            : "no-hero-images"
+        }`}
+      >
+        {/* Solid fallback background. */}
+        <div
+          className="shop-hero-background"
+          aria-hidden="true"
+        />
 
-      <section className="shop-hero">
+        {/* Background decorations */}
+        <div
+          className="shop-hero-background-decorations"
+          aria-hidden="true"
+        >
+          <div className="hero-decoration hero-leaf-one">
+            <i className="bi bi-flower1"></i>
+          </div>
 
-        <div className="shop-hero-background"></div>
+          <div className="hero-decoration hero-leaf-two">
+            <i className="bi bi-leaf"></i>
+          </div>
+        </div>
 
+        {/* =================================================
+            HERO IMAGE GALLERY
+        ================================================= */}
+        {hasHeroImages && (
+          <div
+            className="shop-hero-image-collage"
+            aria-hidden="true"
+          >
+            {visibleHeroImages.map((item, index) => (
+              <div
+                className={`shop-hero-image-tile ${
+                  item.type === "offer" ? "is-offer" : ""
+                }`}
+                key={`${item.src}-${index}`}
+              >
+                <img
+                  src={item.src}
+                  alt=""
+                  loading="lazy"
+                  onError={() => {
+                    setFailedHeroImages((previous) => {
+                      const next = new Set(previous);
+                      next.add(item.src);
+                      return next;
+                    });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* =================================================
+            HERO CONTENT
+        ================================================= */}
         <div className="shop-hero-content">
 
           <span className="shop-hero-kicker">
@@ -517,13 +698,82 @@ export default function Shop() {
 
         </div>
 
-        <div className="hero-decoration hero-leaf-one">
-          <i className="bi bi-flower1"></i>
-        </div>
+        {/* =================================================
+            CURRENT OFFER
+        ================================================= */}
+        {currentOffer && (
+          <article
+            className={`shop-hero-offer ${currentOffer.image ? "has-image" : "no-image"}`}
+            key={currentOffer.id}
+          >
+            <div className="shop-hero-offer-image-wrap">
 
-        <div className="hero-decoration hero-leaf-two">
-          <i className="bi bi-leaf"></i>
-        </div>
+              {currentOffer.image ? (
+                <img
+                  src={currentOffer.image}
+                  alt={currentOffer.title}
+                  className="shop-hero-offer-image"
+                />
+              ) : (
+                <div className="shop-hero-offer-image-placeholder">
+                  <i className="bi bi-gift-fill"></i>
+                </div>
+              )}
+
+              <span>
+                {currentOffer.discount}
+              </span>
+
+            </div>
+
+            <div className="shop-hero-offer-content">
+
+              <small>
+                CURRENT OFFER
+              </small>
+
+              <h2>
+                {currentOffer.title}
+              </h2>
+
+              <p>
+                {currentOffer.description}
+              </p>
+
+              <strong>
+                {String(currentOffer.validUntil).toLowerCase() ===
+                "no expiry"
+                  ? "Available now"
+                  : `Valid until ${currentOffer.validUntil}`}
+              </strong>
+
+            </div>
+
+            {offerSlides.length > 1 && (
+              <div
+                className="shop-hero-offer-dots"
+                aria-label="Offer slides"
+              >
+                {offerSlides.map((offer, index) => (
+                  <button
+                    type="button"
+                    key={offer.id}
+                    className={
+                      index === activeOfferIndex
+                        ? "active"
+                        : ""
+                    }
+                    onClick={() =>
+                      setActiveOfferIndex(index)
+                    }
+                    aria-label={`Show offer ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+
+          </article>
+        )}
 
       </section>
 
@@ -1568,7 +1818,7 @@ export default function Shop() {
 
       )}
 
-      {showOffer && (
+      {showOffer && currentOffer && (
         <div className="offer-popup-overlay">
           <div className="offer-popup">
 
@@ -1580,23 +1830,36 @@ export default function Shop() {
               <i className="bi bi-x-lg"></i>
             </button>
 
-            <div className="offer-popup-icon">
-              <i className="bi bi-gift-fill"></i>
-            </div>
+            {currentOffer.image ? (
+              <div className="offer-popup-image-wrap">
+                <img
+                  className="offer-popup-image"
+                  src={currentOffer.image}
+                  alt={currentOffer.title}
+                />
+              </div>
+            ) : (
+              <div className="offer-popup-icon">
+                <i className="bi bi-gift-fill"></i>
+              </div>
+            )}
 
             <span className="offer-popup-kicker">
               🌿 CURRENT OFFER 🌿
             </span>
 
-            <h2>Special Ayurvedic Offer</h2>
+            <h2>{currentOffer.title}</h2>
 
             <div className="offer-discount">
-              <span>15%</span> OFF
+              <span>{currentOffer.discount}</span>
             </div>
 
             <p>
-              Enjoy <strong>15% OFF</strong> on selected Ayurvedic
-              products from Siddheswari Ayurveda.
+              {currentOffer.description}
+              {" "}
+              <strong>Valid until {currentOffer.validUntil}.</strong>
+              {" "}
+              Enjoy this offer from Siddheswari Ayurveda.
             </p>
 
             <span className="offer-limited">

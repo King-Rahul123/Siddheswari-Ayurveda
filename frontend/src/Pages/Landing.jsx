@@ -1,10 +1,57 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addPatient } from '../services/patientService';
 import { subscribeRemedies } from '../services/remedyService';
 import { getImageUrl } from '../api/config';
+import { toast } from 'react-toastify';
 
 import '../CSS/Landing.css';
+
+const OFFER_STORAGE_KEY = 'ayurveda-user-offers';
+
+function getLatestOffer() {
+  try {
+    const savedOffers = JSON.parse(
+      localStorage.getItem(OFFER_STORAGE_KEY) || '[]'
+    );
+
+    if (!Array.isArray(savedOffers) || savedOffers.length === 0) {
+      return null;
+    }
+
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    const activeOffers = savedOffers.filter((offer) => {
+      if (!offer || !offer.title || !offer.description || !offer.discount) {
+        return false;
+      }
+
+      if (
+        !offer.validUntil ||
+        String(offer.validUntil).toLowerCase() === 'no expiry'
+      ) {
+        return true;
+      }
+
+      const expiryDate = new Date(`${offer.validUntil}T23:59:59`);
+
+      return (
+        !Number.isNaN(expiryDate.getTime()) &&
+        expiryDate >= today
+      );
+    });
+
+    return (
+      [...activeOffers].sort(
+        (first, second) =>
+          Number(second.id || 0) - Number(first.id || 0)
+      )[0] || null
+    );
+  } catch {
+    return null;
+  }
+}
 
 function Landing() {
   const navigate = useNavigate();
@@ -14,13 +61,52 @@ function Landing() {
   const [bookingForm, setBookingForm] = useState({ patientName: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState('');
-  const [showOffer, setShowOffer] = useState(false);
   const [displayedProducts, setDisplayedProducts] = useState([]);
   const hasSelectedProducts = useRef(false);
 
+  const [currentOffer, setCurrentOffer] = useState(getLatestOffer);
+  const [showOffer, setShowOffer] = useState(Boolean(getLatestOffer()));
+  const latestOfferId = useRef(currentOffer?.id || null);
+
   useEffect(() => {
-    setShowOffer(true);
+    const refreshOffer = () => {
+      const latestOffer = getLatestOffer();
+
+      if (!latestOffer) {
+        latestOfferId.current = null;
+        setCurrentOffer(null);
+        setShowOffer(false);
+        return;
+      }
+
+      if (latestOffer.id !== latestOfferId.current) {
+        latestOfferId.current = latestOffer.id;
+        setCurrentOffer(latestOffer);
+        setShowOffer(true);
+      }
+    };
+
+    refreshOffer();
+
+    window.addEventListener('storage', refreshOffer);
+    window.addEventListener('ayurveda-offer-updated', refreshOffer);
+
+    const offerSyncTimer = window.setInterval(refreshOffer, 1500);
+
+    return () => {
+      window.removeEventListener('storage', refreshOffer);
+      window.removeEventListener('ayurveda-offer-updated', refreshOffer);
+      window.clearInterval(offerSyncTimer);
+    };
   }, []);
+
+  const closeOffer = () => {
+    setShowOffer(false);
+  };
+
+  const reopenOffer = () => {
+    setShowOffer(true);
+  };
 
   useEffect(() => {
     const unsubscribe = subscribeRemedies((remedies) => {
@@ -115,9 +201,21 @@ function Landing() {
           <a href="#doctor" onClick={() => setMobileMenuOpen(false)}>Chief Vaidya</a>
           <a href="#timetable" className="md:hidden" onClick={() => setMobileMenuOpen(false)}>Visiting Hours</a>
           <a href="#treatments" onClick={() => setMobileMenuOpen(false)}>Treatments</a>
-          <a href="#shop" onClick={() => setMobileMenuOpen(false)}>Remedies</a>
+          <a href="#remedies" onClick={() => setMobileMenuOpen(false)}>Remedies</a>
           <a href="#location" onClick={() => setMobileMenuOpen(false)}>Ghatal Clinic</a>
-          <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Shop</a>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setMobileMenuOpen(false);
+              toast.info("Shop is currently under development 🚧", {
+                position: "bottom-right",
+                autoClose: 2500,
+              });
+            }}
+          >
+            Shop
+          </a>
           <button className="gold-portal-btn block md:hidden" onClick={() => navigate('/login')}>
             <i className="bi bi-person-circle"></i> Log In
           </button>
@@ -159,7 +257,7 @@ function Landing() {
               <a href="#timetable" className="btn-gold-primary">
                 <i className="bi bi-calendar-check-fill"></i> Book Vaidya Consultation
               </a>
-              <a href="#shop" className="btn-glass-secondary">
+              <a href="#remedies" className="btn-glass-secondary">
                 <i className="bi bi-flower1"></i> Explore Pure Remedies
               </a>
             </div>
@@ -354,7 +452,7 @@ function Landing() {
       </section>
 
       {/* Products Apothecary Section */}
-      <section className="shop-section" id="shop">
+      <section className="shop-section" id="remedies">
         <div className="container">
           <div className="section-title-wrap text-center">
             <span className="section-kicker">Hand-Crafted Formulations</span>
@@ -548,10 +646,10 @@ function Landing() {
 
             <div className="footer-links-col">
               <h4>Formulations</h4>
-              <a href="#shop">Immunity Elixirs</a>
-              <a href="#shop">Kumkumadi Skincare</a>
-              <a href="#shop">Ashwagandha Gold</a>
-              <a href="#shop">Organic Triphala</a>
+              <a href="#remedies">Immunity Elixirs</a>
+              <a href="#remedies">Kumkumadi Skincare</a>
+              <a href="#remedies">Ashwagandha Gold</a>
+              <a href="#remedies">Organic Triphala</a>
             </div>
 
             <div className="footer-links-col">
@@ -571,56 +669,158 @@ function Landing() {
         </div>
       </footer>
     
-      {showOffer && (
-        <div className="offer-popup-overlay">
+      {showOffer && currentOffer && (
+        <div
+          className="offer-popup-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="current-offer-title"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              closeOffer();
+            }
+          }}
+        >
           <div className="offer-popup">
 
             <button
               className="offer-popup-close"
-              onClick={() => setShowOffer(false)}
+              onClick={closeOffer}
               aria-label="Close offer"
             >
               <i className="bi bi-x-lg"></i>
             </button>
 
-            <div className="offer-popup-icon">
-              <i className="bi bi-gift-fill"></i>
-            </div>
-
-            <span className="offer-popup-kicker">
-              🌿 CURRENT OFFER 🌿
-            </span>
-
-            <h2>Special Ayurvedic Offer</h2>
-
-            <div className="offer-discount">
-              <span>15%</span> OFF
-            </div>
-
-            <p>
-              Enjoy <strong>15% OFF</strong> on selected Ayurvedic
-              products from Siddheswari Ayurveda.
-            </p>
-
-            <span className="offer-limited">
-              ✨ Limited Time Offer ✨
-            </span>
-
-            <button
-              className="btn-gold-primary offer-shop-btn"
-              onClick={() => {
-                setShowOffer(false);
-                document.getElementById('shop')?.scrollIntoView({
-                  behavior: 'smooth'
-                });
-              }}
+            <div
+              className="offer-popup-top-pattern"
+              aria-hidden="true"
             >
-              <i className="bi bi-bag-heart-fill"></i>
-              Shop Now
-            </button>
+              <span>✦</span>
+              <span>🌿</span>
+              <span>✦</span>
+            </div>
 
+            {currentOffer.image ? (
+              <div className="offer-popup-image-wrap">
+                <img
+                  className="offer-popup-image"
+                  src={currentOffer.image}
+                  alt={currentOffer.title}
+                />
+
+                <div
+                  className="offer-image-overlay"
+                  aria-hidden="true"
+                ></div>
+              </div>
+            ) : (
+              <div className="offer-popup-icon">
+                <i className="bi bi-gift-fill"></i>
+              </div>
+            )}
+
+            <div className="offer-popup-content">
+
+              <span className="offer-popup-kicker">
+                🌿 &nbsp; SPECIAL OFFER &nbsp; 🌿
+              </span>
+
+              <h2 id="current-offer-title">
+                {currentOffer.title}
+              </h2>
+
+              <div className="offer-gold-divider">
+                <span></span>
+                <i className="bi bi-flower1"></i>
+                <span></span>
+              </div>
+
+              <div className="offer-discount">
+                <small>EXCLUSIVE BENEFIT</small>
+
+                <span>
+                  {currentOffer.discount}
+                </span>
+              </div>
+
+              <p className="offer-description">
+                {currentOffer.description}
+              </p>
+
+              <div className="offer-validity">
+                <i className="bi bi-calendar-heart-fill"></i>
+
+                <span>
+                  {String(currentOffer.validUntil).toLowerCase() ===
+                  'no expiry'
+                    ? 'Available for a limited time'
+                    : (
+                      <>
+                        Offer valid until{' '}
+                        <strong>
+                          {currentOffer.validUntil}
+                        </strong>
+                      </>
+                    )}
+                </span>
+              </div>
+
+              <div className="offer-trust-row">
+
+                <span>
+                  <i className="bi bi-leaf-fill"></i>
+                  Authentic Ayurveda
+                </span>
+
+                <span>
+                  <i className="bi bi-patch-check-fill"></i>
+                  Siddheswari Ayurveda
+                </span>
+
+              </div>
+
+              <button
+                className="btn-gold-primary offer-shop-btn"
+                onClick={() => {
+                  closeOffer();
+
+                  document
+                    .getElementById('shop')
+                    ?.scrollIntoView({
+                      behavior: 'smooth'
+                    });
+                }}
+              >
+                <i className="bi bi-bag-heart-fill"></i>
+
+                Explore This Offer
+
+                <i className="bi bi-arrow-right"></i>
+              </button>
+
+              <button
+                type="button"
+                className="offer-continue-btn"
+                onClick={closeOffer}
+              >
+                Continue browsing
+              </button>
+
+            </div>
           </div>
         </div>
+      )}
+
+      {currentOffer && !showOffer && (
+        <button
+          type="button"
+          className="offer-reopen-btn"
+          onClick={reopenOffer}
+          aria-label="View current offer"
+        >
+          <i className="bi bi-gift-fill"></i>
+          View Offer
+        </button>
       )}
     </div>
   );

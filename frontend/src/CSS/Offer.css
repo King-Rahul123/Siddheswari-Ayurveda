@@ -340,6 +340,17 @@
   display: block;
 }
 
+.offer-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f2;
+  color: #7b8b7d;
+  font-size: 2rem;
+}
+
 .offer-badge {
   position: absolute;
   top: 14px;

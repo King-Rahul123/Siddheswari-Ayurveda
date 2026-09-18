@@ -13,6 +13,7 @@ export default function Outstanding() {
   const [statusFilter, setStatusFilter] = useState("Due");
   const [methodFilter, setMethodFilter] = useState("All");
   const [selectedBill, setSelectedBill] = useState(null);
+  const [selectedPaymentBillIds, setSelectedPaymentBillIds] = useState([]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -107,13 +108,29 @@ export default function Outstanding() {
   const openPayment = (bill) => {
     const due = getDue(bill);
 
+    // Use the same ID logic everywhere
+    const billId = String(
+      bill.id ??
+      bill._id ??
+      bill.saleId ??
+      bill.invoiceNumber ??
+      bill.billNumber
+    );
+
     setSelectedBill(bill);
+
+    // Automatically select the invoice from which
+    // the "Clear Pay" button was clicked
+    setSelectedPaymentBillIds(due > 0 ? [billId] : []);
+
     setPaymentForm({
+      // Initially show the clicked bill's outstanding amount
       amount: due > 0 ? String(due) : "",
       method: "Cash",
       transactionId: "",
       note: "",
     });
+
     setShowPaymentModal(true);
   };
 
@@ -121,6 +138,7 @@ export default function Outstanding() {
     if (saving) return;
     setShowPaymentModal(false);
     setSelectedBill(null);
+    setSelectedPaymentBillIds([]);
   };
 
   // Get all unpaid/partial bills for the selected customer
@@ -130,65 +148,140 @@ export default function Outstanding() {
     const targetCustomerName = (selectedBill.customerName || selectedBill.customer || "").trim().toLowerCase();
     const targetCustomerPhone = (selectedBill.customerPhone || selectedBill.phone || "").trim();
 
-    return bills.filter((b) => {
-      const status = normalizedStatus(b);
-      if (status === "Paid") return false;
+    return bills
+      .filter((b) => {
+        const status = normalizedStatus(b);
+        if (status === "Paid") return false;
 
-      const bName = (b.customerName || b.customer || "").trim().toLowerCase();
-      const bPhone = (b.customerPhone || b.phone || "").trim();
+        const bName = (b.customerName || b.customer || "").trim().toLowerCase();
+        const bPhone = (b.customerPhone || b.phone || "").trim();
 
-      const nameMatch = targetCustomerName && bName === targetCustomerName;
-      const phoneMatch = targetCustomerPhone && bPhone === targetCustomerPhone;
+        const nameMatch = targetCustomerName && bName === targetCustomerName;
+        const phoneMatch = targetCustomerPhone && bPhone === targetCustomerPhone;
 
-      return nameMatch || phoneMatch;
-    });
+        return nameMatch || phoneMatch;
+      })
+      .sort((firstBill, secondBill) => {
+        const firstDate = new Date(firstBill.createdAt || firstBill.date || firstBill.billDate).getTime();
+        const secondDate = new Date(secondBill.createdAt || secondBill.date || secondBill.billDate).getTime();
+
+        if (Number.isNaN(firstDate) || Number.isNaN(secondDate)) return 0;
+        return firstDate - secondDate;
+      });
   }, [selectedBill, bills]);
+
+  const selectedBillsDue = useMemo(
+    () =>
+      customerPendingBills
+        .filter((bill) =>
+          selectedPaymentBillIds.includes(
+            String(bill.id ?? bill._id ?? bill.saleId ?? bill.invoiceNumber ?? bill.billNumber)
+          )
+        )
+        .reduce((sum, bill) => sum + getDue(bill), 0),
+    [customerPendingBills, selectedPaymentBillIds]
+  );
 
   // Projected allocation of entered amount across customer's pending bills
   const paymentAllocation = useMemo(() => {
     const entered = Number(paymentForm.amount || 0);
+
+    if (!entered || entered <= 0) {
+      return customerPendingBills.map((bill) => ({
+        ...bill,
+        allocated: 0,
+        newPaid: getPaid(bill),
+        newDue: getDue(bill),
+        newStatus: normalizedStatus(bill),
+      }));
+    }
+
     let remaining = entered;
 
-    return customerPendingBills.map((b) => {
-      const billTotal = getTotal(b);
-      const billPaid = getPaid(b);
-      const billDue = getDue(b);
+    // Only selected bills can receive payment.
+    // Keep the customer's invoice order.
+    return customerPendingBills.map((bill) => {
+      const billTotal = getTotal(bill);
+      const billPaid = getPaid(bill);
+      const billDue = getDue(bill);
 
-      if (remaining <= 0) {
+      const billId = String(
+        bill.id ??
+        bill._id ??
+        bill.saleId ??
+        bill.invoiceNumber ??
+        bill.billNumber
+      );
+
+      const isSelected = selectedPaymentBillIds.includes(billId);
+
+      if (!isSelected || remaining <= 0 || billDue <= 0) {
         return {
-          ...b,
+          ...bill,
           allocated: 0,
           newPaid: billPaid,
           newDue: billDue,
-          newStatus: normalizedStatus(b)
+          newStatus: normalizedStatus(bill),
         };
       }
 
       const allocated = Math.min(remaining, billDue);
+
       const newPaid = billPaid + allocated;
       const newDue = Math.max(0, billTotal - newPaid);
-      const newStatus = newDue <= 0 ? "Paid" : newPaid > 0 ? "Partial" : "Due";
+
+      const newStatus =
+        newDue <= 0
+          ? "Paid"
+          : newPaid > 0
+          ? "Partial"
+          : "Due";
 
       remaining -= allocated;
 
       return {
-        ...b,
+        ...bill,
         allocated,
         newPaid,
         newDue,
-        newStatus
+        newStatus,
       };
     });
-  }, [customerPendingBills, paymentForm.amount]);
+  }, [customerPendingBills, paymentForm.amount, selectedPaymentBillIds]);
 
   const handlePayment = async (e) => {
     if (e) e.preventDefault();
     if (!selectedBill) return;
 
+    if (selectedPaymentBillIds.length === 0) {
+      toast.warning("Select the bill which is paid");
+      return;
+    }
+
+    const billsToPay = customerPendingBills.filter((bill) =>
+      selectedPaymentBillIds.includes(
+        String(bill.id ?? bill._id ?? bill.saleId ?? bill.invoiceNumber ?? bill.billNumber)
+      )
+    );
+
+    if (billsToPay.length !== selectedPaymentBillIds.length) {
+      toast.error("One or more selected bills are no longer available");
+      return;
+    }
+
     const amount = Number(paymentForm.amount);
 
     if (!amount || amount <= 0) {
       toast.warning("Enter a valid payment amount");
+      return;
+    }
+
+    if (amount > selectedBillsDue) {
+      toast.warning(
+        `Payment cannot exceed the selected bills due of ${formatCurrency(
+          selectedBillsDue
+        )}`
+      );
       return;
     }
 
@@ -203,52 +296,35 @@ export default function Outstanding() {
     setSaving(true);
 
     try {
-      const billId =
-        selectedBill.id ??
-        selectedBill._id ??
-        selectedBill.saleId ??
-        selectedBill.invoiceNumber ??
-        selectedBill.billNumber;
+      let remainingAmount = amount;
+      let processedAmount = 0;
 
-      const customerName = selectedBill.customerName || selectedBill.customer || "";
-      const customerPhone = selectedBill.customerPhone || selectedBill.phone || "";
-      const customerCode = selectedBill.customerCode || "";
+      for (const bill of billsToPay) {
+        if (remainingAmount <= 0) break;
 
-      // If customer has multiple pending bills, use customer clear-payment
-      let res;
-      if (customerPendingBills.length > 1) {
-        res = await apiFetch("/sales/clear-payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            customerName,
-            customerPhone,
-            customerCode,
-            amount,
-            paymentMethod: paymentForm.method,
-            transactionId: paymentForm.method === "UPI" ? paymentForm.transactionId.trim() : "",
-            note: paymentForm.note.trim()
-          })
-        });
-      } else {
-        res = await apiFetch(`/sales/${billId}/payment`, {
+        const billAmount = Math.min(remainingAmount, getDue(bill));
+        const billId = bill.id ?? bill._id ?? bill.saleId ?? bill.invoiceNumber ?? bill.billNumber;
+        const res = await apiFetch(`/sales/${billId}/payment`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            amount,
+            amount: billAmount,
             paymentMethod: paymentForm.method,
             transactionId: paymentForm.method === "UPI" ? paymentForm.transactionId.trim() : "",
             note: paymentForm.note.trim()
           })
         });
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.message || "Payment update failed");
+        }
+
+        remainingAmount -= billAmount;
+        processedAmount += billAmount;
       }
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Payment update failed");
-      }
-
-      toast.success(`₹${amount.toLocaleString("en-IN")} payment processed successfully!`);
+      toast.success(`₹${processedAmount.toLocaleString("en-IN")} payment processed successfully!`);
       closePayment();
       await loadBills();
     } catch (error) {
@@ -542,8 +618,8 @@ export default function Outstanding() {
 
               <div className="payment-balance">
                 <div>
-                  <small>Selected Bill Due</small>
-                  <strong>{formatCurrency(getDue(selectedBill))}</strong>
+                  <small>Selected Bills Due</small>
+                  <strong>{formatCurrency(selectedBillsDue)}</strong>
                 </div>
                 <div>
                   <small>Customer Total Due</small>
@@ -659,6 +735,7 @@ export default function Outstanding() {
                     <table className="preview-table">
                       <thead>
                         <tr>
+                          <th type="checkbox" className="text-center w-1">#</th>
                           <th>Invoice</th>
                           <th>Total</th>
                           <th>Current Due</th>
@@ -669,6 +746,27 @@ export default function Outstanding() {
                       <tbody>
                         {paymentAllocation.map((item) => (
                           <tr key={item.id ?? item._id ?? item.saleId} className={item.allocated > 0 ? "active-alloc" : ""}>
+                            <td className="text-center">
+                              <input
+                                type="checkbox"
+                                checked={selectedPaymentBillIds.includes(String(item.id ?? item._id ?? item.saleId ?? item.invoiceNumber ?? item.billNumber))}
+                                onChange={() => {
+                                  const billId = String(item.id ?? item._id ?? item.saleId ?? item.invoiceNumber ?? item.billNumber);
+                                  const nextIds = selectedPaymentBillIds.includes(billId)
+                                    ? selectedPaymentBillIds.filter((id) => id !== billId)
+                                    : [...selectedPaymentBillIds, billId];
+                                  const selectedDue = customerPendingBills
+                                    .filter((bill) => nextIds.includes(String(bill.id ?? bill._id ?? bill.saleId ?? bill.invoiceNumber ?? bill.billNumber)))
+                                    .reduce((sum, bill) => sum + getDue(bill), 0);
+
+                                  setSelectedPaymentBillIds(nextIds);
+                                  setPaymentForm((prev) => ({
+                                    ...prev,
+                                    amount: String(selectedDue),
+                                  }));
+                                }}
+                              />
+                            </td>
                             <td><strong>{item.saleId || item.invoiceNumber || item.billNumber}</strong></td>
                             <td>{formatCurrency(getTotal(item))}</td>
                             <td className="text-danger">{formatCurrency(getDue(item))}</td>

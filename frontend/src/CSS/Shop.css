@@ -1,27 +1,3 @@
-.shop-page {
-  --shop-green: #315b3c;
-  --shop-dark-green: #23452d;
-  --shop-light-green: #e9f0e7;
-  --shop-pale-green: #f4f7f1;
-  --shop-gold: #b58a45;
-  --shop-light-gold: #d9bd82;
-  --shop-cream: #f8f5ed;
-  --shop-white: #ffffff;
-  --shop-text: #263329;
-  --shop-muted: #6e786f;
-  --shop-border: #e4e7df;
-  --shop-shadow: 0 18px 50px rgba(36, 61, 42, 0.08);
-
-  min-height: 100vh;
-  background: var(--shop-cream);
-  color: var(--shop-text);
-  font-family:
-    "Inter",
-    "Poppins",
-    "Segoe UI",
-    sans-serif;
-  overflow-x: hidden;
-}
 
 .shop-page *,
 .shop-page *::before,
@@ -53,8 +29,8 @@
   top: 0;
   z-index: 1000;
   width: 100%;
-  background: rgba(248, 245, 237, 0.96);
-  border-bottom: 1px solid rgba(49, 91, 60, 0.1);
+  background: rgba(250, 248, 242, 0.9);
+  border-bottom: 1px solid rgba(40, 84, 60, 0.12);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -221,34 +197,149 @@
   overflow: hidden;
   display: flex;
   align-items: center;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(31, 61, 39, 0.94) 0%,
-      rgba(31, 61, 39, 0.78) 43%,
-      rgba(31, 61, 39, 0.25) 100%
-    ),
-    url("/images/shop-banner.jpg") center / cover no-repeat;
+  isolation: isolate;
+  background: linear-gradient(135deg, #28543c 0%, #347653 52%, #17382b 100%);
 }
 
 .shop-hero-background {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(
-      circle at 75% 45%,
-      rgba(217, 189, 130, 0.17),
-      transparent 27%
-    );
+  z-index: -2;
+  background: linear-gradient(135deg, #28543c 0%, #347653 52%, #17382b 100%);
   pointer-events: none;
 }
 
-.shop-hero-content {
+.shop-hero-background-decorations {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Keep decorations behind all main hero content */
+.shop-hero-background-decorations .hero-decoration {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.18;
+}
+
+/* Flower */
+.shop-hero-background-decorations .hero-leaf-one {
+  top: 8%;
+  left: 4%;
+  font-size: 110px;
+  transform: rotate(-15deg);
+}
+
+/* Leaf */
+.shop-hero-background-decorations .hero-leaf-two {
+  right: 5%;
+  bottom: 8%;
+  font-size: 130px;
+  transform: rotate(25deg);
+}
+
+/* Content/images stay above decorations */
+.shop-hero-image-collage,
+.shop-hero-content,
+.shop-hero-offer {
   position: relative;
   z-index: 2;
+}
+
+.shop-hero.has-hero-images {
+  background: transparent;
+}
+
+.shop-hero.has-hero-images .shop-hero-background {
+  display: none;
+}
+
+/* When there are no usable images, keep the solid background visible. */
+.shop-hero.no-hero-images {
+  background: linear-gradient(135deg, #28543c 0%, #347653 52%, #17382b 100%);
+}
+
+.shop-hero.no-hero-images .shop-hero-background {
+  display: block;
+}
+
+/* Atmospheric background treatment only. */
+.shop-hero.no-hero-images .shop-hero-background {
+  background:
+    radial-gradient(circle at 82% 22%, rgba(228, 201, 141, 0.22), transparent 24%),
+    radial-gradient(circle at 18% 82%, rgba(117, 179, 135, 0.18), transparent 28%),
+    linear-gradient(115deg, #102f24 0%, #28543c 48%, #6b8d62 100%);
+}
+
+.shop-hero-image-collage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba(44, 131, 95, 0.72) 0%, rgba(12, 38, 27, 0.34) 44%, rgba(12, 38, 27, 0.12) 100%),
+    linear-gradient(180deg, rgba(8, 29, 20, 0.08), rgba(8, 29, 20, 0.32));
+  pointer-events: none;
+}
+
+.shop-hero-image-collage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(7, 26, 18, 0.28) 100%);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* Clean image-only gallery. No gradients, cards, shadows,
+   floating tiles or product images are added here. */
+.shop-hero-image-collage {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  overflow: hidden;
+  background: #17382b;
+  pointer-events: none;
+}
+
+.shop-hero-image-tile {
+  position: relative;
+  min-width: 0;
+  min-height: 100%;
+  margin-right: -1px;
+  overflow: hidden;
+  background: transparent;
+}
+
+.shop-hero-image-tile img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transform: scale(1.015);
+}
+
+.shop-hero-image-tile.is-offer {
+  position: relative;
+}
+
+.shop-hero.no-hero-images .shop-hero-image-collage {
+  display: none;
+}
+
+/* No overlay/background behind the hero text: images remain fully visible. */
+.shop-hero-content {
+  position: relative;
+  z-index: 3;
   width: min(1400px, calc(100% - 60px));
   margin: auto;
-  padding: 75px 0;
+  padding: 85px 0;
   color: white;
 }
 
@@ -271,11 +362,8 @@
 
 .shop-hero-content h1 {
   max-width: 690px;
-  margin: 20px 0 20px;
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  margin: 20px 0;
+  font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(48px, 6vw, 78px);
   font-weight: 400;
   line-height: 1.05;
@@ -290,17 +378,18 @@
 .shop-hero-content p {
   max-width: 560px;
   margin: 0 0 32px;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.88);
   font-size: 16px;
   line-height: 1.8;
 }
 
 .shop-hero-button {
+  min-height: 50px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 999px;
   background: #e0c185;
   color: #284632;
-  padding: 15px 24px;
+  padding: 0 24px;
   display: inline-flex;
   align-items: center;
   gap: 13px;
@@ -316,27 +405,242 @@
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.15);
 }
 
-.hero-decoration {
+.shop-hero-offer {
   position: absolute;
-  z-index: 1;
-  color: rgba(224, 193, 133, 0.17);
-  pointer-events: none;
+  right: max(30px, 7vw);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  width: min(360px, 31vw);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 18px;
+  background: rgba(23, 55, 36, 0.84);
+  box-shadow: 0 22px 45px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: shopOfferSlideIn 0.6s ease both;
 }
 
-.hero-leaf-one {
-  right: 12%;
-  top: 18%;
-  font-size: 190px;
-  transform: rotate(-22deg);
+.shop-hero-offer-image-wrap {
+  position: relative;
+  height: 170px;
+  background: rgba(255, 255, 255, 0.12);
 }
 
-.hero-leaf-two {
-  right: 27%;
-  bottom: 10%;
-  font-size: 100px;
-  transform: rotate(22deg);
+.shop-hero-offer-image,
+.shop-hero-offer-image-placeholder {
+  width: 100%;
+  height: 100%;
 }
 
+.shop-hero-offer-image {
+  display: block;
+  object-fit: cover;
+}
+
+.shop-hero-offer-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e4c98d;
+  font-size: 42px;
+}
+
+.shop-hero-offer.no-image .shop-hero-offer-image-wrap {
+  height: 86px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(228, 201, 141, 0.28), transparent 62%),
+    linear-gradient(135deg, rgba(52, 118, 83, 0.85), rgba(23, 55, 36, 0.92));
+}
+
+.shop-hero-offer.no-image .shop-hero-offer-image-placeholder {
+  font-size: 32px;
+}
+
+.shop-hero-offer.no-image .shop-hero-offer-content {
+  padding-top: 20px;
+}
+
+.shop-hero-offer-image-wrap > span {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #e0c185;
+  color: #284632;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.shop-hero-offer-content {
+  padding: 18px 20px 22px;
+  color: white;
+}
+
+.shop-hero-offer-content small {
+  color: #e4c98d;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.shop-hero-offer-content h2 {
+  margin: 8px 0;
+  color: #fff8e9;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 25px;
+  line-height: 1.15;
+}
+
+.shop-hero-offer-content p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0 0 12px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.shop-hero-offer-content strong {
+  color: #e4c98d;
+  font-size: 11px;
+}
+
+.shop-hero-offer-dots {
+  display: flex;
+  gap: 6px;
+  padding: 0 20px 16px;
+}
+
+.shop-hero-offer-dots button {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+}
+
+.shop-hero-offer-dots button.active {
+  width: 22px;
+  border-radius: 99px;
+  background: #e0c185;
+}
+
+@keyframes shopOfferSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+@media (max-width: 1100px) {
+  .shop-hero-image-collage {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .shop-hero-image-tile:nth-child(n + 7) {
+    display: none;
+  }
+
+  .shop-hero-offer {
+    right: 25px;
+    width: min(350px, 35vw);
+  }
+}
+
+@media (max-width: 900px) {
+  .shop-hero {
+    min-height: 640px;
+  }
+
+  .shop-hero-image-collage {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .shop-hero-image-tile:nth-child(n + 5) {
+    display: none;
+  }
+
+  .shop-hero-content {
+    padding: 65px 0 250px;
+  }
+
+  .shop-hero-offer {
+    top: auto;
+    right: 20px;
+    bottom: 25px;
+    transform: none;
+    width: min(370px, calc(100% - 40px));
+  }
+
+  .shop-hero.has-hero-images .shop-hero-content::before {
+    left: -25px;
+    width: 80vw;
+  }
+}
+
+@media (max-width: 600px) {
+  .shop-hero {
+    min-height: 700px;
+  }
+
+  .shop-hero-content {
+    padding: 50px 0 255px;
+  }
+
+  .shop-hero-kicker {
+    font-size: 8px;
+    letter-spacing: 2.5px;
+  }
+
+  .shop-hero-content h1 {
+    margin-top: 16px;
+    font-size: clamp(42px, 13vw, 60px);
+    letter-spacing: -1.5px;
+  }
+
+  .shop-hero-content p {
+    max-width: 100%;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .shop-hero-image-collage {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .shop-hero-image-tile:nth-child(n + 5) {
+    display: none;
+  }
+
+  .shop-hero-offer {
+    left: 15px;
+    right: 15px;
+    bottom: 18px;
+    width: auto;
+  }
+
+  .shop-hero-offer-image-wrap {
+    height: 125px;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shop-hero-offer {
+    animation: none;
+  }
+}
 
 /* =========================================================
    INTRO
@@ -1866,13 +2170,6 @@
     display: none;
   }
 
-  .shop-hero {
-    min-height: 520px;
-  }
-
-  .shop-hero-content {
-    width: min(100% - 40px, 700px);
-  }
 
   .shop-intro-inner {
     grid-template-columns: 1fr;
@@ -1998,47 +2295,6 @@
     display: none;
   }
 
-  .shop-hero {
-    min-height: 510px;
-    background-position: 62% center;
-  }
-
-  .shop-hero-content {
-    padding: 55px 0;
-  }
-
-  .shop-hero-kicker {
-    font-size: 8px;
-    letter-spacing: 2.5px;
-  }
-
-  .shop-hero-content h1 {
-    margin-top: 16px;
-    font-size: clamp(42px, 13vw, 60px);
-    letter-spacing: -1.5px;
-  }
-
-  .shop-hero-content p {
-    max-width: 100%;
-    font-size: 13px;
-    line-height: 1.7;
-  }
-
-  .hero-decoration {
-    opacity: 0.5;
-  }
-
-  .hero-leaf-one {
-    right: -25px;
-    top: 10%;
-    font-size: 130px;
-  }
-
-  .hero-leaf-two {
-    right: -5px;
-    bottom: 7%;
-    font-size: 75px;
-  }
 
   .shop-intro {
     padding: 60px 0;
@@ -2377,9 +2633,6 @@
     display: none;
   }
 
-  .shop-hero-content h1 {
-    font-size: 42px;
-  }
 
   .benefit-grid {
     grid-template-columns: 1fr;
@@ -2394,4 +2647,76 @@
     border-bottom: 0;
   }
 
+}
+
+/* =========================================================
+   HERO BACKGROUND DECORATIONS
+   ========================================================= */
+
+/* Keep the decorative icons visible in the background layer.
+   They sit above hero images but below hero content/offer. */
+.shop-hero-background-decorations {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block !important;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.shop-hero-background-decorations .hero-decoration {
+  position: absolute !important;
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: none;
+  z-index: 2;
+  color: rgba(228, 201, 141, 0.28);
+  line-height: 1;
+}
+
+.shop-hero-background-decorations .hero-leaf-one {
+  top: 7%;
+  left: 3%;
+  font-size: 120px;
+  transform: rotate(-15deg);
+}
+
+.shop-hero-background-decorations .hero-leaf-two {
+  right: 4%;
+  bottom: 7%;
+  font-size: 145px;
+  transform: rotate(25deg);
+}
+
+.shop-hero-background-decorations .hero-decoration i {
+  display: block !important;
+  visibility: visible !important;
+  font-size: inherit;
+}
+
+/* Images remain below the decorations */
+.shop-hero-image-collage {
+  z-index: 1;
+}
+
+/* Text and offer remain above the decorations */
+.shop-hero-content,
+.shop-hero-offer {
+  position: relative;
+  z-index: 3;
+}
+
+/* On mobile, keep decorations subtle and inside the hero */
+@media (max-width: 600px) {
+  .shop-hero-background-decorations .hero-leaf-one {
+    top: 4%;
+    left: -10px;
+    font-size: 80px;
+  }
+
+  .shop-hero-background-decorations .hero-leaf-two {
+    right: -10px;
+    bottom: 30%;
+    font-size: 95px;
+  }
 }
