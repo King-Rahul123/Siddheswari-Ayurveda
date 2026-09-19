@@ -74,7 +74,7 @@ export default function Analytics() {
     const [topProducts, setTopProducts] = useState([]);
     const [activities, setActivities] = useState([]);
     const [lowStockProducts, setLowStockProducts] = useState([]);
-    
+
     // State for Performance Popup Modal
     const [showPerformanceModal, setShowPerformanceModal] = useState(false);
     const [modalTimeframe, setModalTimeframe] = useState("monthly");
@@ -104,17 +104,17 @@ export default function Analytics() {
         loadAnalytics(timeframe);
     }, [timeframe]);
 
-    const activeChartData = timeframe === "weekly" 
+    const activeChartData = timeframe === "weekly"
         ? (weeklySalesData.length > 0 ? weeklySalesData : salesData)
         : timeframe === "yearly"
-        ? (yearlySalesData.length > 0 ? yearlySalesData : salesData)
-        : (monthlySalesData.length > 0 ? monthlySalesData : salesData);
+            ? (yearlySalesData.length > 0 ? yearlySalesData : salesData)
+            : (monthlySalesData.length > 0 ? monthlySalesData : salesData);
 
     const modalChartData = modalTimeframe === "weekly"
         ? (weeklySalesData.length > 0 ? weeklySalesData : salesData)
         : modalTimeframe === "yearly"
-        ? (yearlySalesData.length > 0 ? yearlySalesData : salesData)
-        : (monthlySalesData.length > 0 ? monthlySalesData : salesData);
+            ? (yearlySalesData.length > 0 ? yearlySalesData : salesData)
+            : (monthlySalesData.length > 0 ? monthlySalesData : salesData);
 
     // Use Profit Margin data stored continuously in the backend response list
     const performanceGraphData = modalChartData.map((d) => ({
@@ -184,7 +184,7 @@ export default function Analytics() {
                         </div>
 
                         {/* Performance Card - Behaves as interactive button */}
-                        <div 
+                        <div
                             className="analytics-card performance-card-btn"
                             onClick={() => setShowPerformanceModal(true)}
                             title="Click to open performance graph modal"
@@ -217,8 +217,8 @@ export default function Analytics() {
                             <h3>{stats.lowStock}</h3>
                             <p>Low Stock</p>
                         </div>
-                    </div>  
-        
+                    </div>
+
                     <div className="analytics-grid">
                         <div className="chart-card large">
                             <div className="chart-header flex justify-between items-center mb-4">
@@ -242,24 +242,24 @@ export default function Analytics() {
                             </div>
                             <ResponsiveContainer width="100%" height={300}>
                                 <AreaChart data={activeChartData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="label" />
-                                <YAxis />
-                                <Tooltip />
-                                <Area
-                                    type="monotone"
-                                    name="Sales (₹)"
-                                    dataKey="sales"
-                                    stroke="#2e7d32"
-                                    fill="#81c784"
-                                />
-                                <Area
-                                    type="monotone"
-                                    name="Purchases (₹)"
-                                    dataKey="purchases"
-                                    stroke="#0284c7"
-                                    fill="#7dd3fc"
-                                />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" vertical={true} horizontal={true} />
+                                    <XAxis dataKey="label" stroke="#475569" tick={{ fontSize: 12, fill: "#475569" }} axisLine={{ stroke: '#94a3b8' }} tickLine={{ stroke: '#94a3b8' }} />
+                                    <YAxis stroke="#475569" tick={{ fontSize: 12, fill: "#475569" }} axisLine={{ stroke: '#94a3b8' }} tickLine={{ stroke: '#94a3b8' }} />
+                                    <Tooltip />
+                                    <Area
+                                        type="monotone"
+                                        name="Sales (₹)"
+                                        dataKey="sales"
+                                        stroke="#2e7d32"
+                                        fill="#81c784"
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        name="Purchases (₹)"
+                                        dataKey="purchases"
+                                        stroke="#0284c7"
+                                        fill="#7dd3fc"
+                                    />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -268,20 +268,20 @@ export default function Analytics() {
                             <h3>Payment Methods</h3>
                             <ResponsiveContainer width="100%" height={300}>
                                 <PieChart>
-                                <Pie
-                                    data={paymentData}
-                                    dataKey="value"
-                                    outerRadius={90}
-                                    label
-                                >
-                                    {paymentData.map((item, i) => (
-                                        <Cell
-                                            key={i}
-                                            fill={colors[i % colors.length]}
-                                        />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
+                                    <Pie
+                                        data={paymentData}
+                                        dataKey="value"
+                                        outerRadius={90}
+                                        label
+                                    >
+                                        {paymentData.map((item, i) => (
+                                            <Cell
+                                                key={i}
+                                                fill={colors[i % colors.length]}
+                                            />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
@@ -291,11 +291,11 @@ export default function Analytics() {
 
                             <ResponsiveContainer width="100%" height={300}>
                                 <BarChart data={topProducts}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" />
-                                <YAxis />
-                                <Tooltip />
-                                <Bar dataKey="qty" fill="#2e7d32" />
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Bar dataKey="qty" fill="#2e7d32" />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -422,19 +422,19 @@ export default function Analytics() {
                                 <div className="flex items-center gap-2">
                                     <span className="control-group-label">Timeframe:</span>
                                     <div className="toggle-button-group">
-                                        <button 
+                                        <button
                                             className={`toggle-btn ${modalTimeframe === "weekly" ? "active green" : ""}`}
                                             onClick={() => setModalTimeframe("weekly")}
                                         >
                                             Weekly
                                         </button>
-                                        <button 
+                                        <button
                                             className={`toggle-btn ${modalTimeframe === "monthly" ? "active green" : ""}`}
                                             onClick={() => setModalTimeframe("monthly")}
                                         >
                                             Monthly
                                         </button>
-                                        <button 
+                                        <button
                                             className={`toggle-btn ${modalTimeframe === "yearly" ? "active green" : ""}`}
                                             onClick={() => setModalTimeframe("yearly")}
                                         >
@@ -446,13 +446,13 @@ export default function Analytics() {
                                 <div className="flex items-center gap-2">
                                     <span className="control-group-label">Graph Visualization:</span>
                                     <div className="toggle-button-group">
-                                        <button 
+                                        <button
                                             className={`toggle-btn ${graphType === "combination" ? "active" : ""}`}
                                             onClick={() => setGraphType("combination")}
                                         >
                                             <i className="bi bi-bar-chart-line"></i> Combination (Line & Bar)
                                         </button>
-                                        <button 
+                                        <button
                                             className={`toggle-btn ${graphType === "clustered" ? "active" : ""}`}
                                             onClick={() => setGraphType("clustered")}
                                         >
@@ -467,9 +467,9 @@ export default function Analytics() {
                                 <ResponsiveContainer width="100%" height={340}>
                                     {graphType === "combination" ? (
                                         <ComposedChart data={performanceGraphData} margin={{ top: 20, right: 30, left: 15, bottom: 10 }}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                                            <XAxis dataKey="label" stroke="#64748b" tick={{ fontSize: 12, fontWeight: 500 }} />
-                                            <YAxis stroke="#64748b" tick={{ fontSize: 12 }} tickFormatter={(val) => `₹${val >= 1000 ? (val/1000).toFixed(0) + 'k' : val}`} />
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" vertical={true} horizontal={true} />
+                                            <XAxis dataKey="label" stroke="#475569" tick={{ fontSize: 12, fontWeight: 600, fill: "#475569" }} axisLine={{ stroke: '#94a3b8', strokeWidth: 1.5 }} tickLine={{ stroke: '#94a3b8' }} />
+                                            <YAxis stroke="#475569" tick={{ fontSize: 12, fontWeight: 500, fill: "#475569" }} axisLine={{ stroke: '#94a3b8', strokeWidth: 1.5 }} tickLine={{ stroke: '#94a3b8' }} tickFormatter={(val) => `₹${val >= 1000 ? (val / 1000).toFixed(0) + 'k' : val}`} />
                                             <Tooltip content={<CustomChartTooltip />} />
                                             <Bar name="Sales (Revenue)" dataKey="sales" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={32} />
                                             <Bar name="Purchases" dataKey="purchases" fill="#0284c7" radius={[6, 6, 0, 0]} maxBarSize={32} />
@@ -477,9 +477,9 @@ export default function Analytics() {
                                         </ComposedChart>
                                     ) : (
                                         <BarChart data={performanceGraphData} margin={{ top: 20, right: 30, left: 15, bottom: 10 }}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                                            <XAxis dataKey="label" stroke="#64748b" tick={{ fontSize: 12, fontWeight: 500 }} />
-                                            <YAxis stroke="#64748b" tick={{ fontSize: 12 }} tickFormatter={(val) => `₹${val >= 1000 ? (val/1000).toFixed(0) + 'k' : val}`} />
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" vertical={true} horizontal={true} />
+                                            <XAxis dataKey="label" stroke="#475569" tick={{ fontSize: 12, fontWeight: 600, fill: "#475569" }} axisLine={{ stroke: '#94a3b8', strokeWidth: 1.5 }} tickLine={{ stroke: '#94a3b8' }} />
+                                            <YAxis stroke="#475569" tick={{ fontSize: 12, fontWeight: 500, fill: "#475569" }} axisLine={{ stroke: '#94a3b8', strokeWidth: 1.5 }} tickLine={{ stroke: '#94a3b8' }} tickFormatter={(val) => `₹${val >= 1000 ? (val / 1000).toFixed(0) + 'k' : val}`} />
                                             <Tooltip content={<CustomChartTooltip />} />
                                             <Bar name="Sales (Revenue)" dataKey="sales" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={28} />
                                             <Bar name="Purchases" dataKey="purchases" fill="#0284c7" radius={[6, 6, 0, 0]} maxBarSize={28} />
