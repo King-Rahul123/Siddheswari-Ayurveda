@@ -99,6 +99,15 @@ const generateSalePDF = (saleData, items = []) => {
           width: 170,
         });
 
+      if (saleData.createdBy) {
+        doc
+          .font(fontBold)
+          .text(`Billed By : ${saleData.createdBy}`, startX + 365, currentY + 36, {
+            align: "right",
+            width: 170,
+          });
+      }
+
       currentY += 62;
 
       // Banner

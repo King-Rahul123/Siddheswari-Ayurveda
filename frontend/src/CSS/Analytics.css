@@ -39,7 +39,7 @@
   background: #fff;
   border-radius: 18px;
   padding: 10px 24px 10px 24px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
   transition: .3s;
   position: relative;
   overflow: hidden;
@@ -52,7 +52,7 @@
   top: 0;
   width: 6px;
   height: 100%;
-  background: linear-gradient(#2e7d32,#43a047);
+  background: linear-gradient(#2e7d32, #43a047);
 }
 
 .analytics-card:hover {
@@ -245,10 +245,21 @@
   color: #0f172a;
 }
 
-.perf-kpi-card.score .val { color: #16a34a; }
-.perf-kpi-card.sales .val { color: #16a34a; }
-.perf-kpi-card.purchases .val { color: #0284c7; }
-.perf-kpi-card.margin .val { color: #8b5cf6; }
+.perf-kpi-card.score .val {
+  color: #16a34a;
+}
+
+.perf-kpi-card.sales .val {
+  color: #16a34a;
+}
+
+.perf-kpi-card.purchases .val {
+  color: #0284c7;
+}
+
+.perf-kpi-card.margin .val {
+  color: #8b5cf6;
+}
 
 /* Control Bar (Timeframe & Graph Type Buttons) */
 .perf-control-bar {
@@ -297,7 +308,9 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.toggle-btn.active.green { color: #16a34a; }
+.toggle-btn.active.green {
+  color: #16a34a;
+}
 
 /* Graph Container & Custom Tooltip */
 .perf-graph-container {
@@ -306,6 +319,16 @@
   border-radius: 18px;
   padding: 20px 16px 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.perf-graph-container .recharts-cartesian-grid line {
+  stroke: #cbd5e1 !important;
+  stroke-opacity: 0.9;
+}
+
+.perf-graph-container .recharts-cartesian-axis-line,
+.perf-graph-container .recharts-cartesian-axis-tick-line {
+  stroke: #94a3b8 !important;
 }
 
 .custom-chart-tooltip {
@@ -366,7 +389,7 @@
   background: #fff;
   border-radius: 18px;
   padding: 20px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .08);
 }
 
 .chart-card.large {
@@ -383,12 +406,12 @@
 
 .inventory-grid {
   display: grid;
-  grid-template-columns: repeat(2,1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
 }
 
 .inventory-box {
-  background: linear-gradient(135deg,#2e7d32,#4caf50);
+  background: linear-gradient(135deg, #2e7d32, #4caf50);
   color: white;
   border-radius: 14px;
   padding: 20px;
@@ -410,14 +433,14 @@
 
 .analytics-bottom {
   display: grid;
-  grid-template-columns: repeat(2,1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
 
 .table-card {
   background: white;
   border-radius: 18px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .08);
   padding: 20px;
 }
 
@@ -468,70 +491,70 @@
 
 /* Responsive */
 
-@media (max-width:1200px){
+@media (max-width:1200px) {
 
-.analytics-grid{
-grid-template-columns:1fr;
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-bottom {
+    grid-template-columns: 1fr;
+  }
+
 }
 
-.analytics-bottom{
-grid-template-columns:1fr;
+@media (max-width:768px) {
+
+  .analytics-page {
+    padding: 15px;
+  }
+
+  .analytics-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .analytics-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-card h3 {
+    font-size: 26px;
+  }
+
+  .chart-card {
+    padding: 15px;
+  }
 }
 
-}
+@media (max-width:500px) {
+  .analytics-header h2 {
+    font-size: 24px;
+  }
 
-@media (max-width:768px){
+  .analytics-card {
+    padding: 18px;
+  }
 
-.analytics-page{
-padding:15px;
-}
+  .analytics-card i {
+    font-size: 28px;
+  }
 
-.analytics-header{
-flex-direction:column;
-align-items:flex-start;
-gap:10px;
-}
+  .analytics-card h3 {
+    font-size: 24px;
+  }
 
-.analytics-cards{
-grid-template-columns:1fr;
-}
+  .table-card {
+    padding: 15px;
+  }
 
-.inventory-grid{
-grid-template-columns:1fr;
-}
-
-.analytics-card h3{
-font-size:26px;
-}
-
-.chart-card{
-padding:15px;
-}
-}
-
-@media (max-width:500px){
-    .analytics-header h2{
-        font-size:24px;
-    }
-
-    .analytics-card{
-        padding:18px;
-    }
-
-    .analytics-card i{
-        font-size:28px;
-    }
-
-    .analytics-card h3{
-        font-size:24px;
-    }
-
-    .table-card{
-        padding:15px;
-    }
-
-    .table-card td{
-        font-size:13px;
-        padding:10px 6px;
-    }
+  .table-card td {
+    font-size: 13px;
+    padding: 10px 6px;
+  }
 }

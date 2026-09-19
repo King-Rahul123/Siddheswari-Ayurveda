@@ -54,7 +54,8 @@ router.post("/", async (req, res) => {
       companyName: supplierName,
       date: invDate,
       invoiceDate: invDate,
-      items: items || []
+      items: items || [],
+      createdBy: purchaseData?.createdBy || req.user?.username || req.user?.id || "Admin"
     });
 
     await purchase.save();
@@ -245,6 +246,11 @@ router.put("/:id", async (req, res) => {
     existingPurchase.invoiceDate = invDate;
     if (purchaseData?.customerName) existingPurchase.customerName = purchaseData.customerName;
     if (purchaseData?.mobile || purchaseData?.phone) existingPurchase.mobile = purchaseData.mobile || purchaseData.phone;
+    if (purchaseData?.createdBy) {
+      existingPurchase.createdBy = purchaseData.createdBy;
+    } else if (!existingPurchase.createdBy) {
+      existingPurchase.createdBy = req.user?.username || req.user?.id || "Admin";
+    }
 
     existingPurchase.subTotal = newSubTotal;
     existingPurchase.discount = purchaseData?.discount ?? 0;
@@ -383,7 +389,7 @@ router.put("/:id", async (req, res) => {
     }
 
     res.json({ message: "Purchase updated successfully and stock adjusted", purchase: existingPurchase });
-   } catch (error) {
+  } catch (error) {
     console.error("Error updating purchase:", error);
     res.status(500).json({ message: error.message });
   }

@@ -828,7 +828,7 @@ export default function PurchaseEntry() {
                                                                             value = value.replace(/[-—]/g, "").toUpperCase();
                                                                         } else if (value.startsWith("-") || value.startsWith("—")) {
                                                                             value = value.replace(/^[-—]+/, "").toUpperCase();
-                                                                        }else {
+                                                                        } else {
                                                                             value = value.toUpperCase();
                                                                         }
                                                                     }

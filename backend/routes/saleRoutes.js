@@ -218,6 +218,7 @@ router.put("/:saleId", async (req, res) => {
     const dueAmount = Math.max(0, grandTotal - paidAmount);
     sale.set({
       ...saleData,
+      createdBy: sale.createdBy || saleData?.createdBy || req.user?.username || "Admin",
       saleId: sale.saleId,
       paidAmount,
       dueAmount,
@@ -456,6 +457,7 @@ router.post("/", async (req, res) => {
 
     const sale = new Sale({
       ...saleData,
+      createdBy: saleData?.createdBy || req.user?.username || req.user?.id || "Admin",
       saleId,
       paidAmount: initialPaid,
       dueAmount: initialDue,

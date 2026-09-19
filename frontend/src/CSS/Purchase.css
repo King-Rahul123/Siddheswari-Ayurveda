@@ -4,12 +4,6 @@
     gap: 15px;
 }
 
-.download-btn {
-    color: green;
-    font-size: 18px;
-    transition: all 0.3s ease;
-}
-
 .add-stock-btn {
     background-color: #2E7D32;
     color: #fff;
@@ -17,79 +11,6 @@
     border-radius: 10px;
     font-size: 16px;
     transition: all 0.3s ease;
-}
-
-/* Action Cell & Action Buttons System */
-.sales-table th.action-header,
-.sales-table td.action-cell {
-    width: 140px;
-    min-width: 140px;
-    text-align: center;
-}
-
-.action-buttons-group {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.action-icon-btn {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    border: 1px solid transparent;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    background-color: #f8fafc;
-    padding: 0;
-    outline: none;
-}
-
-.action-icon-btn.download-btn {
-    color: #16a34a;
-    border-color: #dcfce7;
-    background-color: #f0fdf4;
-}
-
-.action-icon-btn.download-btn:hover {
-    background-color: #16a34a;
-    color: #ffffff;
-    border-color: #16a34a;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
-}
-
-.action-icon-btn.view-btn {
-    color: #2563eb;
-    border-color: #dbeafe;
-    background-color: #eff6ff;
-}
-
-.action-icon-btn.view-btn:hover {
-    background-color: #2563eb;
-    color: #ffffff;
-    border-color: #2563eb;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-}
-
-.action-icon-btn.edit-btn {
-    color: #15803d;
-    border-color: #dcfce7;
-    background-color: #f0fdf4;
-}
-
-.action-icon-btn.edit-btn:hover {
-    background-color: #15803d;
-    color: #ffffff;
-    border-color: #15803d;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(21, 128, 61, 0.25);
 }
 
 /* Modal Overlay Backdrop with Smooth Fade Animation */
@@ -362,16 +283,6 @@
     background-color: #f0fdf4;
 }
 
-.edit-btn {
-    background-color: transparent !important;
-    border: none !important;
-    color: #14532d !important;
-    box-shadow: none !important;
-}
-
-.edit-btn i {
-    color: #14532d !important;
-}
 
 @media print {
     @page {

@@ -75,7 +75,7 @@ export default function Purchase() {
                 const day = String(d.getDate()).padStart(2, '0');
                 return `${year}-${month}-${day}`;
             }
-        } catch(e) {}
+        } catch (e) { }
         return String(dateVal).split("T")[0];
     };
 
@@ -98,6 +98,24 @@ export default function Purchase() {
         return matchesSearch && matchesFrom && matchesTo;
     });
 
+    const isPurchaseLocked = (purchase) => {
+        if (!purchase) return false;
+        if (purchase.isLocked || purchase.locked) return true;
+        const pDateVal = purchase.createdAt || purchase.invoiceDate || purchase.date;
+        if (!pDateVal) return false;
+        try {
+            const pDate = typeof pDateVal.toDate === "function" ? pDateVal.toDate() : new Date(pDateVal);
+            if (!isNaN(pDate.getTime())) {
+                const now = new Date();
+                const diffInDays = (now.getTime() - pDate.getTime()) / (1000 * 60 * 60 * 24);
+                return diffInDays > 15;
+            }
+        } catch (e) {
+            console.error("Error checking purchase lock status:", e);
+        }
+        return false;
+    };
+
     const formatPurchaseDate = (dateVal) => {
         if (!dateVal) return "-";
         try {
@@ -107,7 +125,7 @@ export default function Purchase() {
                 month: "short",
                 year: "numeric",
             });
-        } catch(e) { return String(dateVal); }
+        } catch (e) { return String(dateVal); }
     };
 
     const exportFilteredPurchasesToExcel = () => {
@@ -374,51 +392,71 @@ export default function Purchase() {
                                         </td>
                                     </tr>
                                 ) : (
-                                filteredPurchase.map((purchase) => (
-                                    <tr key={purchase.purchaseId || purchase._id} className="hover:bg-gray-50/80 transition">
-                                        <td className="font-mono text-gray-700">{purchase.purchaseId || "-"}</td>
-                                        <td className="font-bold text-gray-900">{purchase.companyName || purchase.supplier || "-"}</td>
-                                        <td className="text-gray-600">{formatPurchaseDate(purchase.createdAt || purchase.invoiceDate || purchase.date)}</td>
-                                        <td className="font-semibold text-emerald-800">₹{Number(purchase.totalAmount || purchase.totalamount || 0).toFixed(2)}</td>
+                                    filteredPurchase.map((purchase) => {
+                                        const isLocked = isPurchaseLocked(purchase);
+                                        return (
+                                            <tr key={purchase.purchaseId || purchase._id} className="hover:bg-gray-50/80 transition">
+                                                <td className="font-mono text-gray-700">{purchase.purchaseId || "-"}</td>
+                                                <td className="font-bold text-gray-900">{purchase.companyName || purchase.supplier || "-"}</td>
+                                                <td className="text-gray-600">{formatPurchaseDate(purchase.createdAt || purchase.invoiceDate || purchase.date)}</td>
+                                                <td className="font-semibold text-emerald-800">₹{Number(purchase.totalAmount || purchase.totalamount || 0).toFixed(2)}</td>
 
-                                        <td className="action-cell">
-                                            <div className="action-buttons-group">
-                                                <button
-                                                    type="button"
-                                                    className="action-icon-btn download-btn"
-                                                    title="Download Invoice (Excel / CSV)"
-                                                    onClick={() => {
-                                                        setSelectedPurchaseForExport(purchase);
-                                                        setShowExportPopup(true);
-                                                    }}
-                                                >
-                                                    <i className="bi bi-download"></i>
-                                                </button>
+                                                <td className="action-cell">
+                                                    <div className="action-buttons-group">
+                                                        <button
+                                                            type="button"
+                                                            className="action-icon-btn download-btn"
+                                                            title="Download Invoice (Excel / CSV)"
+                                                            onClick={() => {
+                                                                setSelectedPurchaseForExport(purchase);
+                                                                setShowExportPopup(true);
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-download"></i>
+                                                        </button>
 
-                                                <button
-                                                    type="button"
-                                                    className="action-icon-btn view-btn"
-                                                    title="Preview Invoice Details"
-                                                    onClick={() => openPreviewModal(purchase)}
-                                                >
-                                                    <i className="bi bi-eye"></i>
-                                                </button>
+                                                        <button
+                                                            type="button"
+                                                            className="action-icon-btn view-btn"
+                                                            title="Preview Invoice Details"
+                                                            onClick={() => openPreviewModal(purchase)}
+                                                        >
+                                                            <i className="bi bi-eye"></i>
+                                                        </button>
 
-                                                <button
-                                                    type="button"
-                                                    className="action-icon-btn edit-btn"
-                                                    title="Edit Invoice Details"
-                                                    onClick={() => {
-                                                        const billId = purchase.invoiceNo || purchase.purchaseId || purchase.id || "INV";
-                                                        navigate(`/dashboard/sales/edit/${encodeURIComponent(billId)}`, { state: purchase });
-                                                    }}
-                                                >
-                                                    <i className="bi bi-pencil-square"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
+                                                        {isLocked ? (
+                                                            <button
+                                                                type="button"
+                                                                className="action-icon-btn edit-btn locked"
+                                                                title="This purchase invoice is more than 15 days old and cannot be edited"
+                                                                disabled
+                                                                aria-disabled="true"
+                                                                tabIndex="-1"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                }}
+                                                            >
+                                                                <i className="bi bi-lock-fill"></i>
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                className="action-icon-btn edit-btn"
+                                                                title="Edit Invoice Details"
+                                                                onClick={() => {
+                                                                    const billId = purchase.invoiceNo || purchase.purchaseId || purchase.id || "INV";
+                                                                    navigate(`/dashboard/sales/edit/${encodeURIComponent(billId)}`, { state: purchase });
+                                                                }}
+                                                            >
+                                                                <i className="bi bi-pencil-square"></i>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                                 )}
                             </tbody>
                         </table>
@@ -499,9 +537,11 @@ export default function Purchase() {
                                             <h4 className="flex items-center gap-2 text-emerald-900 font-bold text-lg m-0">
                                                 Purchase Invoice Preview
                                             </h4>
-                                            <span className="text-xs text-gray-500 font-medium">
-                                                Invoice: <strong className="text-emerald-800 font-mono">{selectedPurchaseForPreview.purchaseId || selectedPurchaseForPreview.invoiceNo || "N/A"}</strong>
-                                            </span>
+                                            <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+                                                <span>Invoice: <strong className="text-emerald-800 font-mono">{selectedPurchaseForPreview.purchaseId || selectedPurchaseForPreview.invoiceNo || "N/A"}</strong></span>
+                                                <span className="text-gray-300">|</span>
+                                                <span>Created By: <strong className="text-emerald-900 font-mono">{selectedPurchaseForPreview.createdBy || "Admin"}</strong></span>
+                                            </div>
                                         </div>
                                     </div>
                                     <button
@@ -515,10 +555,21 @@ export default function Purchase() {
                                 </div>
 
                                 <div className="preview-body space-y-4">
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-gradient-to-r from-emerald-50/90 to-teal-50/50 p-4 rounded-xl border border-emerald-100 text-sm shadow-xs">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 bg-gradient-to-r from-emerald-50/90 to-teal-50/50 p-4 rounded-xl border border-emerald-100 text-sm shadow-xs">
                                         <div>
                                             <span className="text-gray-500 text-xs block font-medium">Purchase ID</span>
                                             <strong className="text-emerald-900 font-semibold font-mono text-base">{selectedPurchaseForPreview.purchaseId || "-"}</strong>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-500 text-xs block font-medium">
+                                                <i className="bi bi-person-badge-fill text-emerald-700 mr-1"></i> Billed By (User ID)
+                                            </span>
+                                            <div className="mt-1">
+                                                <span className="inline-flex items-center gap-1.5 bg-white text-emerald-900 border border-emerald-300 px-2.5 py-1 rounded-lg font-mono font-bold text-xs shadow-xs">
+                                                    <i className="bi bi-person-check-fill text-emerald-600"></i>
+                                                    {selectedPurchaseForPreview.createdBy || "Admin"}
+                                                </span>
+                                            </div>
                                         </div>
                                         <div>
                                             <span className="text-gray-500 text-xs block font-medium">Supplier Invoice No</span>
@@ -631,21 +682,31 @@ export default function Purchase() {
                                     </div>
                                 </div>
 
-                                <div className="preview-footer flex justify-end gap-3 pt-4 border-t border-gray-200 mt-4">
-                                    <button
-                                        type="button"
-                                        className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-semibold text-sm transition shadow-sm flex items-center gap-2 cursor-pointer"
-                                        onClick={() => window.print()}
-                                    >
-                                        <i className="bi bi-printer-fill"></i> Print Invoice
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-semibold text-sm transition cursor-pointer"
-                                        onClick={closePreviewModal}
-                                    >
-                                        Close
-                                    </button>
+                                <div className="preview-footer flex flex-col sm:flex-row justify-between items-center gap-3 pt-4 border-t border-gray-200 mt-4">
+                                    <div className="flex items-center gap-2 text-xs text-gray-600 font-medium">
+                                        <i className="bi bi-shield-check text-emerald-600 text-sm"></i>
+                                        <span>Billed / Created by:</span>
+                                        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-900 border border-emerald-200 px-2.5 py-1 rounded-md font-mono font-bold text-xs shadow-xs">
+                                            <i className="bi bi-person-fill text-emerald-600"></i>
+                                            {selectedPurchaseForPreview.createdBy || "Admin"}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            type="button"
+                                            className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-semibold text-sm transition shadow-sm flex items-center gap-2 cursor-pointer"
+                                            onClick={() => window.print()}
+                                        >
+                                            <i className="bi bi-printer-fill"></i> Print Invoice
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-semibold text-sm transition cursor-pointer"
+                                            onClick={closePreviewModal}
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
