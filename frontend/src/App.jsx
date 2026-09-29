@@ -26,6 +26,8 @@ import ExpiryReturn from "./Pages/ExpiryReturn.jsx";
 import Offer from "./Pages/Offer";
 import SalesReturn from "./Components/SalesReturn.jsx";
 import Shop from "./Pages/Shop.jsx";
+import DShop from "./Pages/DShop.jsx";
+import Checkout from "./Pages/Checkout.jsx";
 
 const PurchaseEntry = lazy(() => import("./Components/PurchaseEntry"));
 // import EditPurchase from "./Components/EditPurchase";
@@ -38,6 +40,7 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/remedies" element={<Remedies />} />
         <Route path="/shop" element={<Suspense fallback={<Loader />}><Shop /></Suspense>} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
         <Route element={<ProtectedRoute />}>
           {/* Dashboard */}
@@ -59,6 +62,7 @@ export default function App() {
           <Route path="/dashboard/sales-return" element={<Suspense fallback={<Loader />}><SalesReturn /></Suspense>} />
           <Route path="/dashboard/expiry-return" element={<Suspense fallback={<Loader />}><ExpiryReturn /></Suspense>} />
           <Route path="/dashboard/offer" element={<Offer />} />
+          <Route path="/dashboard/shop" element={<DShop />} />
         </Route>
       </Routes>
       <ToastContainer

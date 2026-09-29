@@ -69,11 +69,22 @@ export default function Shop() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    try {
+      const savedCart = JSON.parse(localStorage.getItem("ayurveda-cart") || "[]");
+      return Array.isArray(savedCart) ? savedCart : [];
+    } catch {
+      return [];
+    }
+  });
   const [offerSlides, setOfferSlides] = useState(getActiveOffers);
   const [activeOfferIndex, setActiveOfferIndex] = useState(0);
   const currentOffer = offerSlides[activeOfferIndex] || null;
   const [showOffer, setShowOffer] = useState(Boolean(offerSlides.length));
+
+  useEffect(() => {
+    localStorage.setItem("ayurveda-cart", JSON.stringify(cart));
+  }, [cart]);
 
   // =========================================================
   // HERO IMAGES
@@ -307,26 +318,6 @@ export default function Shop() {
   // PRICE HELPERS
   // =========================================================
 
-  const getSellingPrice = (product) => {
-    if (
-      product.price !== undefined &&
-      product.price !== null &&
-      product.price !== ""
-    ) {
-      return product.price;
-    }
-
-    if (
-      product.mrp !== undefined &&
-      product.mrp !== null &&
-      product.mrp !== ""
-    ) {
-      return `₹${product.mrp}`;
-    }
-
-    return "₹0";
-  };
-
   const getNumericPrice = (product) => {
     const price =
       product.price !== undefined &&
@@ -335,19 +326,11 @@ export default function Shop() {
         ? product.price
         : product.mrp;
 
-    if (typeof price === "number") {
-      return price;
-    }
-
-    if (typeof price === "string") {
-      const numeric = Number(
-        price.replace(/[^\d.]/g, "")
-      );
-
-      return Number.isNaN(numeric) ? 0 : numeric;
-    }
-
-    return 0;
+    const numeric = typeof price === "number"
+      ? price
+      : Number(String(price || 0).replace(/[^\d.]/g, ""));
+    const basePrice = Number.isNaN(numeric) ? 0 : numeric;
+    return basePrice * (1 - Number(product.discount || 0) / 100);
   };
 
   const getMrp = (product) => {
@@ -561,11 +544,16 @@ export default function Shop() {
             <button className="active">
               Shop
             </button>
+
+            <button onClick={() => navigate("/help")}>
+              Help
+            </button>
           </nav>
 
           <div className="shop-header-actions">
 
             <button
+              title="Search"
               className="shop-header-icon"
               onClick={() =>
                 document
@@ -578,6 +566,7 @@ export default function Shop() {
             </button>
 
             <button
+              title="Cart"
               className="shop-header-icon cart-trigger"
               onClick={() =>
                 setMobileFilterOpen(false)
@@ -591,6 +580,10 @@ export default function Shop() {
                   {cartCount}
                 </span>
               )}
+            </button>
+
+            <button title="User Account" className="shop-header-icon" onClick={() => navigate("/account")} aria-label="User Account">
+              <i className="bi bi-user"></i>
             </button>
 
           </div>
@@ -1184,11 +1177,7 @@ export default function Shop() {
                           <div className="product-prices">
 
                             <strong>
-                              {formatPrice(
-                                product.price ||
-                                  product.mrp ||
-                                  0
-                              )}
+                              {formatPrice(getNumericPrice(product))}
                             </strong>
 
                             {mrp &&
@@ -1401,6 +1390,16 @@ export default function Shop() {
         </div>
 
       </section>
+      
+      <footer className="shop-footer">
+
+        <div className="shop-footer-inner">
+          <p>
+            &copy; {new Date().getFullYear()} Siddheswari Ayurveda. All rights reserved.
+          </p>
+        </div>
+
+      </footer>
 
       {/* ===================================================
           PRODUCT DETAILS MODAL
@@ -1500,9 +1499,7 @@ export default function Shop() {
 
                   <strong>
                     {formatPrice(
-                      selectedProduct.price ||
-                        selectedProduct.mrp ||
-                        0
+                      getNumericPrice(selectedProduct)
                     )}
                   </strong>
 
@@ -1662,7 +1659,7 @@ export default function Shop() {
                     }}
                   >
                     <i className="bi bi-bag-plus"></i>
-                    Add to Cart
+                    Add to Cart 
                   </button>
 
                 </div>

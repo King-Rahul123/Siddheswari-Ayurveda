@@ -18,7 +18,7 @@ const salesReturnItemSchema = new mongoose.Schema({
 
 const salesReturnSchema = new mongoose.Schema(
   {
-    returnId: { type: String, unique: true },
+    returnId: { type: String, required: true, unique: true },
     saleId: { type: String, default: "" },
     billNumber: { type: String, required: true },
     customerName: { type: String, default: "Walk-in Customer" },

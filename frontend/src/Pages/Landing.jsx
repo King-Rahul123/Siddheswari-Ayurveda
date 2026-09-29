@@ -203,7 +203,8 @@ function Landing() {
           <a href="#treatments" onClick={() => setMobileMenuOpen(false)}>Treatments</a>
           <a href="#remedies" onClick={() => setMobileMenuOpen(false)}>Remedies</a>
           <a href="#location" onClick={() => setMobileMenuOpen(false)}>Ghatal Clinic</a>
-          <a
+          <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Shop</a>
+          {/* <a
             href="#"
             onClick={(e) => {
               e.preventDefault();
@@ -215,7 +216,7 @@ function Landing() {
             }}
           >
             Shop
-          </a>
+          </a> */}
           <button className="gold-portal-btn block md:hidden" onClick={() => navigate('/login')}>
             <i className="bi bi-person-circle"></i> Log In
           </button>
@@ -655,9 +656,9 @@ function Landing() {
             <div className="footer-links-col">
               <h4>Connect</h4>
               <div className="social-icons">
-                <a href="#" aria-label="Facebook"><i className="bi bi-facebook"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61591202047223" aria-label="Facebook"><i className="bi bi-facebook"></i></a>
                 <a href="#" aria-label="Instagram"><i className="bi bi-instagram"></i></a>
-                <a href="#" aria-label="WhatsApp"><i className="bi bi-whatsapp"></i></a>
+                <a href="https://wa.me/9903052224" aria-label="WhatsApp"><i className="bi bi-whatsapp"></i></a>
                 <a href="#" aria-label="YouTube"><i className="bi bi-youtube"></i></a>
               </div>
             </div>

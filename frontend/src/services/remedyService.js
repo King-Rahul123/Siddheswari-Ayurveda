@@ -23,14 +23,25 @@ export const addRemedy = async (remedyData) => {
   });
 
   const raw = await res.text();
-  let data = {};
-  try {
-    data = raw ? JSON.parse(raw) : {};
-  } catch {
-    data = { message: raw || "Server returned an invalid response" };
-  }
+  const data = (() => {
+    try {
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return { message: raw || "Server returned an invalid response" };
+    }
+  })();
 
   if (!res.ok) throw new Error(data.message || "Failed to save remedy");
+  return data;
+};
+
+export const updateRemedyDiscount = async (remedyId, discount) => {
+  const res = await apiFetch(`/remedies/${remedyId}/discount`, {
+    method: "PATCH",
+    body: JSON.stringify({ discount }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to update discount");
   return data;
 };
 

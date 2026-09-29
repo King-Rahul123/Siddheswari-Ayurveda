@@ -1,0 +1,22 @@
+.dshop-search {
+  min-width: min(100%, 280px);
+}
+
+.dshop-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  z-index: 1;
+  color: #6b7280;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.dshop-product-image {
+  aspect-ratio: 1 / 1;
+  background: #f3f7f1;
+}
+
+.dshop-price {
+  color: #28543c;
+}

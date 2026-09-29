@@ -183,6 +183,34 @@ router.post("/", uploadRemedyImage, async (req, res) => {
   }
 });
 
+// PATCH /api/remedies/:id/discount - Update the public shop discount
+router.patch("/:id/discount", async (req, res) => {
+  try {
+    const discount = Number(req.body.discount);
+    if (!Number.isFinite(discount) || discount < 0 || discount > 100) {
+      return res.status(400).json({ message: "Discount must be between 0 and 100" });
+    }
+
+    const { id } = req.params;
+    const query = /^[0-9a-fA-F]{24}$/.test(id)
+      ? { _id: id }
+      : { $or: [{ remedyId: Number(id) }, { id: Number(id) }] };
+    const remedy = await Remedy.findOneAndUpdate(
+      query,
+      { discount: Math.round(discount * 100) / 100 },
+      { new: true, runValidators: true }
+    );
+
+    if (!remedy) {
+      return res.status(404).json({ message: "Remedy not found" });
+    }
+
+    res.json({ message: "Discount updated successfully", remedy });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update discount", error: err.message });
+  }
+});
+
 // DELETE /api/remedies/:id - Delete a remedy by ID or _id
 router.delete("/:id", async (req, res) => {
   try {

@@ -8,6 +8,7 @@ const remedySchema = new mongoose.Schema(
     category: { type: String, default: "Others" },
     price: { type: String, default: "" },
     mrp: { type: Number, default: 0 },
+    discount: { type: Number, default: 0, min: 0, max: 100 },
     rating: { type: Number, default: 4.9 },
     reviews: { type: Number, default: 120 },
     image: { type: String, default: "" },

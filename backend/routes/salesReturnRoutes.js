@@ -2,12 +2,24 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 const SalesReturn = require("../models/SalesReturn");
+const Sale = require("../models/Sale");
 const Stock = require("../models/Stock");
 const Product = require("../models/Product");
-const { getNextSequence } = require("../models/Counter");
+const { getNextSequence, getCurrentSequence } = require("../models/Counter");
 const authMiddleware = require("../middleware/authMiddleware");
 
 router.use(authMiddleware);
+
+// Show the next sales return ID without incrementing the counter.
+router.get("/current-id", async (req, res) => {
+  try {
+    const counter = await getCurrentSequence("salesreturn");
+    const returnId = `SR${(counter + 1).toString().padStart(4, "0")}`;
+    res.json({ returnId, currentId: counter, nextId: counter + 1 });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // GET all sales returns
 router.get("/", async (req, res) => {
@@ -44,21 +56,47 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "At least one item must be returned" });
     }
 
+    const existingReturn = await SalesReturn.findOne({
+      $or: [
+        { saleId: saleId || billNumber },
+        { billNumber }
+      ]
+    });
+
+    if (existingReturn) {
+      return res.status(409).json({
+        message: `Bill already returned with Return ID ${existingReturn.returnId}`,
+        returnId: existingReturn.returnId
+      });
+    }
+
+    const originalSale = await Sale.findOne({
+      $or: [
+        { saleId: saleId || billNumber },
+        { billNumber },
+        { invoiceNumber: billNumber }
+      ]
+    });
+
+    const savedCustomerName = originalSale?.customerName || customerName || "Walk-in Customer";
+    const savedCustomerPhone = originalSale?.customerPhone || customerPhone || "";
+    const savedBillingDate = originalSale?.date || billingDate || "";
+
     const calculatedTotalQty = items.reduce((sum, it) => sum + Number(it.qty || 0), 0) || Number(totalQty || 0);
     const calculatedSubTotal = items.reduce((sum, it) => sum + (Number(it.qty || 0) * Number(it.price || it.mrp || 0)), 0) || Number(subTotal || 0);
     const calculatedNetAmount = Number(netAmount || Math.round(calculatedSubTotal));
     const calculatedRoundOff = Number((calculatedNetAmount - calculatedSubTotal).toFixed(2));
 
     const seq = await getNextSequence("salesreturn");
-    const returnId = `SR${seq.toString().padStart(6, "0")}`;
+    const returnId = `SR${seq.toString().padStart(4, "0")}`;
 
     const newReturn = new SalesReturn({
       returnId,
       saleId: saleId || "",
       billNumber: billNumber || "",
-      customerName: customerName || "Walk-in Customer",
-      customerPhone: customerPhone || "",
-      billingDate: billingDate || "",
+      customerName: savedCustomerName,
+      customerPhone: savedCustomerPhone,
+      billingDate: savedBillingDate,
       returnDate: new Date(),
       items: items.map((it) => ({
         productId: it.productId || it.itemCode || "",
@@ -90,6 +128,7 @@ router.post("/", async (req, res) => {
 
     res.status(201).json({
       success: true,
+      returnId: newReturn.returnId,
       message: "Sales return registered successfully. Items are pending return processing.",
       data: newReturn
     });
@@ -150,7 +189,7 @@ router.post("/:id/process", async (req, res) => {
         } else {
           // Create new Stock document or update Product
           const stockSeq = await getNextSequence("stock");
-          const stockId = `STOCK${stockSeq.toString().padStart(6, "0")}`;
+          const stockId = `STOCK${stockSeq.toString().padStart(4, "0")}`;
 
           const newStock = new Stock({
             stockId,

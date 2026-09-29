@@ -141,11 +141,19 @@ export default function Sidebar() {
             </ul>
           )}
 
+          {/* Admin Menu */}
           {loggedInUser?.role?.toLowerCase() === "admin" && (
-            <li className={ window.location.pathname === "/dashboard/offer" ? "active" : "" } onClick={() => navigate("/dashboard/offer")}>
-              <i className="bi bi-tag"></i>
-              Offer
-            </li>
+            <>
+              <li className={ window.location.pathname === "/dashboard/offer" ? "active" : "" } onClick={() => navigate("/dashboard/offer")}>
+                <i className="bi bi-tag"></i>
+                Offer
+              </li>
+
+              <li className={ window.location.pathname === "/dashboard/shop" ? "active" : "" } onClick={() => navigate("/dashboard/shop")}>
+                <i className="bi bi-cart"></i>
+                Shop
+              </li>
+            </>
           )}
         </ul>
       </div>
