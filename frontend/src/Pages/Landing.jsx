@@ -203,8 +203,8 @@ function Landing() {
           <a href="#treatments" onClick={() => setMobileMenuOpen(false)}>Treatments</a>
           <a href="#remedies" onClick={() => setMobileMenuOpen(false)}>Remedies</a>
           <a href="#location" onClick={() => setMobileMenuOpen(false)}>Ghatal Clinic</a>
-          <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Shop</a>
-          {/* <a
+          {/* <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Shop</a> */}
+          <a
             href="#"
             onClick={(e) => {
               e.preventDefault();
@@ -216,7 +216,7 @@ function Landing() {
             }}
           >
             Shop
-          </a> */}
+          </a>
           <button className="gold-portal-btn block md:hidden" onClick={() => navigate('/login')}>
             <i className="bi bi-person-circle"></i> Log In
           </button>
