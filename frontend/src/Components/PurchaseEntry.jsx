@@ -389,16 +389,43 @@ export default function PurchaseEntry() {
         });
     }, []);
 
+    const validatePurchaseFields = useCallback(() => {
+        if (!invoiceNo.trim()) {
+            toast.warning("Invoice number must be entered.");
+            invoiceRef.current?.focus();
+            return false;
+        }
+
+        const rowIndex = rows.findIndex(
+            (row) => !row.isDeleted && row.productName?.trim() && (!String(row.qty ?? "").trim() && !String(row.free ?? "").trim())
+        );
+
+        if (rowIndex !== -1) {
+            toast.warning("Qty and Free fields cannot both be empty.");
+            tableRefs.current[rowIndex]?.[2]?.focus();
+            return false;
+        }
+
+        return true;
+    }, [invoiceNo, rows]);
+
     const triggerSaveFlow = useCallback(() => {
+        if (!validatePurchaseFields()) return;
+
         const validItems = rows.filter((r) => !r.isDeleted && r.productName && r.productName.trim() !== "");
         if (validItems.length === 0) {
             toast.error("Please add at least one product before saving.");
             return;
         }
         setShowConfirmModal(true);
-    }, [rows]);
+    }, [rows, validatePurchaseFields]);
 
     const executeSavePurchase = useCallback(async () => {
+        if (!validatePurchaseFields()) {
+            setShowConfirmModal(false);
+            return;
+        }
+
         try {
             const purchaseId = await getNextPurchaseId();
             const items = rows
@@ -498,7 +525,7 @@ export default function PurchaseEntry() {
             console.error(err);
             toast.error("Failed to save purchase");
         }
-    }, [rows, companySearchText, invoiceNo, invoiceDate, clearForm, loggedInUser, navigate]);
+    }, [rows, companySearchText, invoiceNo, invoiceDate, clearForm, loggedInUser, navigate, validatePurchaseFields]);
 
     useEffect(() => {
         const shortcuts = (e) => {
@@ -730,6 +757,11 @@ export default function PurchaseEntry() {
                                         onKeyDown={(e) => {
                                             if (e.key === "Enter") {
                                                 e.preventDefault();
+                                                if (!invoiceNo.trim()) {
+                                                    toast.warning("Invoice number must be entered.");
+                                                    invoiceRef.current?.focus();
+                                                    return;
+                                                }
                                                 dateRef.current?.focus();
                                             }
                                         }}

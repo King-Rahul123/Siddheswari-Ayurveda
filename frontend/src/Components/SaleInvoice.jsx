@@ -5,7 +5,13 @@ import "../CSS/Card.css";
 import "../CSS/SaleInvoice.css";
 import CustomerList from "../Popup/CustomerList";
 import ProductList from "../Popup/ProductList";
-import { addSale, updateSale, getNextSaleId, getCurrentSaleId } from "../services/saleService";
+import { addSale, updateSale, getNextSaleId, getCurrentSaleId, subscribeSales } from "../services/saleService";
+
+const normalizeSaleDate = (value) => {
+  if (!value) return "";
+  const date = typeof value?.toDate === "function" ? value.toDate() : new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString().split("T")[0];
+};
 
 export default function SaleInvoice() {
   const navigate = useNavigate();
@@ -27,6 +33,7 @@ export default function SaleInvoice() {
   const [invoiceDate, setInvoiceDate] = useState(
     editingSale?.date || new Date().toISOString().split("T")[0]
   );
+  const [lastBillDate, setLastBillDate] = useState("");
 
   const [toast, setToast] = useState({
     show: false,
@@ -34,12 +41,23 @@ export default function SaleInvoice() {
     type: "",
   });
 
+  useEffect(() => {
+    if (!toast.show) return undefined;
+
+    const toastTimer = window.setTimeout(() => {
+      setToast((currentToast) => ({ ...currentToast, show: false }));
+    }, 3000);
+
+    return () => window.clearTimeout(toastTimer);
+  }, [toast.show, toast.message, toast.type]);
+
   const loggedInUser = JSON.parse(
     localStorage.getItem("loggedInUser") || "{}"
   );
 
   const firstProductRef = useRef(null);
   const invoiceRef = useRef(null);
+  const invoiceDateRef = useRef(null);
   const lastFocusedElement = useRef(null);
 
   const [items, setItems] = useState(() => {
@@ -81,6 +99,18 @@ export default function SaleInvoice() {
     }
     loadBillNo();
   }, [isEditMode]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeSales((sales) => {
+      const latestDate = (sales || [])
+        .map((sale) => normalizeSaleDate(sale.date || sale.createdAt))
+        .filter(Boolean)
+        .reduce((latest, date) => (date > latest ? date : latest), "");
+      setLastBillDate(latestDate);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Global listener for End key shortcut
   useEffect(() => {
@@ -261,6 +291,30 @@ export default function SaleInvoice() {
   const grandTotal = subTotal - totalItemDiscount + gstAmount;
   const netAmount = Math.round(grandTotal);
   const roundOff = Number((netAmount - grandTotal).toFixed(2));
+  const todayDate = new Date().toISOString().split("T")[0];
+  const validateInvoiceDate = () => {
+    if (invoiceDate && invoiceDate > todayDate) {
+      setToast({
+        show: true,
+        message: "Invoice date cannot be after today.",
+        type: "error",
+      });
+      invoiceDateRef.current?.focus();
+      return false;
+    }
+
+    if (lastBillDate && invoiceDate && invoiceDate < lastBillDate) {
+      setToast({
+        show: true,
+        message: `Invoice date cannot be before ${lastBillDate}`,
+        type: "error",
+      });
+      invoiceDateRef.current?.focus();
+      return false;
+    }
+
+    return true;
+  };
 
   const handleEnterKey = (e) => {
     if (e.key === "+" || e.code === "NumpadAdd") {
@@ -278,6 +332,8 @@ export default function SaleInvoice() {
 
   const saveInvoice = async () => {
     try {
+      if (!validateInvoiceDate()) return false;
+
       const validItems = items
         .filter((item) => item.productName && item.productName.trim() !== "")
         .map((item) => {
@@ -528,16 +584,22 @@ export default function SaleInvoice() {
 
               <input
                 autoFocus
+                ref={invoiceDateRef}
                 type="date"
+                min={lastBillDate || undefined}
+                max={todayDate}
                 value={invoiceDate}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
+                    if (!validateInvoiceDate()) return;
                     const custInput = invoiceRef.current?.querySelector("input[placeholder='Customer Name']");
                     custInput?.focus();
                   }
                 }}
-                onChange={(e) => setInvoiceDate(e.target.value)}
+                onChange={(e) => {
+                  setInvoiceDate(e.target.value);
+                }}
               />
 
               <input

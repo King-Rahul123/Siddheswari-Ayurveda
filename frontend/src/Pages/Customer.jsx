@@ -1,17 +1,29 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import "../CSS/Dashboard.css";
 import "../CSS/Customer.css";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import AddCustomer from "../Popup/AddCustomer";
+import BillPreview from "../Popup/SBillPreview";
+import CustomerLedger from "../Popup/CustomerLedger";
 import * as XLSX from "xlsx";
 import { subscribeCustomers, deleteCustomer } from "../services/customerService";
+import { subscribeSales } from "../services/saleService";
 
 
 export default function Customer() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [showExportPopup, setShowExportPopup] = useState(false);
   const [showCustomerPopup, setShowCustomerPopup] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [sales, setSales] = useState([]);
+  const [salesLoading, setSalesLoading] = useState(true);
+  const [selectedBill, setSelectedBill] = useState(null);
+  const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+  const [isClosingPreview, setIsClosingPreview] = useState(false);
 
   const [editMode, setEditMode] = useState(false);
 
@@ -38,7 +50,7 @@ export default function Customer() {
     const formatCustomerDate = (dt) => {
       if (!dt) return "-";
       if (typeof dt.toDate === "function") return dt.toDate().toLocaleDateString("en-IN");
-      try { return new Date(dt).toLocaleDateString("en-IN"); } catch(e) { return "-"; }
+      try { return new Date(dt).toLocaleDateString("en-IN"); } catch { return "-"; }
     };
 
     const rows = filteredCustomers.map((customer) => [
@@ -70,7 +82,7 @@ export default function Customer() {
     const formatCustomerDate = (dt) => {
       if (!dt) return "-";
       if (typeof dt.toDate === "function") return dt.toDate().toLocaleDateString("en-IN");
-      try { return new Date(dt).toLocaleDateString("en-IN"); } catch(e) { return "-"; }
+      try { return new Date(dt).toLocaleDateString("en-IN"); } catch { return "-"; }
     };
 
     const excelData = filteredCustomers.map((customer, index) => ({
@@ -108,6 +120,15 @@ export default function Customer() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = subscribeSales((data) => {
+      setSales(data || []);
+      setSalesLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const filteredCustomers = (customers || []).filter((customer) => {
     const custName = (customer.name || customer.customerName || "").toLowerCase();
     const custPhone = (customer.phone || "").toString();
@@ -116,6 +137,20 @@ export default function Customer() {
   });
 
   const handleDelete = async (customerCode) => {
+    if (salesLoading) {
+      toast.warning("Please wait while customer bills are loading.");
+      return;
+    }
+
+    const hasBills = sales.some(
+      (sale) => String(sale.customerCode || "") === String(customerCode)
+    );
+
+    if (hasBills) {
+      toast.warning("Customer cannot be deleted because bills exist against this customer.");
+      return;
+    }
+
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this customer?"
     );
@@ -144,6 +179,36 @@ export default function Customer() {
 
     setEditMode(true);
     setShowCustomerPopup(true);
+  };
+
+  const openCustomerBills = (customer) => {
+    if (!customer.customerCode) return;
+    setSelectedCustomer(customer);
+  };
+
+  const customerBills = selectedCustomer
+    ? sales.filter((sale) => String(sale.customerCode || "") === String(selectedCustomer.customerCode))
+    : [];
+
+  const openBillPreview = (bill) => {
+    setSelectedBill(bill);
+    setIsClosingPreview(false);
+    setTimeout(() => setIsPreviewVisible(true), 15);
+  };
+
+  const closeBillPreview = () => {
+    setIsClosingPreview(true);
+    setIsPreviewVisible(false);
+    setTimeout(() => {
+      setSelectedBill(null);
+      setIsClosingPreview(false);
+    }, 250);
+  };
+
+  const handleBillEdit = (event, bill) => {
+    event.preventDefault();
+    closeBillPreview();
+    navigate("/dashboard/sales/sale-invoice", { state: { sale: bill } });
   };
 
   return (
@@ -231,7 +296,18 @@ export default function Customer() {
                           </div>
                         </td>
 
-                        <td className="text-center text-sm">{customer.customerCode || "-"}</td>
+                        <td className="text-center text-sm">
+                          {customer.customerCode ? (
+                            <button
+                              type="button"
+                              className="customer-id-link"
+                              onClick={() => openCustomerBills(customer)}
+                              title="View bills for this customer"
+                            >
+                              {customer.customerCode}
+                            </button>
+                          ) : "-"}
+                        </td>
                         <td className="text-center text-sm">{customer.gender || "-"}</td>
                         <td className="text-center text-sm">{customer.phone || "-"}</td>
                         <td className="text-center text-sm">
@@ -319,6 +395,24 @@ export default function Customer() {
             editMode={editMode}
             customerForm={customerForm}
             setCustomerForm={setCustomerForm}
+          />
+
+          <CustomerLedger
+            customer={selectedCustomer}
+            bills={customerBills}
+            loading={salesLoading}
+            isPreviewOpen={Boolean(selectedBill)}
+            onClose={() => setSelectedCustomer(null)}
+            onSelectBill={openBillPreview}
+          />
+
+          <BillPreview
+            sale={selectedBill}
+            isVisible={isPreviewVisible}
+            isClosing={isClosingPreview}
+            onClose={closeBillPreview}
+            onEdit={handleBillEdit}
+            isBillReturned={() => false}
           />
         </main>
       </div>

@@ -4,6 +4,10 @@ import Sidebar from "../Components/Sidebar";
 import "../CSS/Stock.css";
 import { subscribeStock } from "../services/stockService";
 import { subscribeProducts } from "../services/productService";
+import { subscribeSales } from "../services/saleService";
+import { subscribePurchases } from "../services/purchaseService";
+import ProductLedger from "../Popup/ProductLedger";
+import ProductInvoicePreview from "../Popup/ProductInvoicePreview";
 import * as XLSX from "xlsx";
 import { toast } from "react-toastify";
 
@@ -14,6 +18,10 @@ export default function Stock() {
     const [loading, setLoading] = useState(true);
     const [showExportModal, setShowExportModal] = useState(false);
     const [statusFilter, setStatusFilter] = useState("all"); // "all" | "inStock" | "lowStock" | "outOfStock"
+    const [sales, setSales] = useState([]);
+    const [purchases, setPurchases] = useState([]);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [selectedLedgerInvoice, setSelectedLedgerInvoice] = useState(null);
 
     useEffect(() => {
         let isMounted = true;
@@ -28,10 +36,18 @@ export default function Stock() {
                 setProducts(Array.isArray(data) ? data : []);
             }
         });
+        const unsubSales = subscribeSales((data) => {
+            if (isMounted) setSales(Array.isArray(data) ? data : []);
+        });
+        const unsubPurchases = subscribePurchases((data) => {
+            if (isMounted) setPurchases(Array.isArray(data) ? data : []);
+        });
         return () => {
             isMounted = false;
             unsubStock();
             unsubProd();
+            unsubSales();
+            unsubPurchases();
         };
     }, []);
 
@@ -99,12 +115,59 @@ export default function Stock() {
         }
     });
 
+    const batchStockData = stockData.filter((item) => hasValidBatch(item.batch));
+
+    const productLedgerEntries = selectedProduct ? [
+        ...(purchases || []).flatMap((purchase) =>
+            (purchase.items || [])
+                .filter((item) => {
+                    const itemCode = String(item.itemCode || item.productId || "").trim().toLowerCase();
+                    const productCode = String(selectedProduct.code || "").trim().toLowerCase();
+                    const itemName = String(item.productName || item.product || "").trim().toLowerCase();
+                    return (productCode && productCode !== "-" && itemCode === productCode) || itemName === selectedProduct.product.toLowerCase();
+                })
+                .map((item, index) => ({
+                    id: `inward-${purchase.purchaseId || purchase._id}-${index}`,
+                    type: "inward",
+                    date: purchase.invoiceDate || purchase.date || "-",
+                    billNumber: purchase.invoiceNo || purchase.purchaseId || "-",
+                    party: purchase.companyName || purchase.supplier || "-",
+                    batch: item.batch || "-",
+                    quantity: Number(item.qty || 0) + Number(item.free || 0),
+                    item,
+                    record: purchase,
+                }))
+        ),
+        ...(sales || []).flatMap((sale) =>
+            String(sale.customerName || sale.customer || "").trim().toLowerCase() === "short products"
+                ? []
+                : (sale.items || [])
+                .filter((item) => {
+                    const itemCode = String(item.itemCode || item.productId || "").trim().toLowerCase();
+                    const productCode = String(selectedProduct.code || "").trim().toLowerCase();
+                    const itemName = String(item.productName || item.product || "").trim().toLowerCase();
+                    return (productCode && productCode !== "-" && itemCode === productCode) || itemName === selectedProduct.product.toLowerCase();
+                })
+                .map((item, index) => ({
+                    id: `outward-${sale.saleId || sale._id}-${index}`,
+                    type: "outward",
+                    date: sale.date || "-",
+                    billNumber: sale.saleId || sale.billNumber || "-",
+                    party: sale.customerName || sale.customer || "-",
+                    batch: item.batch || "-",
+                    quantity: Number(item.qty || 0),
+                    item,
+                    record: sale,
+                }))
+        ),
+    ].sort((a, b) => String(b.date).localeCompare(String(a.date))) : [];
+
     const getMinStockThreshold = (item) => {
         const val = Number(item.minStock || 0);
         return val > 0 ? val : 5;
     };
 
-    const filteredStock = stockData.filter((item) => {
+    const filteredStock = batchStockData.filter((item) => {
         const searchLower = (search || "").toLowerCase();
         const matchesSearch = (
             (item.product || "").toLowerCase().includes(searchLower) ||
@@ -126,25 +189,20 @@ export default function Stock() {
         return matchesSearch && matchesStatus;
     });
 
-    const totalProducts = stockData.length;
+    const totalProducts = batchStockData.length;
+    const productsWithBatch = totalProducts;
 
-    const productsWithoutBatch = stockData.filter(
-        (item) => !hasValidBatch(item.batch)
-    ).length;
-
-    const productsWithBatch = totalProducts - productsWithoutBatch;
-
-    const inStock = stockData.filter((x) => x.stock > getMinStockThreshold(x)).length;
-    const lowStock = stockData.filter(
+    const inStock = batchStockData.filter((x) => x.stock > getMinStockThreshold(x)).length;
+    const lowStock = batchStockData.filter(
         (x) => x.stock > 0 && x.stock <= getMinStockThreshold(x)
     ).length;
-    const outOfStock = stockData.filter(
+    const outOfStock = batchStockData.filter(
         (x) => x.stock === 0 && hasValidBatch(x.batch)
     ).length;
 
     // Filter items with valid batch numbers for export
     const getBatchItemsForExport = () => {
-        return stockData.filter(item => hasValidBatch(item.batch));
+        return batchStockData;
     };
 
     const handleExportExcel = () => {
@@ -527,7 +585,16 @@ export default function Stock() {
                                         return (
                                             <tr key={item.id || index}>
                                                 <td>{index + 1}</td>
-                                                <td>{item.product}</td>
+                                                <td>
+                                                    <button
+                                                        type="button"
+                                                        className="stock-product-link"
+                                                        onClick={() => setSelectedProduct(item)}
+                                                        title="View product ledger"
+                                                    >
+                                                        {item.product}
+                                                    </button>
+                                                </td>
                                                 <td>{item.code}</td>
                                                 <td>{item.batch}</td>
                                                 <td>₹{Number(item.mrp || 0).toFixed(2)}</td>
@@ -603,6 +670,20 @@ export default function Stock() {
                     </div>
                 </div>
             )}
+
+            <ProductLedger
+                product={selectedProduct}
+                entries={productLedgerEntries}
+                onClose={() => setSelectedProduct(null)}
+                onOpenInvoice={setSelectedLedgerInvoice}
+                isInvoiceOpen={Boolean(selectedLedgerInvoice)}
+            />
+
+            <ProductInvoicePreview
+                product={selectedProduct}
+                entry={selectedLedgerInvoice}
+                onClose={() => setSelectedLedgerInvoice(null)}
+            />
         </div>
     );
 }

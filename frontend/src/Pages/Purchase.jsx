@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
+import PBillPreview from "../Popup/PBillPreview";
 import "../CSS/Sale.css";
 import "../CSS/Purchase.css";
 import * as XLSX from "xlsx";
@@ -51,16 +52,6 @@ export default function Purchase() {
             setIsClosingPreview(false);
         }, 250);
     };
-
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (e.key === "Escape" && showPreviewModal) {
-                closePreviewModal();
-            }
-        };
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [showPreviewModal]);
 
     const getNormalizedDateStr = (dateVal) => {
         if (!dateVal) return "";
@@ -310,7 +301,7 @@ export default function Purchase() {
                             className="add-stock-btn"
                             onClick={handleAddProduct}
                         >
-                            <i className="bi bi-plus-circle"></i> Add Product
+                            <i className="bi bi-plus-circle"></i> Add Bill
                         </button>
                     </div>
 
@@ -336,7 +327,7 @@ export default function Purchase() {
                             Export
                         </button>
 
-                        <div className="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-gray-300 shadow-sm text-sm">
+                        <div className="flex items-center gap-2 bg-white py-1.5 px-2 rounded-xl border border-gray-300 shadow-sm text-sm">
                             <span className="font-semibold text-gray-700">From:</span>
                             <input
                                 type="date"
@@ -519,198 +510,13 @@ export default function Purchase() {
                         </div>
                     )}
 
-                    {showPreviewModal && selectedPurchaseForPreview && (
-                        <div
-                            className={`purchase-export-modal-overlay ${isPreviewVisible && !isClosingPreview ? 'overlay-active' : 'overlay-closing'}`}
-                            onClick={closePreviewModal}
-                        >
-                            <div
-                                className={`purchase-preview-modal ${isPreviewVisible && !isClosingPreview ? 'modal-active' : 'modal-closing'}`}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <div className="preview-modal-header">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xl shadow-xs">
-                                            <i className="bi bi-file-earmark-text-fill"></i>
-                                        </div>
-                                        <div>
-                                            <h4 className="flex items-center gap-2 text-emerald-900 font-bold text-lg m-0">
-                                                Purchase Invoice Preview
-                                            </h4>
-                                            <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
-                                                <span>Invoice: <strong className="text-emerald-800 font-mono">{selectedPurchaseForPreview.purchaseId || selectedPurchaseForPreview.invoiceNo || "N/A"}</strong></span>
-                                                <span className="text-gray-300">|</span>
-                                                <span>Created By: <strong className="text-emerald-900 font-mono">{selectedPurchaseForPreview.createdBy || "Admin"}</strong></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className="close-btn"
-                                        onClick={closePreviewModal}
-                                        title="Close Preview (Esc)"
-                                    >
-                                        <i className="bi bi-x-lg"></i>
-                                    </button>
-                                </div>
+                    <PBillPreview
+                        purchase={showPreviewModal ? selectedPurchaseForPreview : null}
+                        isVisible={isPreviewVisible}
+                        isClosing={isClosingPreview}
+                        onClose={closePreviewModal}
+                    />
 
-                                <div className="preview-body space-y-4">
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 bg-gradient-to-r from-emerald-50/90 to-teal-50/50 p-4 rounded-xl border border-emerald-100 text-sm shadow-xs">
-                                        <div>
-                                            <span className="text-gray-500 text-xs block font-medium">Purchase ID</span>
-                                            <strong className="text-emerald-900 font-semibold font-mono text-base">{selectedPurchaseForPreview.purchaseId || "-"}</strong>
-                                        </div>
-                                        <div>
-                                            <span className="text-gray-500 text-xs block font-medium">
-                                                <i className="bi bi-person-badge-fill text-emerald-700 mr-1"></i> Billed By (User ID)
-                                            </span>
-                                            <div className="mt-1">
-                                                <span className="inline-flex items-center gap-1.5 bg-white text-emerald-900 border border-emerald-300 px-2.5 py-1 rounded-lg font-mono font-bold text-xs shadow-xs">
-                                                    <i className="bi bi-person-check-fill text-emerald-600"></i>
-                                                    {selectedPurchaseForPreview.createdBy || "Admin"}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <span className="text-gray-500 text-xs block font-medium">Supplier Invoice No</span>
-                                            <strong className="text-gray-800 font-semibold font-mono">{selectedPurchaseForPreview.invoiceNo || "-"}</strong>
-                                        </div>
-                                        <div>
-                                            <span className="text-gray-500 text-xs block font-medium">Company / Supplier</span>
-                                            <strong className="text-gray-800 font-semibold">{selectedPurchaseForPreview.companyName || selectedPurchaseForPreview.supplier || "-"}</strong>
-                                        </div>
-                                        <div>
-                                            <span className="text-gray-500 text-xs block font-medium">Invoice Date</span>
-                                            <strong className="text-gray-800 font-semibold">{formatPurchaseDate(selectedPurchaseForPreview.invoiceDate || selectedPurchaseForPreview.date)}</strong>
-                                        </div>
-                                    </div>
-
-                                    <div className="preview-table-container">
-                                        <table className="preview-table">
-                                            <thead>
-                                                <tr>
-                                                    <th className="text-center" style={{ width: "4%" }}>#</th>
-                                                    <th className="text-center" style={{ width: "9%" }}>Item Code</th>
-                                                    <th className="text-left" style={{ width: "25%" }}>Product Name</th>
-                                                    <th className="text-center" style={{ width: "9%" }}>Batch</th>
-                                                    <th className="text-center" style={{ width: "8%" }}>Expiry</th>
-                                                    <th className="text-center" style={{ width: "6%" }}>Qty</th>
-                                                    <th className="text-center" style={{ width: "6%" }}>Free</th>
-                                                    <th className="text-right" style={{ width: "9%" }}>MRP (₹)</th>
-                                                    <th className="text-right" style={{ width: "9%" }}>Rate (₹)</th>
-                                                    <th className="text-center" style={{ width: "6%" }}>GST %</th>
-                                                    <th className="text-right" style={{ width: "9%" }}>Amount (₹)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {!selectedPurchaseForPreview.items || selectedPurchaseForPreview.items.length === 0 ? (
-                                                    <tr>
-                                                        <td colSpan={11} className="text-center py-10 text-gray-500">
-                                                            <div className="flex flex-col items-center justify-center gap-2">
-                                                                <i className="bi bi-inbox text-3xl text-gray-400"></i>
-                                                                <span className="font-medium text-sm">No product item details recorded for this purchase entry.</span>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ) : (
-                                                    selectedPurchaseForPreview.items.map((item, idx) => {
-                                                        const qty = Number(item.qty || 0);
-                                                        const rate = Number(item.rate || item.mrp || 0);
-                                                        const amount = item.amount !== undefined && item.amount !== null
-                                                            ? Number(item.amount)
-                                                            : qty * rate;
-                                                        return (
-                                                            <tr key={idx}>
-                                                                <td className="text-center text-slate-500 font-mono font-medium">{idx + 1}</td>
-                                                                <td className="text-center font-mono text-slate-700">
-                                                                    {item.itemCode || item.productId || "-"}
-                                                                </td>
-                                                                <td className="text-left font-semibold text-slate-800">
-                                                                    {item.productName || "-"}
-                                                                </td>
-                                                                <td className="text-center font-mono text-slate-700">
-                                                                    {item.batch || "-"}
-                                                                </td>
-                                                                <td className="text-center font-mono text-slate-700">
-                                                                    {item.expiry || item.expiryDate || "-"}
-                                                                </td>
-                                                                <td className="text-center font-semibold text-slate-800">
-                                                                    {qty}
-                                                                </td>
-                                                                <td className="text-center text-slate-600 font-mono">
-                                                                    {item.free || 0}
-                                                                </td>
-                                                                <td className="text-right text-slate-700 font-mono whitespace-nowrap">
-                                                                    ₹{Number(item.mrp || 0).toFixed(2)}
-                                                                </td>
-                                                                <td className="text-right text-slate-800 font-mono font-medium whitespace-nowrap">
-                                                                    ₹{rate.toFixed(2)}
-                                                                </td>
-                                                                <td className="text-center font-medium text-slate-700">
-                                                                    {item.gst || 0}%
-                                                                </td>
-                                                                <td className="text-right font-bold text-slate-900 font-mono whitespace-nowrap">
-                                                                    ₹{amount.toFixed(2)}
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm">
-                                        <div>
-                                            <span className="text-xs text-gray-500 block font-medium">Total Items</span>
-                                            <span className="font-bold text-gray-800 text-base">{selectedPurchaseForPreview.totalItems || (selectedPurchaseForPreview.items?.length || 0)}</span>
-                                        </div>
-                                        <div>
-                                            <span className="text-xs text-gray-500 block font-medium">Total Quantity</span>
-                                            <span className="font-bold text-gray-800 text-base">{selectedPurchaseForPreview.totalQty || 0}</span>
-                                        </div>
-                                        <div>
-                                            <span className="text-xs text-gray-500 block font-medium">Total Amount</span>
-                                            <span className="font-bold text-gray-800 text-base">₹{Number(selectedPurchaseForPreview.totalAmount || 0).toFixed(2)}</span>
-                                        </div>
-                                        <div>
-                                            <span className="text-xs text-gray-500 block font-medium">Net Amount</span>
-                                            <span className="font-bold text-emerald-700 text-lg">
-                                                ₹{Number(selectedPurchaseForPreview.netAmount || selectedPurchaseForPreview.grandTotal || selectedPurchaseForPreview.totalAmount || 0).toFixed(2)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="preview-footer flex flex-col sm:flex-row justify-between items-center gap-3 pt-4 border-t border-gray-200 mt-4">
-                                    <div className="flex items-center gap-2 text-xs text-gray-600 font-medium">
-                                        <i className="bi bi-shield-check text-emerald-600 text-sm"></i>
-                                        <span>Billed / Created by:</span>
-                                        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-900 border border-emerald-200 px-2.5 py-1 rounded-md font-mono font-bold text-xs shadow-xs">
-                                            <i className="bi bi-person-fill text-emerald-600"></i>
-                                            {selectedPurchaseForPreview.createdBy || "Admin"}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            type="button"
-                                            className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-semibold text-sm transition shadow-sm flex items-center gap-2 cursor-pointer"
-                                            onClick={() => window.print()}
-                                        >
-                                            <i className="bi bi-printer-fill"></i> Print Invoice
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-semibold text-sm transition cursor-pointer"
-                                            onClick={closePreviewModal}
-                                        >
-                                            Close
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </main>
             </div>
         </div>
