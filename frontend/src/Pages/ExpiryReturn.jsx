@@ -1811,17 +1811,10 @@ const ExpiryReturn = () => {
                         )
                       }
                     >
-                      <option value="">
-                        Select Action
-                      </option>
-
-                      <option value="Returned">
-                        Returned to Vendor
-                      </option>
-
-                      <option value="No Stock">
-                        No Stock / Written Off
-                      </option>
+                      <option value="">-----Select Action-----</option>
+                      <option value="Returned">Returned to Vendor</option>
+                      <option value="No Stock">No Stock / Written Off</option>
+                      <option value="Pending">Restock</option>
                     </select>
 
                   </div>

@@ -53,6 +53,11 @@ export default function SBillPreview({
 
     if (!sale) return null;
 
+    const isReturned = Boolean(isBillReturned?.(sale) || sale.returnId);
+    const displayStatus = isReturned
+        ? "Return"
+        : sale.status || (Number(sale.dueAmount || 0) <= 0 ? "Paid" : "Due");
+
     return (
         <div
             className={`sale-preview-modal-overlay ${isVisible && !isClosing ? "overlay-active" : "overlay-closing"}`}
@@ -76,8 +81,8 @@ export default function SBillPreview({
                                 <span className="text-xs text-gray-500 font-medium">
                                     Bill No: <strong className="text-emerald-800 font-mono font-bold text-sm">{sale.saleId || "N/A"}</strong>
                                 </span>
-                                <span className={`status-pill status-${(sale.status || (Number(sale.dueAmount || 0) <= 0 ? "paid" : "due")).toLowerCase()}`}>
-                                    {sale.status || (Number(sale.dueAmount || 0) <= 0 ? "Paid" : "Due")}
+                                <span className={`status-pill status-${displayStatus.toLowerCase()}`}>
+                                    {displayStatus}
                                 </span>
                             </div>
                         </div>
@@ -88,7 +93,7 @@ export default function SBillPreview({
                 </div>
 
                 <div className="preview-body space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-linear-to-r from-emerald-50/90 to-teal-50/50 p-4 rounded-xl border border-emerald-100 text-sm shadow-xs">
+                    <div className="grid grid-cols-2 mb-2 md:grid-cols-4 gap-3 bg-linear-to-r from-emerald-50/90 to-teal-50/50 p-4 rounded-xl border border-emerald-100 text-sm shadow-xs">
                         <div className="preview-creator-card">
                             <span className="text-gray-500 text-xs block font-medium">
                                 <i className="bi bi-person-badge-fill text-emerald-700 mr-1"></i> Billed By (User ID)
@@ -112,7 +117,7 @@ export default function SBillPreview({
                                 {sale.customerName || "Walk-in Customer"}
                             </strong>
                             {sale.customerPhone && (
-                                <span className="text-gray-500 text-xs block mt-0.5">
+                                <span className="text-gray-500 text-xs mt-0.5 gap-1 flex items-center">
                                     <i className="bi bi-telephone text-emerald-600 mr-1"></i>
                                     {sale.customerPhone}
                                 </span>
@@ -124,12 +129,14 @@ export default function SBillPreview({
                                 {sale.paymentMethod || "Cash"}
                             </strong>
                             <span className="text-gray-500 text-xs block mt-0.5">
-                                Paid: ₹{Number(sale.paidAmount || sale.netAmount || sale.grandTotal || 0).toFixed(2)}
+                                {isReturned
+                                    ? "Payment Status: Returned"
+                                    : `Amount Paid: ₹${Number(sale.paidAmount || 0).toFixed(2)}`}
                             </span>
                         </div>
                     </div>
 
-                    <div className="preview-table-container">
+                    <div className="preview-table-container mb-2">
                         <table className="preview-table">
                             <thead>
                                 <tr>
@@ -190,7 +197,7 @@ export default function SBillPreview({
                         </table>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 bg-slate-50 py-2 px-4 rounded-xl border border-slate-200 text-sm">
                         <div>
                             <span className="text-xs text-gray-500 block font-medium">Total Items</span>
                             <span className="font-bold text-gray-800 text-base">{sale.items?.length || 0}</span>
@@ -212,17 +219,36 @@ export default function SBillPreview({
                             <span className="font-bold text-gray-800 text-base">₹{Number(sale.gstTotal || 0).toFixed(2)}</span>
                         </div>
                         <div className="net-amount-highlight">
-                            <span className="text-xs text-emerald-800 block font-bold">Net Payable</span>
-                            <span className="font-bold text-emerald-700 text-lg">₹{Number(sale.netAmount || sale.grandTotal || sale.totalAmount || 0).toFixed(2)}</span>
+                            <span className="text-xs text-emerald-800 block font-bold">
+                                {isReturned ? "Return Status" : "Net Payable"}
+                            </span>
+                            <span className="font-bold text-emerald-700 text-lg">
+                                {isReturned
+                                    ? "Returned"
+                                    : `₹${Number(sale.netAmount || sale.grandTotal || sale.totalAmount || 0).toFixed(2)}`}
+                            </span>
                         </div>
                     </div>
                 </div>
 
                 <div className="preview-modal-footer">
                     <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 font-medium">
                             <i className="bi bi-info-circle mr-1"></i>
-                            Created by: <strong className="text-emerald-800">{sale.createdBy || "Admin"}</strong>
+                            Created on: 
+                            <strong className="text-emerald-800">
+                                {new Date(sale.createdAt).toLocaleDateString("en-IN", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                })}
+                                {", "}
+                                {new Date(sale.createdAt).toLocaleTimeString("en-IN", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                }).toLowerCase()}
+                            </strong>
                         </span>
                     </div>
                     <div className="flex items-center gap-2">

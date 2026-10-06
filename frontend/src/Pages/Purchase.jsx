@@ -387,7 +387,16 @@ export default function Purchase() {
                                         const isLocked = isPurchaseLocked(purchase);
                                         return (
                                             <tr key={purchase.purchaseId || purchase._id} className="hover:bg-gray-50/80 transition">
-                                                <td className="font-mono text-gray-700">{purchase.purchaseId || "-"}</td>
+                                                <td>
+                                                    <button
+                                                        type="button"
+                                                        className="font-mono text-emerald-700 hover:text-emerald-900 hover:underline font-semibold bg-transparent border-0 p-0"
+                                                        title="Preview Invoice Details"
+                                                        onClick={() => openPreviewModal(purchase)}
+                                                    >
+                                                        {purchase.purchaseId || "-"}
+                                                    </button>
+                                                </td>
                                                 <td className="font-bold text-gray-900">{purchase.companyName || purchase.supplier || "-"}</td>
                                                 <td className="text-gray-600">{formatPurchaseDate(purchase.createdAt || purchase.invoiceDate || purchase.date)}</td>
                                                 <td className="font-semibold text-emerald-800">₹{Number(purchase.totalAmount || purchase.totalamount || 0).toFixed(2)}</td>
@@ -404,15 +413,6 @@ export default function Purchase() {
                                                             }}
                                                         >
                                                             <i className="bi bi-download"></i>
-                                                        </button>
-
-                                                        <button
-                                                            type="button"
-                                                            className="action-icon-btn view-btn"
-                                                            title="Preview Invoice Details"
-                                                            onClick={() => openPreviewModal(purchase)}
-                                                        >
-                                                            <i className="bi bi-eye"></i>
                                                         </button>
 
                                                         {isLocked ? (

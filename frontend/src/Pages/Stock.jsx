@@ -10,6 +10,7 @@ import ProductLedger from "../Popup/ProductLedger";
 import ProductInvoicePreview from "../Popup/ProductInvoicePreview";
 import * as XLSX from "xlsx";
 import { toast } from "react-toastify";
+import { apiFetch } from "../api/apiClient";
 
 export default function Stock() {
     const [search, setSearch] = useState("");
@@ -19,6 +20,7 @@ export default function Stock() {
     const [showExportModal, setShowExportModal] = useState(false);
     const [statusFilter, setStatusFilter] = useState("all"); // "all" | "inStock" | "lowStock" | "outOfStock"
     const [sales, setSales] = useState([]);
+    const [salesReturns, setSalesReturns] = useState([]);
     const [purchases, setPurchases] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedLedgerInvoice, setSelectedLedgerInvoice] = useState(null);
@@ -39,6 +41,16 @@ export default function Stock() {
         const unsubSales = subscribeSales((data) => {
             if (isMounted) setSales(Array.isArray(data) ? data : []);
         });
+        apiFetch("/sales/returns")
+            .then(async (response) => {
+                if (!response.ok || !isMounted) return;
+                const data = await response.json();
+                const returns = Array.isArray(data)
+                    ? data
+                    : data.returns || data.salesReturns || [];
+                if (isMounted) setSalesReturns(returns);
+            })
+            .catch((error) => console.error("Product ledger return loading error:", error));
         const unsubPurchases = subscribePurchases((data) => {
             if (isMounted) setPurchases(Array.isArray(data) ? data : []);
         });
@@ -117,6 +129,25 @@ export default function Stock() {
 
     const batchStockData = stockData.filter((item) => hasValidBatch(item.batch));
 
+    const isProcessedReturn = (sale) => {
+        const saleKeys = [
+            sale.returnId,
+            sale.saleId,
+            sale.billNumber,
+            sale.invoiceNumber,
+            sale._id,
+        ]
+            .filter(Boolean)
+            .map((key) => String(key).trim().toLowerCase());
+        const salesReturn = salesReturns.find((salesReturn) =>
+            [salesReturn.saleId, salesReturn.billNumber, salesReturn.invoiceNumber]
+                .filter(Boolean)
+                .some((key) => saleKeys.includes(String(key).trim().toLowerCase()))
+        );
+
+        return (sale.returnStatus || salesReturn?.status || "").toLowerCase() === "processed";
+    };
+
     const productLedgerEntries = selectedProduct ? [
         ...(purchases || []).flatMap((purchase) =>
             (purchase.items || [])
@@ -138,7 +169,7 @@ export default function Stock() {
                     record: purchase,
                 }))
         ),
-        ...(sales || []).flatMap((sale) =>
+        ...(sales || []).filter((sale) => !isProcessedReturn(sale)).flatMap((sale) =>
             String(sale.customerName || sale.customer || "").trim().toLowerCase() === "short products"
                 ? []
                 : (sale.items || [])

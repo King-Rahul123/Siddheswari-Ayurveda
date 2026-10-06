@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const Sale = require("../models/Sale");
 const Product = require("../models/Product");
 const Stock = require("../models/Stock");
+const SalesReturn = require("../models/SalesReturn");
 const { getNextSequence, getCurrentSequence } = require("../models/Counter");
 const authMiddleware = require("../middleware/authMiddleware");
 const { generateSalePDF } = require("../utils/pdfGenerator");
@@ -89,8 +90,28 @@ router.get("/pdf/:saleId", async (req, res) => {
 router.get("/unpaid-bills", async (req, res) => {
   try {
     const sales = await Sale.find().sort({ createdAt: -1 });
+    const salesReturns = await SalesReturn.find()
+      .select("returnId saleId billNumber status")
+      .lean();
+
+    const returnByBillNumber = new Map();
+    salesReturns.forEach((salesReturn) => {
+      [salesReturn.saleId, salesReturn.billNumber]
+        .filter(Boolean)
+        .forEach((billNumber) => {
+          returnByBillNumber.set(String(billNumber).trim().toLowerCase(), salesReturn);
+        });
+    });
+
     const formatted = sales.map((sale) => {
       const obj = sale.toObject();
+      const saleKeys = [obj.saleId, obj.billNumber, obj.invoiceNumber, obj._id]
+        .filter(Boolean)
+        .map((key) => String(key).trim().toLowerCase());
+      const salesReturn = saleKeys
+        .map((key) => returnByBillNumber.get(key))
+        .find(Boolean);
+
       const total = Number(obj.grandTotal || obj.netAmount || obj.totalAmount || obj.total || 0);
       const paid = Number(obj.paidAmount || 0);
       const due = Math.max(0, total - paid);
@@ -104,9 +125,11 @@ router.get("/unpaid-bills", async (req, res) => {
         paidAmount: paid,
         dueAmount: due,
         status,
-        paymentMethod: obj.paymentMethod || "-"
+        paymentMethod: obj.paymentMethod || "-",
+        returnId: salesReturn?.returnId || null,
+        returnStatus: salesReturn?.status || null
       };
-    });
+    }).filter(Boolean);
     res.json(formatted);
   } catch (error) {
     res.status(500).json({ message: error.message });

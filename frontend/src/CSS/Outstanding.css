@@ -420,6 +420,11 @@
   background: #eaf7ed;
 }
 
+.bill-status.return {
+  color: #7a3f8c;
+  background: #f6ecfa;
+}
+
 .update-payment-btn {
   border: 0;
   border-radius: 8px;

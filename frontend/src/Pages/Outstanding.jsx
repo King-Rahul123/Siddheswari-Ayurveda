@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { apiFetch } from "../api/apiClient";
 import "../CSS/Dashboard.css";
@@ -10,7 +10,7 @@ export default function Outstanding() {
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("Due");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [methodFilter, setMethodFilter] = useState("All");
   const [selectedBill, setSelectedBill] = useState(null);
   const [selectedPaymentBillIds, setSelectedPaymentBillIds] = useState([]);
@@ -24,38 +24,86 @@ export default function Outstanding() {
     note: "",
   });
 
-  useEffect(() => {
-    loadBills();
-  }, []);
-
-  const loadBills = async () => {
+  const loadBills = useCallback(async () => {
     setLoading(true);
 
     try {
-      // Change this endpoint if your existing sales API uses another route.
-      const res = await apiFetch("/sales/unpaid-bills");
+      const [res, returnsRes] = await Promise.all([
+        apiFetch("/sales/unpaid-bills"),
+        apiFetch("/sales/returns"),
+      ]);
 
       if (!res.ok) throw new Error("Unable to load bills");
 
       const data = await res.json();
-      setBills(Array.isArray(data) ? data : data.bills || []);
+      const sales = Array.isArray(data) ? data : data.bills || [];
+      const returnsData = returnsRes.ok ? await returnsRes.json() : [];
+      const salesReturns = Array.isArray(returnsData)
+        ? returnsData
+        : returnsData.returns || returnsData.salesReturns || [];
+      const returnsByBill = new Map();
+
+      salesReturns.forEach((salesReturn) => {
+        [salesReturn.saleId, salesReturn.billNumber, salesReturn.invoiceNumber]
+          .filter(Boolean)
+          .forEach((billNumber) => {
+            returnsByBill.set(String(billNumber).trim().toLowerCase(), salesReturn);
+          });
+      });
+
+      const billsWithReturns = sales
+        .map((bill) => {
+          const billKeys = [
+            bill.saleId,
+            bill.billNumber,
+            bill.invoiceNumber,
+            bill._id,
+          ]
+            .filter(Boolean)
+            .map((key) => String(key).trim().toLowerCase());
+          const salesReturn = billKeys
+            .map((key) => returnsByBill.get(key))
+            .find(Boolean);
+
+          return {
+            ...bill,
+            returnId: bill.returnId || salesReturn?.returnId || null,
+            returnStatus: bill.returnStatus || salesReturn?.status || null,
+          };
+        });
+
+      setBills(billsWithReturns);
     } catch (error) {
       console.error("Bill payment loading error:", error);
       toast.error("Unable to load pending bills");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const loadTimer = setTimeout(loadBills, 0);
+    return () => clearTimeout(loadTimer);
+  }, [loadBills]);
 
   const getTotal = (bill) =>
     Number(bill.total ?? bill.grandTotal ?? bill.amount ?? 0);
 
   const getPaid = (bill) => Number(bill.paidAmount ?? bill.paid ?? 0);
 
-  const getDue = (bill) =>
-    Math.max(0, getTotal(bill) - getPaid(bill));
+  const isProcessedReturn = (bill) =>
+    Boolean(bill.returnId) && bill.returnStatus?.toLowerCase() === "processed";
+
+  const getDue = (bill) => {
+    if (isProcessedReturn(bill)) return 0;
+    return Math.max(0, getTotal(bill) - getPaid(bill));
+  };
 
   const normalizedStatus = (bill) => {
+    if (bill.returnId) {
+      return "Return";
+    }
+
     const due = getDue(bill);
     const paid = getPaid(bill);
 
@@ -151,7 +199,7 @@ export default function Outstanding() {
     return bills
       .filter((b) => {
         const status = normalizedStatus(b);
-        if (status === "Paid") return false;
+        if (status === "Paid" || isProcessedReturn(b)) return false;
 
         const bName = (b.customerName || b.customer || "").trim().toLowerCase();
         const bPhone = (b.customerPhone || b.phone || "").trim();
@@ -230,12 +278,13 @@ export default function Outstanding() {
       const newPaid = billPaid + allocated;
       const newDue = Math.max(0, billTotal - newPaid);
 
-      const newStatus =
-        newDue <= 0
-          ? "Paid"
-          : newPaid > 0
-          ? "Partial"
-          : "Due";
+      const newStatus = bill.returnId
+        ? "Return"
+        : newDue <= 0
+        ? "Paid"
+        : newPaid > 0
+        ? "Partial"
+        : "Due";
 
       remaining -= allocated;
 
@@ -449,6 +498,7 @@ export default function Outstanding() {
                 <option value="Due">Due</option>
                 <option value="Partial">Partial</option>
                 <option value="Paid">Paid</option>
+                <option value="Return">Return</option>
               </select>
 
               <select
@@ -539,7 +589,7 @@ export default function Outstanding() {
                           <td className="amount total">{formatCurrency(total)}</td>
 
                           <td>
-                            {status === "Paid" ? (
+                            {status === "Paid" || isProcessedReturn(bill) ? (
                               method === "Cash" ? (
                                 <span className="payment-method cash">
                                   <i className="bi bi-cash"></i> Cash
