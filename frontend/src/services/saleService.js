@@ -1,4 +1,5 @@
 import { apiFetch } from "../api/apiClient";
+import { API_BASE_URL } from "../api/config";
 
 // Show next bill number without incrementing
 export const getCurrentSaleId = async () => {
@@ -35,6 +36,11 @@ export const updateSale = async (saleId, saleData, items) => {
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Failed to update sale");
   return data;
+};
+
+export const getSalePdfUrl = (saleId) => {
+  const token = localStorage.getItem("token") || "";
+  return `${API_BASE_URL}/sales/pdf/${encodeURIComponent(saleId)}?token=${encodeURIComponent(token)}`;
 };
 
 // Real-time Sales

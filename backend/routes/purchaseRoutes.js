@@ -283,7 +283,7 @@ router.put("/:id", async (req, res) => {
       }
 
       if (productDoc) {
-        productDoc.stock = Math.max(0, Number(productDoc.stock || 0) - oldQty);
+        productDoc.stock = Number(productDoc.stock || 0) - oldQty;
         await productDoc.save();
       }
 
@@ -297,7 +297,7 @@ router.put("/:id", async (req, res) => {
         if (!targetStock && stockDocs.length > 0) targetStock = stockDocs[0]; // fallback if batch changed
 
         if (targetStock) {
-          targetStock.qty = Math.max(0, Number(targetStock.qty || 0) - oldQty);
+          targetStock.qty = Number(targetStock.qty || 0) - oldQty;
           await targetStock.save();
         }
       }

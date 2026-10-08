@@ -1,15 +1,47 @@
 const express = require("express");
 const router = express.Router();
 const fs = require("fs");
-const path = require("path");
 const mongoose = require("mongoose");
 const Sale = require("../models/Sale");
+const Customer = require("../models/Customer");
 const Product = require("../models/Product");
 const Stock = require("../models/Stock");
 const SalesReturn = require("../models/SalesReturn");
 const { getNextSequence, getCurrentSequence } = require("../models/Counter");
 const authMiddleware = require("../middleware/authMiddleware");
 const { generateSalePDF } = require("../utils/pdfGenerator");
+
+const resolveCustomerGender = async (saleData, fallback = "") => {
+  const explicitGender =
+    saleData?.gender || saleData?.customerType || saleData?.customerGender;
+  if (explicitGender) return explicitGender;
+
+  if (!saleData?.customerCode) return fallback;
+
+  const customer = await Customer.findOne({
+    customerCode: saleData.customerCode
+  }).select("gender").lean();
+
+  return customer?.gender || fallback;
+};
+
+const generateInvoicePDF = async (
+  saleData,
+  items
+) => {
+  const gender =
+    await resolveCustomerGender(
+      saleData
+    );
+
+  return generateSalePDF(
+    {
+      ...saleData,
+      gender,
+    },
+    items
+  );
+};
 
 router.use(authMiddleware);
 
@@ -55,28 +87,19 @@ router.get("/pdf/:saleId", async (req, res) => {
       sale = await Sale.findOne({ saleId: saleId.replace(/_/g, " ") }) || await Sale.findOne({ saleId: saleId.replace(/_/g, "-") });
     }
 
+    if (!sale) {
+      return res.status(404).json({ message: "Sale invoice not found in database" });
+    }
+
+    // Always regenerate from the saved customer type. Older invoices may have
+    // a normal PDF in pdfPath even though the customer is a shop.
+    const filePath = await generateInvoicePDF(sale.toObject(), sale.items);
+    if (sale.pdfPath !== filePath) {
+      sale.pdfPath = filePath;
+      await sale.save();
+    }
+
     const safeSaleId = (saleId || "INVOICE").replace(/[/\\?%*:|"<>]/g, "_");
-
-    let filePath = sale?.pdfPath;
-
-    if (!filePath || !fs.existsSync(filePath)) {
-      filePath = path.join("D:\\Mongodb_Siddheswari\\Invoices", `${safeSaleId}.pdf`);
-      if (!fs.existsSync(filePath)) {
-        filePath = path.join("D:\\Mongodb_Siddheswari", `${safeSaleId}.pdf`);
-      }
-    }
-
-    // If file does not exist on disk but sale document exists, re-generate PDF on demand
-    if (!fs.existsSync(filePath)) {
-      if (sale) {
-        filePath = await generateSalePDF(sale.toObject(), sale.items);
-        sale.pdfPath = filePath;
-        await sale.save();
-      } else {
-        return res.status(404).json({ message: "Sale invoice not found in database" });
-      }
-    }
-
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="${safeSaleId}.pdf"`);
     const stream = fs.createReadStream(filePath);
@@ -239,9 +262,13 @@ router.put("/:saleId", async (req, res) => {
     const paidAmount = Number(sale.paidAmount || 0);
     const grandTotal = Number(saleData?.grandTotal || saleData?.netAmount || 0);
     const dueAmount = Math.max(0, grandTotal - paidAmount);
-    sale.set({
+    const resolvedSaleData = {
       ...saleData,
-      createdBy: sale.createdBy || saleData?.createdBy || req.user?.username || "Admin",
+      gender: await resolveCustomerGender(saleData, sale.gender)
+    };
+    sale.set({
+      ...resolvedSaleData,
+      createdBy: sale.createdBy || resolvedSaleData?.createdBy || req.user?.username || "Admin",
       saleId: sale.saleId,
       paidAmount,
       dueAmount,
@@ -252,7 +279,7 @@ router.put("/:saleId", async (req, res) => {
     await sale.save();
 
     try {
-      sale.pdfPath = await generateSalePDF(sale.toObject(), processedItems);
+      sale.pdfPath = await generateInvoicePDF(sale.toObject(), processedItems);
       await sale.save();
     } catch (pdfErr) {
       console.error("Error regenerating PDF invoice:", pdfErr);
@@ -478,8 +505,13 @@ router.post("/", async (req, res) => {
       };
     });
 
-    const sale = new Sale({
+    const resolvedSaleData = {
       ...saleData,
+      gender: await resolveCustomerGender(saleData)
+    };
+
+    const sale = new Sale({
+      ...resolvedSaleData,
       createdBy: saleData?.createdBy || req.user?.username || req.user?.id || "Admin",
       saleId,
       paidAmount: initialPaid,
@@ -493,7 +525,7 @@ router.post("/", async (req, res) => {
 
     // Generate PDF invoice and store path
     try {
-      const pdfPath = await generateSalePDF(sale.toObject(), items);
+      const pdfPath = await generateInvoicePDF(sale.toObject(), items);
       sale.pdfPath = pdfPath;
       await sale.save();
     } catch (pdfErr) {

@@ -5,7 +5,14 @@ import "../CSS/Card.css";
 import "../CSS/SaleInvoice.css";
 import CustomerList from "../Popup/CustomerList";
 import ProductList from "../Popup/ProductList";
-import { addSale, updateSale, getNextSaleId, getCurrentSaleId, subscribeSales } from "../services/saleService";
+import {
+  addSale,
+  updateSale,
+  getNextSaleId,
+  getCurrentSaleId,
+  getSalePdfUrl,
+  subscribeSales,
+} from "../services/saleService";
 
 const normalizeSaleDate = (value) => {
   if (!value) return "";
@@ -22,6 +29,7 @@ export default function SaleInvoice() {
     customerCode: editingSale?.customerCode || "",
     customerName: editingSale?.customerName || "",
     phone: editingSale?.customerPhone || "",
+    gender: editingSale?.gender || "",
   });
 
   const [showCustomerPopup, setShowCustomerPopup] = useState(false);
@@ -303,7 +311,12 @@ export default function SaleInvoice() {
       return false;
     }
 
-    if (lastBillDate && invoiceDate && invoiceDate < lastBillDate) {
+    if (
+      !isEditMode &&
+      lastBillDate &&
+      invoiceDate &&
+      invoiceDate < lastBillDate
+    ) {
       setToast({
         show: true,
         message: `Invoice date cannot be before ${lastBillDate}`,
@@ -330,7 +343,7 @@ export default function SaleInvoice() {
     }
   };
 
-  const saveInvoice = async () => {
+  const saveInvoice = async ({ redirect = true } = {}) => {
     try {
       if (!validateInvoiceDate()) return false;
 
@@ -390,6 +403,7 @@ export default function SaleInvoice() {
         customerCode: customer.customerCode,
         customerName: customer.customerName,
         customerPhone: customer.phone,
+        gender: customer.gender,
         date: invoiceDate,
         totalQty,
         totalAmount: subTotal,
@@ -413,8 +427,10 @@ export default function SaleInvoice() {
           message: `${saleId} updated successfully`,
           type: "success",
         });
-        setTimeout(() => navigate("/dashboard/sales"), 700);
-        return true;
+        if (redirect) {
+          setTimeout(() => navigate("/dashboard/sales"), 700);
+        }
+        return { saleId: saleData.saleId };
       }
 
       const nextDisplayId = await getCurrentSaleId();
@@ -425,6 +441,7 @@ export default function SaleInvoice() {
         customerCode: "",
         customerName: "",
         phone: "",
+        gender: "",
       });
 
       // Reset items
@@ -449,7 +466,7 @@ export default function SaleInvoice() {
         message: `${saleData.saleId} saved & PDF stored in D:\\Mongodb_Siddheswari`,
         type: "success",
       });
-      return true;
+      return { saleId: saleData.saleId };
     } catch (err) {
       console.error(err);
       setToast({
@@ -475,27 +492,14 @@ export default function SaleInvoice() {
       return;
     }
 
-    const currentBillNo = saleId;
-    const savedSuccess = await saveInvoice();
-    if (!savedSuccess) return;
+    const savedSale = await saveInvoice({ redirect: false });
+    if (!savedSale?.saleId) return;
 
-    navigate("/print-invoice", {
-      state: {
-        billNumber: currentBillNo,
-        invoiceDate,
-        customerName: customer.customerName,
-        phone: customer.phone,
-        mobile: customer.phone,
-        customerPhone: customer.phone,
-        items: validItems,
-        subTotal,
-        discount: totalItemDiscount,
-        gstAmount,
-        grandTotal,
-        roundOff,
-        netAmount,
-      },
-    });
+    window.open(getSalePdfUrl(savedSale.saleId), "_blank", "noopener,noreferrer");
+
+    if (isEditMode) {
+      navigate(-1);
+    }
   };
 
   useEffect(() => {
@@ -586,7 +590,7 @@ export default function SaleInvoice() {
                 autoFocus
                 ref={invoiceDateRef}
                 type="date"
-                min={lastBillDate || undefined}
+                min={isEditMode ? undefined : lastBillDate || undefined}
                 max={todayDate}
                 value={invoiceDate}
                 onKeyDown={(e) => {
@@ -744,7 +748,7 @@ export default function SaleInvoice() {
                         name="rate"
                         type="number"
                         placeholder="Rate"
-                        value={item.rate}
+                        value={item.calculateRate || item.rate}
                         readOnly
                         title="Fixed as per database product record"
                         className="bg-gray-100 cursor-not-allowed"
@@ -851,6 +855,7 @@ export default function SaleInvoice() {
                 customerCode: customerData.customerCode,
                 customerName: customerData.name,
                 phone: customerData.phone,
+                gender: customerData.gender,
               });
               setShowCustomerPopup(false);
               setTimeout(() => {

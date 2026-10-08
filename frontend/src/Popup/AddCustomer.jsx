@@ -155,12 +155,13 @@ export default function AddCustomer({
                             </div>
 
                             <div className="form-group">
-                                <label>Gender *</label>
+                                <label>Type / Gender *</label>
                                 <select name="gender" value={form.gender} onChange={handleChange} required >
-                                    <option value="">Select Gender</option>
+                                    <option value="">Select Type</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
                                     <option value="Other">Other</option>
+                                    <option value="Shop">Shop</option>
                                 </select>
                             </div>
 

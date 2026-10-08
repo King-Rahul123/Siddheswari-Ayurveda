@@ -28,6 +28,7 @@ const saleSchema = new mongoose.Schema(
     customerCode: { type: String, default: "" },
     customerName: { type: String, default: "" },
     customerPhone: { type: String, default: "" },
+    gender: { type: String, default: "" },
     doctor: { type: String, default: "" },
     date: { type: String, default: "" },
     paymentMethod: { type: String, default: "-" },
