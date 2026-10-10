@@ -427,35 +427,55 @@ const generateSalePDF = (saleData, items = []) => {
       // QR CODE
       // ------------------------------------------
 
-      // TEMPORARY QR PLACEHOLDER
-      // Replace this section with your actual QR image
-      // after providing the UPI QR image/path.
+      const qrCandidatePaths = [
+          path.resolve(
+              __dirname,
+              "../../frontend/public/QR.jpeg"
+          )
+      ];
+
+      const qrCodePath = qrCandidatePaths.find((candidate) =>
+          fs.existsSync(candidate)
+      );
 
       const qrSize = 55;
 
-      doc
-          .rect(
+      if (qrCodePath) {
+          doc.image(
+              qrCodePath,
               qrCenterX - qrSize / 2,
-              infoBoxY + 25,
-              qrSize,
-              qrSize
-          )
-          .lineWidth(1)
-          .stroke("#94a3b8");
-
-      doc
-          .font(fontRegular)
-          .fontSize(7)
-          .fillColor("#64748b")
-          .text(
-              "QR CODE",
-              qrCenterX - 25,
-              infoBoxY + 47,
+              infoBoxY + 19,
               {
-                  width: 50,
+                  fit: [qrSize, qrSize],
                   align: "center",
+                  valign: "center",
               }
           );
+      } else {
+          doc
+              .rect(
+                  qrCenterX - qrSize / 2,
+                  infoBoxY + 25,
+                  qrSize,
+                  qrSize
+              )
+              .lineWidth(1)
+              .stroke("#94a3b8");
+
+          doc
+              .font(fontRegular)
+              .fontSize(7)
+              .fillColor("#64748b")
+              .text(
+                  "QR CODE",
+                  qrCenterX - 25,
+                  infoBoxY + 47,
+                  {
+                      width: 50,
+                      align: "center",
+                  }
+              );
+      }
 
 
       // ==========================================
