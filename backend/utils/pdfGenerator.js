@@ -274,11 +274,11 @@ const generateSalePDF = (saleData, items = []) => {
       const infoBoxY = currentY;
 
       const infoBoxW = width;
-      const infoBoxH = 86;
+      const infoBoxH = 80;
 
       // Three columns
-      const leftColW = 210;
-      const middleColW = 130;
+      const leftColW = 250;
+      const middleColW = 100;
       const rightColW = infoBoxW - leftColW - middleColW;
 
 
@@ -496,7 +496,7 @@ const generateSalePDF = (saleData, items = []) => {
           .text(
               "Invoice No.:",
               rightX,
-              infoBoxY + 14
+              infoBoxY + 10
           );
 
       doc
@@ -505,7 +505,7 @@ const generateSalePDF = (saleData, items = []) => {
           .text(
               invoiceNumber,
               rightX + 70,
-              infoBoxY + 14,
+              infoBoxY + 10,
               {
                   width: rightColW - 82,
               }
@@ -517,7 +517,7 @@ const generateSalePDF = (saleData, items = []) => {
           .text(
               "Date:",
               rightX,
-              infoBoxY + 34
+              infoBoxY + 30
           );
 
       doc
@@ -526,7 +526,7 @@ const generateSalePDF = (saleData, items = []) => {
           .text(
               invoiceDate,
               rightX + 70,
-              infoBoxY + 34,
+              infoBoxY + 30,
               {
                   width: rightColW - 82,
               }
@@ -625,43 +625,43 @@ const generateSalePDF = (saleData, items = []) => {
           },
           {
             name: "Product Name",
-            x: startX + 38,
+            x: startX + 42,
             w: 140,
             align: "left",
           },
           {
             name: "HSN",
-            x: startX + 178,
+            x: startX + 190,
             w: 45,
             align: "center",
           },
           {
             name: "Batch",
-            x: startX + 223,
+            x: startX + 250,
             w: 60,
             align: "center",
           },
           {
             name: "Qty",
-            x: startX + 283,
+            x: startX + 305,
             w: 38,
             align: "center",
           },
           {
             name: "Exp",
-            x: startX + 321,
+            x: startX + 340,
             w: 48,
             align: "center",
           },
           {
             name: "MRP",
-            x: startX + 369,
+            x: startX + 395,
             w: 58,
             align: "center",
           },
           {
             name: "Amount",
-            x: startX + 427,
+            x: startX + 430,
             w: 108,
             align: "center",
           },
@@ -1040,10 +1040,10 @@ const generateSalePDF = (saleData, items = []) => {
 
       if (
         currentY <
-        startY + 460
+        startY + 500
       ) {
         currentY =
-          startY + 460;
+          startY + 500;
       }
 
       doc
@@ -1291,7 +1291,7 @@ const generateSalePDF = (saleData, items = []) => {
         )
         .stroke("#e2e8f0");
 
-      currentY += 45;
+      currentY += 70;
 
       doc
         .font(fontRegular)
@@ -1322,7 +1322,7 @@ const generateSalePDF = (saleData, items = []) => {
       // ==========================================
 
       const footerY =
-        startY + height - 25;
+        startY + height - 10;
 
       doc
         .moveTo(
