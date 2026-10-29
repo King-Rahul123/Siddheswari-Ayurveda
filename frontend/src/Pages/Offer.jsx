@@ -35,6 +35,10 @@ export default function Offer() {
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleImageUpload = (event) => {

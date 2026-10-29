@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addPatient } from '../services/patientService';
 import { subscribeRemedies } from '../services/remedyService';
+import { subscribeDoctors } from '../services/doctorService';
+import { DEFAULT_DOCTORS, SHOW_MULTIPLE_DOCTORS } from '../data/doctorsData';
 import { getImageUrl } from '../api/config';
 import { toast } from 'react-toastify';
 
@@ -58,11 +60,149 @@ function Landing() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [bookingForm, setBookingForm] = useState({ patientName: '', phone: '' });
+  const [bookingForm, setBookingForm] = useState({ patientName: '', phone: '', notes: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState('');
   const [displayedProducts, setDisplayedProducts] = useState([]);
   const hasSelectedProducts = useRef(false);
+
+  // Doctors & Speciality States
+  const [doctorsList, setDoctorsList] = useState(DEFAULT_DOCTORS);
+  const [selectedSpeciality, setSelectedSpeciality] = useState('All');
+  const [selectedDoctorId, setSelectedDoctorId] = useState(DEFAULT_DOCTORS[0].id);
+  const [isDoctorSwitching, setIsDoctorSwitching] = useState(false);
+
+  // Dynamic syncing of doctors from database (if available)
+  useEffect(() => {
+    const unsubscribe = subscribeDoctors((apiDocs) => {
+      if (Array.isArray(apiDocs) && apiDocs.length > 0) {
+        setDoctorsList((prevDocs) => {
+          const merged = [...DEFAULT_DOCTORS];
+          apiDocs.forEach((doc) => {
+            const existingIdx = merged.findIndex(
+              (d) =>
+                d.doctorCode === doc.doctorCode ||
+                (d.doctorName && doc.doctorName && d.doctorName.trim().toLowerCase() === doc.doctorName.trim().toLowerCase())
+            );
+
+            if (existingIdx >= 0) {
+              merged[existingIdx] = {
+                ...merged[existingIdx],
+                ...doc,
+                image: doc.photo || doc.image || merged[existingIdx].image,
+                timetable: merged[existingIdx].timetable,
+                expertise: merged[existingIdx].expertise,
+              };
+            } else {
+              const spec = doc.specialization || "General";
+              merged.push({
+                id: doc.doctorCode || doc._id || `dr-${Date.now()}`,
+                doctorCode: doc.doctorCode || `DR${merged.length + 1}`,
+                doctorName: doc.doctorName?.startsWith("Dr.") ? doc.doctorName : `Dr. ${doc.doctorName || 'Specialist'}`,
+                title: `${spec} Specialist & Ayurvedic Physician`,
+                speciality: spec,
+                specialityLabel: `${spec} (Ayurveda)`,
+                qualifications: doc.qualification || "B.A.M.S. | Ayurvedic Physician",
+                experience: doc.age ? `${Math.max(5, Number(doc.age) - 26)}+` : "15+",
+                experienceText: "Years Experience",
+                image: doc.photo || (doc.gender === "Female" ? "/images/doctor_vision.jpg" : "/images/doctor.png"),
+                bio: `${doc.doctorName} is a certified Ayurvedic doctor specializing in ${spec}, providing personalized consultations and natural healing at Siddheswari Ayurveda.`,
+                timetable: [
+                  { day: "Monday to Saturday", time: "10:00 AM – 02:00 PM", badge: "OPD Session", icon: "bi-clock" },
+                  { day: "Evening Session", time: "05:00 PM – 07:30 PM", badge: "Consultation", icon: "bi-sun" }
+                ],
+                expertise: [spec, "Nadi Pariksha", "Dosha Balancing", "Herbal Prescriptions"],
+                fee: "₹300"
+              });
+            }
+          });
+          return merged;
+        });
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // Compute available unique specialities with counts
+  const availableSpecialities = [
+    { key: "All", label: "All Specialities", icon: "bi-grid-fill" },
+    { key: "Vision", label: "Vision", icon: "bi-eye-fill" },
+    { key: "Rheumatology", label: "Rheumatology", icon: "bi-universal-access" },
+    { key: "Neurology", label: "Neurology", icon: "bi-activity" },
+    ...Array.from(
+      new Set(
+        doctorsList
+          .map((d) => d.speciality)
+          .filter((s) => s && !["Vision", "Rheumatology", "Neurology"].includes(s))
+      )
+    ).map((spec) => ({
+      key: spec,
+      label: spec,
+      icon: "bi-patch-check-fill"
+    }))
+  ];
+
+  const getSpecialityCount = (specKey) => {
+    if (specKey === "All") return doctorsList.length;
+    return doctorsList.filter(
+      (d) => (d.speciality || "").toLowerCase() === specKey.toLowerCase()
+    ).length;
+  };
+
+  const filteredDoctors = doctorsList.filter((doc) => {
+    if (selectedSpeciality === "All") return true;
+    return (doc.speciality || "").toLowerCase() === selectedSpeciality.toLowerCase();
+  });
+
+  // Feature Lock: false = show only Dr. Subham Maity; true = unlock multi-doctor & specialities
+  const isMultiDoctorUnlocked = Boolean(
+    SHOW_MULTIPLE_DOCTORS ||
+    (typeof window !== 'undefined' && (
+      new URLSearchParams(window.location.search).get('doctors') === 'all' ||
+      new URLSearchParams(window.location.search).get('multidoctor') === 'true' ||
+      localStorage.getItem('ayurveda_unlock_doctors') === 'true'
+    ))
+  );
+
+  const activeDoctor = isMultiDoctorUnlocked
+    ? (doctorsList.find((d) => d.id === selectedDoctorId || d.doctorCode === selectedDoctorId) || filteredDoctors[0] || DEFAULT_DOCTORS[0])
+    : DEFAULT_DOCTORS[0];
+
+  const handleSpecialityChange = (specKey) => {
+    setSelectedSpeciality(specKey);
+    setIsDoctorSwitching(true);
+    setTimeout(() => setIsDoctorSwitching(false), 380);
+
+    const matching = doctorsList.filter((doc) => {
+      if (specKey === "All") return true;
+      return (doc.speciality || "").toLowerCase() === specKey.toLowerCase();
+    });
+
+    if (
+      matching.length > 0 &&
+      !matching.some(
+        (d) => d.id === selectedDoctorId || d.doctorCode === selectedDoctorId
+      )
+    ) {
+      setSelectedDoctorId(matching[0].id || matching[0].doctorCode);
+    }
+  };
+
+  const handleSelectDoctor = (docId) => {
+    setSelectedDoctorId(docId);
+    setIsDoctorSwitching(true);
+    setTimeout(() => setIsDoctorSwitching(false), 380);
+
+    const doc = doctorsList.find((d) => d.id === docId || d.doctorCode === docId);
+    if (
+      doc &&
+      selectedSpeciality !== "All" &&
+      (doc.speciality || "").toLowerCase() !== selectedSpeciality.toLowerCase()
+    ) {
+      setSelectedSpeciality(doc.speciality);
+    }
+  };
 
   const [currentOffer, setCurrentOffer] = useState(getLatestOffer);
   const [showOffer, setShowOffer] = useState(Boolean(getLatestOffer()));
@@ -164,12 +304,17 @@ function Landing() {
       await addPatient({
         patientName: nameVal,
         phone: phoneVal,
+        doctor: activeDoctor?.doctorName || "",
+        doctorCode: activeDoctor?.doctorCode || "",
+        disease: activeDoctor?.speciality || "",
         appointmentDate: new Date().toISOString().split("T")[0],
-        notes: "Requested from Website Landing Page",
+        notes: bookingForm.notes
+          ? `${bookingForm.notes} (Doctor: ${activeDoctor?.doctorName} [${activeDoctor?.speciality}])`
+          : `Requested appointment with ${activeDoctor?.doctorName} (${activeDoctor?.speciality})`,
         status: "Scheduled"
       });
       setBookingSuccess(true);
-      setBookingForm({ patientName: '', phone: '' });
+      setBookingForm({ patientName: '', phone: '', notes: '' });
       setTimeout(() => setBookingSuccess(false), 6000);
     } catch (err) {
       console.error("Booking submission error:", err);
@@ -198,7 +343,7 @@ function Landing() {
 
         <div className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
           <a href="#about" onClick={() => setMobileMenuOpen(false)}>Philosophy</a>
-          <a href="#doctor" onClick={() => setMobileMenuOpen(false)}>Chief Vaidya</a>
+          <a href="#doctor" onClick={() => setMobileMenuOpen(false)}>Doctors</a>
           <a href="#timetable" className="md:hidden" onClick={() => setMobileMenuOpen(false)}>Visiting Hours</a>
           <a href="#treatments" onClick={() => setMobileMenuOpen(false)}>Treatments</a>
           <a href="#remedies" onClick={() => setMobileMenuOpen(false)}>Remedies</a>
@@ -256,7 +401,7 @@ function Landing() {
 
             <div className="hero-actions">
               <a href="#timetable" className="btn-gold-primary">
-                <i className="bi bi-calendar-check-fill"></i> Book Vaidya Consultation
+                <i className="bi bi-calendar-check-fill"></i> Book Doctor Consultation
               </a>
               <a href="#remedies" className="btn-glass-secondary">
                 <i className="bi bi-flower1"></i> Explore Pure Remedies
@@ -266,7 +411,7 @@ function Landing() {
             {/* Quick Stats Grid */}
             <div className="hero-stats-grid">
               <div className="stat-card">
-                <span className="stat-num">25+</span>
+                <span className="stat-num">50+</span>
                 <span className="stat-label">Years Heritage</span>
               </div>
               <div className="stat-card">
@@ -322,46 +467,178 @@ function Landing() {
       {/* Doctor & Timetable Section */}
       <section className="doctor-section" id="doctor">
         <div className="container">
-          <div className="doctor-main-card glass-card-large grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-14 p-5 sm:p-6 md:p-8 lg:p-12 items-center">
-            <div className="relative overflow-hidden rounded-2xl border-2 border-yellow-600 shadow-xl">
-              <img 
-                src="/images/doctor.png" 
-                alt="Dr. Subham Maity - Chief Ayurvedic Physician" 
-                className="doctor-portrait-img"
-              />
-              <div className="absolute bottom-3 left-2 right-2 md:bottom-10 md:left-7 md:right-7 bg-white/95 backdrop-blur-md rounded-xl shadow-lg px-3 py-2 flex items-center gap-3">
-                <span className="exp-years text-sm md:text-4xl">25+</span>
-                <span className="exp-text text-xs md:text-lg">Years Clinical Experience</span>
+          {/* Multi-Doctor Header & Controls (Only visible when unlocked) */}
+          {isMultiDoctorUnlocked && (
+            <>
+              {/* Section Header */}
+              <div className="doctor-section-header">
+                <span className="section-kicker">
+                  <i className="bi bi-patch-check-fill"></i> Vaidya Ratna & Specialists
+                </span>
+                <h2>Our Esteemed Ayurvedic Physicians</h2>
+                <p className="section-subtext">
+                  Consult with distinguished Vaidyas and specialized Ayurvedic doctors offering personalized, root-cause healing across Vision, Rheumatology, Neurology, and holistic Panchakarma therapies.
+                </p>
+                <div className="gold-divider"></div>
               </div>
-            </div>
 
+              {/* Speciality Filter Tabs */}
+              <div className="doctor-speciality-nav" role="tablist">
+                {availableSpecialities.map((spec) => {
+                  const count = getSpecialityCount(spec.key);
+                  if (count === 0 && spec.key !== "All") return null;
+                  const isActive = selectedSpeciality.toLowerCase() === spec.key.toLowerCase();
+                  return (
+                    <button
+                      key={spec.key}
+                      type="button"
+                      className={`speciality-pill-btn ${isActive ? 'active' : ''}`}
+                      onClick={() => handleSpecialityChange(spec.key)}
+                      role="tab"
+                      aria-selected={isActive}
+                    >
+                      <i className={`bi ${spec.icon}`}></i>
+                      <span>{spec.label}</span>
+                      <span className="speciality-count-badge">{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Doctor Selection Cards Strip */}
+              <div className="doctor-selector-strip">
+                {filteredDoctors.map((doc) => {
+                  const isSelected = (activeDoctor?.id && activeDoctor.id === doc.id) || 
+                                     (activeDoctor?.doctorCode && activeDoctor.doctorCode === doc.doctorCode);
+                  return (
+                    <button
+                      key={doc.id || doc.doctorCode}
+                      type="button"
+                      className={`doctor-chip-card ${isSelected ? 'active' : ''}`}
+                      onClick={() => handleSelectDoctor(doc.id || doc.doctorCode)}
+                    >
+                      <img src={doc.image} alt={doc.doctorName} className="doctor-chip-avatar" />
+                      <div className="doctor-chip-info">
+                        <span className="doctor-chip-name">{doc.doctorName}</span>
+                        <span className="doctor-chip-spec">
+                          <i className="bi bi-tag-fill text-[11px] text-amber-600"></i> {doc.speciality} • {doc.experience}
+                        </span>
+                      </div>
+                      {isSelected && (
+                        <span className="doctor-chip-status" title="Active Selection">
+                          <i className="bi bi-check-circle-fill"></i>
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* Doctor Card */}
+          <div className={`doctor-main-card glass-card-large grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-14 p-5 sm:p-6 md:p-8 lg:p-12 items-center ${isDoctorSwitching ? 'doctor-fade-in' : ''}`}>
+            {/* Left: Doctor Portrait */}
+            {isMultiDoctorUnlocked ? (
+              <div className="doctor-portrait-wrapper">
+                <span className="doctor-speciality-floating-tag">
+                  <i className="bi bi-shield-check"></i> {activeDoctor.speciality} Specialist
+                </span>
+                <img 
+                  src={activeDoctor.image} 
+                  alt={`${activeDoctor.doctorName} - ${activeDoctor.title}`} 
+                  className="doctor-portrait-img"
+                />
+                <div className="doctor-exp-badge">
+                  <span className="exp-years text-xl md:text-3xl">{activeDoctor.experience}</span>
+                  <span className="exp-text text-xs md:text-sm">{activeDoctor.experienceText || 'Years Clinical Experience'}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="relative overflow-hidden rounded-2xl border-2 border-yellow-600 shadow-xl">
+                <img 
+                  src="/images/doctor.png" 
+                  alt="Dr. Subham Maity - Chief Ayurvedic Physician" 
+                  className="doctor-portrait-img"
+                />
+                <div className="absolute bottom-3 left-2 right-2 md:bottom-10 md:left-7 md:right-7 bg-white/95 backdrop-blur-md rounded-xl shadow-lg px-3 py-2 flex items-center gap-3">
+                  <span className="exp-years text-sm md:text-4xl">25+</span>
+                  <span className="exp-text text-xs md:text-lg">Years Clinical Experience</span>
+                </div>
+              </div>
+            )}
+
+            {/* Right: Doctor Details & Timetable */}
             <div className="w-full">
-              <span className="doctor-kicker">Chief Ayurvedic Physician & Vaidya</span>
-              <h2 className="doctor-name">Dr. Subham Maity</h2>
-              <p className="doctor-qualifications">
-                <i className="bi bi-patch-check-fill gold-icon"></i> B.A.M.S. | M.D. (Ayurveda) | Specialist in Ksharasutra & Panchakarma 
-              </p>
+              {isMultiDoctorUnlocked ? (
+                <>
+                  <span className="doctor-kicker">{activeDoctor.title}</span>
+                  <h2 className="doctor-name">
+                    {activeDoctor.doctorName}
+                    <i className="bi bi-patch-check-fill gold-icon text-xl" title="Verified Ayurvedic Physician"></i>
+                  </h2>
+                  <p className="doctor-qualifications">
+                    <i className="bi bi-mortarboard-fill gold-icon"></i> {activeDoctor.qualifications}
+                  </p>
+                  <p className="doctor-bio">{activeDoctor.bio}</p>
 
-              <p className="doctor-bio">
-                Dr. Shubham Maity, <strong>M.D. (Ayurveda)</strong>, is an experienced Ayurvedic physician specializing in <em>Ksharasutra</em> and <em>Panchakarma</em>. He offers holistic treatment for skin, digestive, gynecological, ENT, and lifestyle disorders, focusing on restoring health by treating the root cause through authentic Ayurvedic therapies.
-              </p>
+                  {/* Key Clinical Expertise */}
+                  {Array.isArray(activeDoctor.expertise) && activeDoctor.expertise.length > 0 && (
+                    <div className="doctor-expertise-wrap">
+                      <span className="doctor-expertise-label">
+                        <i className="bi bi-stars gold-icon"></i> Key Clinical Expertise:
+                      </span>
+                      <div className="doctor-expertise-chips">
+                        {activeDoctor.expertise.map((item, idx) => (
+                          <span key={idx} className="doctor-expertise-chip">
+                            <i className="bi bi-check2"></i> {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <span className="doctor-kicker">Chief Ayurvedic Physician & Doctor</span>
+                  <h2 className="doctor-name">Dr. Subham Maity</h2>
+                  <p className="doctor-qualifications">
+                    <i className="bi bi-patch-check-fill gold-icon"></i> B.A.M.S. | M.D. (Ayurveda) | Specialist in Ksharasutra & Panchakarma 
+                  </p>
+                  <p className="doctor-bio">
+                    Dr. Shubham Maity, <strong>M.D. (Ayurveda)</strong>, is an experienced Ayurvedic physician specializing in <em>Ksharasutra</em> and <em>Panchakarma</em>. He offers holistic treatment for skin, digestive, gynecological, ENT, and lifestyle disorders, focusing on restoring health by treating the root cause through authentic Ayurvedic therapies.
+                  </p>
+                </>
+              )}
 
               {/* Doctor's Timetable Widget */}
               <div className="timetable-box" id="timetable">
                 <div className="timetable-header">
                   <i className="bi bi-clock-history gold-icon"></i>
                   <h3>Doctor's Timetable & Visiting Hours</h3>
+                  {isMultiDoctorUnlocked && activeDoctor.fee && (
+                    <span className="timetable-fee-badge">
+                      Consultation: {activeDoctor.fee}
+                    </span>
+                  )}
                 </div>
 
                 <div className="timetable-grid">
-                  {/* <div className="time-row grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div>
-                      <span className="day-name text-sm md:text-normal"><i className="bi bi-sun hidden md:block"></i> Afternoon Session</span>
-                      <span className="time-range text-sm md:text-normal">04:00 PM – 06:30 PM</span>
-                    </div>
-                    <span className="day-badge text-sm md:text-normal">Mon to Sat</span>
-                  </div> */}
-                  <div className="time-row highlight-row">
+                  {isMultiDoctorUnlocked && Array.isArray(activeDoctor.timetable) ? (
+                    activeDoctor.timetable.map((slot, sIdx) => (
+                      <div key={sIdx} className={`time-row ${sIdx === 0 ? 'highlight-row' : ''}`}>
+                        <div className="flex items-center gap-2">
+                          <i className={`bi ${slot.icon || 'bi-calendar-check'} text-emerald-800`}></i>
+                          <span>
+                            <p className="day-name text-sm md:text-normal">{slot.day}</p>
+                            <p className="time-range text-sm md:text-normal">{slot.time}</p>
+                          </span>
+                        </div>
+                        <span className="day-badge gold-badge text-xs md:text-sm">{slot.badge}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="time-row highlight-row">
                       <div className="flex items-center gap-2">
                         <i className="bi bi-heart"></i>
                         <span>
@@ -369,13 +646,55 @@ function Landing() {
                           <p className="time-range text-sm md:text-normal">04:00 PM – 06:30 PM</p>
                         </span>
                       </div>
-                    <span className="day-badge gold-badge text-sm md:text-normal">Healthy Family 🌿</span>
-                  </div>
+                      <span className="day-badge gold-badge text-sm md:text-normal">Healthy Family 🌿</span>
+                    </div>
+                  )}
                 </div>
+
+                {/* Dropdown Bar to choose doctor (Only when multi-doctor is unlocked) */}
+                {isMultiDoctorUnlocked && (
+                  <div className="doctor-dropdown-control-wrap">
+                    <div className="doctor-dropdown-label">
+                      <span><i className="bi bi-person-badge-fill"></i> Select Doctor for Consultation:</span>
+                      {filteredDoctors.length > 1 && (
+                        <span className="doctor-dropdown-hint">{filteredDoctors.length} doctors available</span>
+                      )}
+                    </div>
+                    <div className="doctor-select-box-wrap">
+                      <select 
+                        id="appointment-doctor-select"
+                        className="doctor-select-dropdown"
+                        value={activeDoctor.id || activeDoctor.doctorCode}
+                        onChange={(e) => handleSelectDoctor(e.target.value)}
+                      >
+                        {selectedSpeciality === "All" ? (
+                          doctorsList.map((doc) => (
+                            <option key={doc.id || doc.doctorCode} value={doc.id || doc.doctorCode}>
+                              {doc.doctorName} — {doc.speciality} ({doc.experience} exp)
+                            </option>
+                          ))
+                        ) : (
+                          filteredDoctors.map((doc) => (
+                            <option key={doc.id || doc.doctorCode} value={doc.id || doc.doctorCode}>
+                              {doc.doctorName} — {doc.speciality} ({doc.experience} exp)
+                            </option>
+                          ))
+                        )}
+                      </select>
+                      <i className="bi bi-chevron-down doctor-select-arrow"></i>
+                    </div>
+                  </div>
+                )}
 
                 {bookingSuccess ? (
                   <div className="booking-alert-success">
-                    <i className="bi bi-check-circle-fill"></i> Your appointment request has been submitted! Our clinic staff at Ghatal will call you shortly.
+                    <i className="bi bi-check-circle-fill text-xl"></i>
+                    <div>
+                      <strong>Appointment Requested Successfully!</strong>
+                      <p className="text-xs md:text-sm mt-1">
+                        Your appointment request has been submitted! Our clinic staff at Ghatal will call you shortly.
+                      </p>
+                    </div>
                   </div>
                 ) : (
                   <form className="quick-booking-form" onSubmit={handleBookConsultation}>
@@ -409,7 +728,9 @@ function Landing() {
                     </div>
                     <button type="submit" className="btn-gold-primary btn-sm" disabled={isSubmitting}>
                       <i className="bi bi-calendar2-plus"></i>
-                      {isSubmitting ? ( "Submitting..." ) : (
+                      {isSubmitting ? (
+                        "Submitting..."
+                      ) : (
                         <>
                           <span className="hidden md:inline">Request </span>
                           Appointment

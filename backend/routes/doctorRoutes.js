@@ -4,8 +4,17 @@ const Doctor = require("../models/Doctor");
 const { getNextSequence } = require("../models/Counter");
 const authMiddleware = require("../middleware/authMiddleware");
 
-router.use(authMiddleware);
+// Get all Doctors (Public for landing page & appointments)
+router.get("/", async (req, res) => {
+  try {
+    const doctors = await Doctor.find().sort({ createdAt: -1 });
+    res.json(doctors);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
+router.use(authMiddleware);
 
 // Generate Next Doctor Code
 router.get("/next-code", async (req, res) => {
@@ -13,16 +22,6 @@ router.get("/next-code", async (req, res) => {
     const nextId = await getNextSequence("doctor");
     const code = `DR${nextId.toString().padStart(4, "0")}`;
     res.json({ code, nextId });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Get all Doctors
-router.get("/", async (req, res) => {
-  try {
-    const doctors = await Doctor.find().sort({ createdAt: -1 });
-    res.json(doctors);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
