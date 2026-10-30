@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
-import "bootstrap-icons/font/bootstrap-icons.css";
+// import "bootstrap-icons/font/bootstrap-icons.css";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
