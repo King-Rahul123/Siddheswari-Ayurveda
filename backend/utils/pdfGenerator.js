@@ -1,6 +1,15 @@
 const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
+const QRCode = require("qrcode");
+
+// ==========================================
+// UPI CONFIGURATION
+// ==========================================
+const UPI_PA = process.env.UPI_ID || "8145322318m@pnb";
+const UPI_PN = process.env.UPI_NAME || "SIDDHESWARI AYURVEDA";
+const UPI_MC = process.env.UPI_MC || "8050";
+
 
 // ==========================================
 // FONT PATHS
@@ -76,8 +85,33 @@ const money = (value) => {
 // ==========================================
 
 const generateSalePDF = (saleData, items = []) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
+      // ==========================================
+      // COMPUTE BILLED AMOUNT UPFRONT (FOR QR & TOTALS)
+      // ==========================================
+      const itemListForBilling = items && items.length > 0 ? items : (saleData.items || []);
+      let initialSubTotal = 0;
+      let initialDiscount = 0;
+      itemListForBilling.forEach((item) => {
+        const qty = Number(item.qty || 0);
+        const mrp = Number(item.mrp || item.rate || 0);
+        const discount = Number(item.discount || 0);
+        const itemSubtotal = qty * mrp;
+        const discountAmount = (itemSubtotal * discount) / 100;
+        initialSubTotal += itemSubtotal;
+        initialDiscount += discountAmount;
+      });
+      const initialRawGrandTotal = initialSubTotal - initialDiscount;
+      const billedAmount =
+        saleData.netAmount !== undefined && saleData.netAmount !== null && saleData.netAmount !== ""
+          ? Math.round(Number(saleData.netAmount))
+          : (saleData.grandTotal !== undefined && saleData.grandTotal !== null && saleData.grandTotal !== ""
+            ? Math.round(Number(saleData.grandTotal))
+            : (saleData.totalAmount !== undefined && saleData.totalAmount !== null && saleData.totalAmount !== ""
+              ? Math.round(Number(saleData.totalAmount))
+              : Math.round(initialRawGrandTotal)));
+
       // ==========================================
       // OUTPUT DIRECTORY
       // ==========================================
@@ -424,57 +458,90 @@ const generateSalePDF = (saleData, items = []) => {
 
 
       // ------------------------------------------
-      // QR CODE
+      // QR CODE (WITH AUTOMATED BILLED AMOUNT)
       // ------------------------------------------
 
-      const qrCandidatePaths = [
-          path.resolve(
-              __dirname,
-              "../../frontend/public/QR.jpeg"
-          )
-      ];
-
-      const qrCodePath = qrCandidatePaths.find((candidate) =>
-          fs.existsSync(candidate)
-      );
-
       const qrSize = 55;
+      let qrBuffer = null;
 
-      if (qrCodePath) {
-          doc.image(
-              qrCodePath,
-              qrCenterX - qrSize / 2,
-              infoBoxY + 19,
-              {
-                  fit: [qrSize, qrSize],
-                  align: "center",
-                  valign: "center",
-              }
-          );
+      try {
+        const encodedPn = encodeURIComponent(UPI_PN);
+        const note = saleData.saleId ? `Invoice ${saleData.saleId}` : "Siddheswari Ayurveda";
+        const encodedTn = encodeURIComponent(note);
+        const amStr = billedAmount > 0 ? Number(billedAmount).toFixed(2) : "";
+
+        // Standard UPI Deep Link URI with automated billed amount
+        const upiString = `upi://pay?pa=${UPI_PA}&pn=${encodedPn}&mc=${UPI_MC}&am=${amStr}&cu=INR&tn=${encodedTn}&mode=02`;
+
+        qrBuffer = await QRCode.toBuffer(upiString, {
+          type: "png",
+          width: 250,
+          margin: 1,
+          errorCorrectionLevel: "M",
+        });
+      } catch (qrErr) {
+        console.error("Error generating dynamic UPI QR code with billed amount:", qrErr);
+      }
+
+      if (qrBuffer) {
+        doc.image(
+          qrBuffer,
+          qrCenterX - qrSize / 2,
+          infoBoxY + 19,
+          {
+            fit: [qrSize, qrSize],
+            align: "center",
+            valign: "center",
+          }
+        );
       } else {
+        const qrCandidatePaths = [
+          path.resolve(
+            __dirname,
+            "../../frontend/public/QR.jpeg"
+          )
+        ];
+
+        const qrCodePath = qrCandidatePaths.find((candidate) =>
+          fs.existsSync(candidate)
+        );
+
+        if (qrCodePath) {
+          doc.image(
+            qrCodePath,
+            qrCenterX - qrSize / 2,
+            infoBoxY + 19,
+            {
+              fit: [qrSize, qrSize],
+              align: "center",
+              valign: "center",
+            }
+          );
+        } else {
           doc
-              .rect(
-                  qrCenterX - qrSize / 2,
-                  infoBoxY + 25,
-                  qrSize,
-                  qrSize
-              )
-              .lineWidth(1)
-              .stroke("#94a3b8");
+            .rect(
+              qrCenterX - qrSize / 2,
+              infoBoxY + 25,
+              qrSize,
+              qrSize
+            )
+            .lineWidth(1)
+            .stroke("#94a3b8");
 
           doc
-              .font(fontRegular)
-              .fontSize(7)
-              .fillColor("#64748b")
-              .text(
-                  "QR CODE",
-                  qrCenterX - 25,
-                  infoBoxY + 47,
-                  {
-                      width: 50,
-                      align: "center",
-                  }
-              );
+            .font(fontRegular)
+            .fontSize(7)
+            .fillColor("#64748b")
+            .text(
+              "QR CODE",
+              qrCenterX - 25,
+              infoBoxY + 47,
+              {
+                width: 50,
+                align: "center",
+              }
+            );
+        }
       }
 
 
@@ -754,9 +821,9 @@ const generateSalePDF = (saleData, items = []) => {
           // SHOP AMOUNT
           // ======================================
 
-          const lineAmount = qty * rate;
+          const lineAmount = qty * mrp;
 
-          subTotal += itemSubtotal;
+          subTotal += lineAmount;
 
           totalDiscount +=
             discountAmount;
