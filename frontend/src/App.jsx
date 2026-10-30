@@ -28,6 +28,7 @@ import SalesReturn from "./Components/SalesReturn.jsx";
 import Shop from "./Pages/Shop.jsx";
 import DShop from "./Pages/DShop.jsx";
 import Checkout from "./Pages/Checkout.jsx";
+import Order from "./Components/Order.jsx";
 
 const PurchaseEntry = lazy(() => import("./Components/PurchaseEntry"));
 // import EditPurchase from "./Components/EditPurchase";
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="/dashboard/purchase-report" element={<Purchase />} />
           <Route path="/dashboard/stock-report" element={<Stock />} />
           <Route path="/dashboard/purchase/purchase-entry" element={<Suspense fallback={<Loader />}><PurchaseEntry /></Suspense>} />
+          <Route path="/dashboard/purchase/order" element={<Suspense fallback={<Loader />}><Order /></Suspense>} />
           <Route path="/dashboard/staff-report" element={<StaffReport />} />
           <Route path="/dashboard/analytics" element={<Suspense fallback={<Loader />}><Analytics /></Suspense>} />
           <Route path="/dashboard/appointments" element={<Suspense fallback={<Loader />}><Appointment /></Suspense>} />

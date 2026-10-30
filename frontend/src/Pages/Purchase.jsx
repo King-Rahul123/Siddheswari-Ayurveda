@@ -23,6 +23,8 @@ export default function Purchase() {
 
     const [purchaseData, setPurchaseData] = useState([]);
 
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
     useEffect(() => {
         const unsubscribe = subscribePurchases(setPurchaseData);
         return () => unsubscribe();
@@ -31,6 +33,10 @@ export default function Purchase() {
     const handleAddProduct = () => {
         navigate("/dashboard/purchase/purchase-entry");
     };
+
+    const handleOrder = () => {
+        navigate("/dashboard/purchase/order");
+    }
 
     const openPreviewModal = (purchase) => {
         setSelectedPurchaseForPreview(purchase);
@@ -297,12 +303,25 @@ export default function Purchase() {
                             <h2>Purchase Management</h2>
                             <p className="text-gray-600 text-sm">Manage Ayurvedic product purchases</p>
                         </div>
-                        <button
-                            className="add-stock-btn"
-                            onClick={handleAddProduct}
-                        >
-                            <i className="bi bi-plus-circle"></i> Add Bill
-                        </button>
+
+                        <div className="flex items-center gap-2">
+
+                            {loggedInUser?.role?.toLowerCase() === "admin" && (
+                            <button
+                                className="add-stock-btn"
+                                onClick={handleOrder}
+                            >
+                                <i className="bi bi-cart"></i> Order
+                            </button>
+                            )}
+                            
+                            <button
+                                className="add-stock-btn"
+                                onClick={handleAddProduct}
+                            >
+                                <i className="bi bi-plus-circle"></i> Add Bill
+                            </button>
+                        </div>
                     </div>
 
                     <div className="sales-toolbar flex-wrap">

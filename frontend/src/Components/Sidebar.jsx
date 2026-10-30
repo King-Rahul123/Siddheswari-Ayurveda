@@ -46,17 +46,17 @@ export default function Sidebar() {
 
   return (
     <aside className="sidebar">
-      <div>
-        <div className="logo">
-          <img
-            src="/logo.png"
-            alt="Logo"
-            className="w-16 h-16 rounded-full"
-          />
-          <h2>Siddheswari Ayurveda</h2>
-          <span>Healing Naturally</span>
-        </div>
+      <div className="logo">
+        <img
+          src="/logo.png"
+          alt="Logo"
+          className="w-16 h-16 rounded-full"
+        />
+        <h2>Siddheswari Ayurveda</h2>
+        <span>Healing Naturally</span>
+      </div>
 
+      <div className="sidebar-content">
         <ul className="menu">
           <li className={ window.location.pathname === "/dashboard" ? "active" : "" } onClick={() => navigate("/dashboard")} >
             <i className="bi bi-grid-fill"></i>
@@ -158,10 +158,12 @@ export default function Sidebar() {
         </ul>
       </div>
 
-      <button className="logout-btn" onClick={handleLogout}>
-        <i className="bi bi-box-arrow-right"></i>
-        Logout
-      </button>
+      <div className="sidebar-footer">
+        <button className="logout-btn" onClick={handleLogout}>
+            <i className="bi bi-box-arrow-right"></i>
+            Logout
+        </button>
+      </div>
     </aside>
   );
 }
